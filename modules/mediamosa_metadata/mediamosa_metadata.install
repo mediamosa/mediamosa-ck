@@ -1,0 +1,52 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ *  Metadata support DC & QDC.
+ */
+
+/**
+ * Required helpers.
+ */
+require_once('mediamosa_metadata_definition.inc');
+
+/**
+ * Implementation of hook_install().
+ */
+function mediamosa_metadata_install() {
+  drupal_load('module', 'content');
+  content_notify('install', 'mediamosa_metadata');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function mediamosa_metadata_uninstall() {
+  drupal_load('module', 'content');
+  content_notify('uninstall', 'mediamosa_metadata');
+}
+
+/**
+ * Implementation of hook_enable().
+ *
+ * Notify content module when this module is enabled.
+ */
+function mediamosa_metadata_enable() {
+  drupal_load('module', 'content');
+  content_notify('enable', 'mediamosa_metadata');
+  _mediamosa_metadata_link_fields('mediamosa_videocontent');
+}
+
+/**
+ * Implementation of hook_disable().
+ *
+ * Notify content module when this module is disabled.
+ */
+function mediamosa_metadata_disable() {
+  drupal_load('module', 'content');
+  // Please note - we have to do unlink before notify.
+  _mediamosa_metadata_unlink_fields('mediamosa_videocontent');
+  content_notify('disable', 'mediamosa_metadata');
+  watchdog('Mediamosa CK', 'Dublin Core Metadata module has been disabled, all metadata info removed from Drupal.', array(), WATCHDOG_NOTICE);
+}

@@ -1,0 +1,5 @@
+#edit-year-from-wrapper, #edit-month-from-wrapper, #edit-year-to-wrapper, #edit-month-to-wrapper, #edit-type-wrapper {
+  float:left;
+  margin-right:8px;
+  margin-left:8px;
+}
