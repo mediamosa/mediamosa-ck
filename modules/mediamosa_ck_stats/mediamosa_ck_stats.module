@@ -1,0 +1,605 @@
+<?php
+// $Id$
+
+/**
+ * MediaMosa is a Full Featured, Webservice Oriented Media Management and
+ * Distribution platform (http://www.vpcore.nl)
+ *
+ * Copyright (C) 2011 SURFnet BV (http://www.surfnet.nl) and Kennisnet
+ * (http://www.kennisnet.nl)
+ *
+ * MediaMosa is based on the open source Drupal platform and
+ * was originally developed by Madcap BV (http://www.madcap.nl)
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, you can find it at:
+ * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+ */
+
+
+/**
+ * @file
+ * This module enables various statistics for frontend applications.
+ */
+
+// Includes.
+
+define('MEDIAMOSA_CK_STATS_PERMISSION_VIEW_STATS', 'view mediamosa statistics');
+
+// @todo: move to setting.
+define('MEDIAMOSA_CK_STATS_PER_PAGE', 50);
+// @todo: move to setting under block.
+define('MEDIAMOSA_CK_STATS_PER_PAGE_BLOCK_LATEST_MEDIA', 5);
+define('MEDIAMOSA_CK_STATS_PER_PAGE_BLOCK_POPULAR_MEDIA', 5);
+
+// Form names.
+define('MEDIAMOSA_CK_STATS_FORMNAME_USED_DISKSPACE', 'used_diskspace');
+define('MEDIAMOSA_CK_STATS_FORMNAME_NEWEST_MEDIA', 'newest_mediafiles');
+
+/**
+ * Types for datausagevideo REST call.
+ */
+define('MEDIAMOSA_CK_STATS_DATAUSAGE_TYPE_CONTAINER', 'container');
+define('MEDIAMOSA_CK_STATS_DATAUSAGE_TYPE_GROUP', 'group');
+define('MEDIAMOSA_CK_STATS_DATAUSAGE_TYPE_USER', 'user');
+
+/**
+ * Implementation of hook_permission().
+ */
+function mediamosa_ck_stats_permission() {
+  return array(
+    MEDIAMOSA_CK_STATS_PERMISSION_VIEW_STATS => array(
+      'title' => t('View Mediamosa frontend statistics'),
+      'description' => t('View results of statistics REST calls.'),
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function mediamosa_ck_stats_menu() {
+  $items['mediamosa/stats'] = array(
+    'page callback' => '_mediamosa_ck_stats_overview',
+    'access arguments' => array(MEDIAMOSA_CK_STATS_PERMISSION_VIEW_STATS),
+    'title' => 'Statistics',
+  );
+
+  $items['mediamosa/stats/used_diskspace'] = array(
+    'page callback' => '_mediamosa_ck_stats_used_diskspace',
+    'access arguments' => array(MEDIAMOSA_CK_STATS_PERMISSION_VIEW_STATS),
+    'type' => MENU_VISIBLE_IN_BREADCRUMB,
+    'weight' => 1,
+    'title' => 'Overview of diskspace used',
+  );
+
+  $items['mediamosa/stats/newest_mediafiles'] = array(
+    'page callback' => '_mediamosa_ck_stats_newest_mediafiles',
+    'access arguments' => array(MEDIAMOSA_CK_STATS_PERMISSION_VIEW_STATS),
+    'type' => MENU_VISIBLE_IN_BREADCRUMB,
+    'weight' => 1,
+    'title' => 'Overview of newest mediafiles',
+  );
+
+  return $items;
+}
+
+/**
+ * Implementation of hook_help().
+ */
+function mediamosa_ck_stats_help($path, $arg) {
+  switch ($path) {
+    case 'mediamosa/stats':
+      return '<p>' . t('Welcome to MediaMosa statistics. Click on one of our overviews to see more information.') . '<p>';
+
+    case 'mediamosa/stats/used_diskspace':
+      return '<p>' . t('This overview displays a list of the disk usage per container.') . '<p>';
+
+    case 'mediamosa/stats/requested_streams':
+      return '<p>' . t('This overview displays a list of requested streams. Note that this overview gives the number of created symlinks, not the eventually streamed mediafiles.') . '<p>';
+  }
+}
+
+/**
+ * Implementation of hook_block_info().
+ */
+function mediamosa_ck_stats_block_info() {
+  $blocks['latest'] = array(
+    'info' => t('Latest videos'),
+  );
+  $blocks['populair'] = array(
+    'info' => t('Populair videos'),
+  );
+  return $blocks;
+}
+
+/**
+ * Implementation of hook_block_view().
+ */
+function mediamosa_ck_stats_block_view($delta = 0) {
+  $block = array();
+  switch ($delta) {
+    case 'latest':
+      $block['subject'] = t('Latest videos');
+      $block['content'] = _mediamosa_ck_stats_block_latest_videos();
+      break;
+
+    case 'populair':
+      $block['subject'] = t('Popular videos');
+      $block['content'] = _mediamosa_ck_stats_block_popular_videos();
+      break;
+
+    default:
+      assert(0);
+      break;
+  }
+
+  return $block;
+}
+
+/**
+ * Block callback for popular mediafiles.
+ */
+function _mediamosa_ck_stats_block_popular_videos() {
+
+  // Load the themes.
+  assert(module_load_include('inc', 'media_mediamosa', 'media_mediamosa.theme') !== FALSE);
+
+  // Get videos.
+  $populair_videos = MediaMosaCkConnectorStatsWrapper::request_stats_popular_mediafiles(array('limit' => MEDIAMOSA_CK_STATS_PER_PAGE_BLOCK_POPULAR_MEDIA));
+
+  if (!empty($populair_videos)) {
+    foreach ($populair_videos['response']->xml->items->item as $item) {
+      $items[] = theme('media_mediamosa_link', array('asset_id' => $item->asset_id));
+    }
+  }
+
+  return theme('item_list', array('items' => $items));
+}
+
+/**
+ * Block callback for latest videos.
+ */
+function _mediamosa_ck_stats_block_latest_videos() {
+  // Load the themes.
+  assert(module_load_include('inc', 'media_mediamosa', 'media_mediamosa.theme') !== FALSE);
+
+  // Get the latest videos.
+  $response = MediaMosaCkConnectorStatsWrapper::request_stats_latest_mediafiles(array('limit' => MEDIAMOSA_CK_STATS_PER_PAGE_BLOCK_LATEST_MEDIA));
+
+  if (!empty($response)) {
+    foreach ($response->xml->items->item as $item) {
+      $items[] = theme('media_mediamosa_link', array('asset_id' => $item->asset_id));
+    }
+  }
+
+  return theme('item_list', array('items' => $items));
+}
+
+/**
+ * Overview of all statstics options.
+ */
+function _mediamosa_ck_stats_overview() {
+  // @todo: may be optimized with D7 approach - no $output, etc
+  $menus = mediamosa_ck_stats_menu();
+
+  $items = array();
+
+  foreach ($menus as $menu_path => $menu) {
+    if (!preg_match('/stats\/[a-z]*/', $menu_path)) {
+      continue;
+    }
+
+    $items[] = l($menu['title'], $menu_path);
+  }
+
+  $output = theme('item_list', array('items' => $items));
+
+  return $output;
+}
+
+/**
+ * Used diskspace Form.
+ */
+function _mediamosa_ck_stats_used_diskspace() {
+
+  // Get/set session.
+  $session = _mediamosa_ck_stats_filter_session(MEDIAMOSA_CK_STATS_FORMNAME_USED_DISKSPACE);
+
+  $build = array();
+
+  $build[MEDIAMOSA_CK_STATS_FORMNAME_USED_DISKSPACE . '_filter'] = drupal_get_form('mediamosa_ck_stats_filter_form', MEDIAMOSA_CK_STATS_FORMNAME_USED_DISKSPACE);
+  $build[MEDIAMOSA_CK_STATS_FORMNAME_USED_DISKSPACE . '_list'] = drupal_get_form('mediamosa_ck_stats_used_diskspace_form');
+
+  return $build;
+}
+
+/**
+ * Latest mediafiles Form.
+ */
+function _mediamosa_ck_stats_newest_mediafiles() {
+  // No filter for this form.
+  $build[MEDIAMOSA_CK_STATS_FORMNAME_NEWEST_MEDIA .'_list'] = drupal_get_form('mediamosa_ck_stats_newest_mediafiles_form');
+  return $build;
+}
+
+/**
+ * Form builder; Return form for statistics filters.
+ *
+ * @param string $form_name
+ *   ID of the page where filter is applied.
+ *
+ * @see mediamosa_ck_stats_filter_form_submit()
+ */
+function mediamosa_ck_stats_filter_form($form, &$form_state, $form_name) {
+  // Get session.
+  $session = _mediamosa_ck_stats_filter_session($form_name);
+
+  $form = array();
+
+  $form['filter'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Search Filter'),
+    '#collapsible' => TRUE,
+    '#description' => t('This filter allows you to change the outcome of the listing. Container type is the same as the container in uploaded media, like asf, mpg etc. Searching on user or group will allow you to see usage of these groups or users.'),
+  );
+
+  $form['filter']['period']['from']['year'] = array(
+    '#type' => 'select',
+    '#title' => t('From year'),
+    '#options' => drupal_map_assoc(range(2004, date("Y"))),
+    '#default_value' => isset($session['year']) ? $session['year'] : date('Y'),
+  );
+
+  $form['filter']['period']['from']['month'] = array(
+    '#type' => 'select',
+    '#title' => t('From month'),
+    '#options' => drupal_map_assoc(range(1, 12)),
+    '#default_value' => empty($session['month']) ? date('n') : $session['month'],
+  );
+
+  $form['filter']['period']['type'] = array(
+    '#type' => 'select',
+    '#title' => 'Type',
+    '#options' => array(
+        MEDIAMOSA_CK_STATS_DATAUSAGE_TYPE_CONTAINER => t('Container'),
+        MEDIAMOSA_CK_STATS_DATAUSAGE_TYPE_GROUP => t('Group'),
+        MEDIAMOSA_CK_STATS_DATAUSAGE_TYPE_USER => t('User')
+    ),
+    '#default_value' => isset($session['type']) ? $session['type'] : MEDIAMOSA_CK_STATS_DATAUSAGE_TYPE_CONTAINER,
+  );
+
+  $form['filter']['go'] = array(
+    '#type' => 'submit',
+    '#value' => t('Filter'),
+   );
+
+  return $form;
+}
+
+/**
+ * Process result from filter form.
+ */
+function mediamosa_ck_stats_filter_form_submit($form, $form_state) {
+  // We need to know on which page filter was applied.
+  if (!isset($form_state['build_info']['args'][0]) || empty($form_state['build_info']['args'][0])) {
+    drupal_set_message(t('Bad call to mediamosa_ck_stats_filter_form_submit.'), 'warning');
+    return;
+  }
+  $form_name = $form_state['build_info']['args'][0];
+  _mediamosa_ck_stats_filter_session($form_name, $form_state);
+}
+
+/**
+ * Form builder; disk space listing page.
+ */
+function mediamosa_ck_stats_used_diskspace_form() {
+  // Include our css.
+  drupal_add_css(drupal_get_path('module', 'mediamosa_ck_stats') . '/mediamosa_ck_stats.css');
+
+  // Get session.
+  $session = _mediamosa_ck_stats_filter_session(MEDIAMOSA_CK_STATS_FORMNAME_USED_DISKSPACE);
+
+  $sort_map = array(
+    t('Container Type') => 'container_type',
+    t('Type') => 'type',
+    t('Disk space used, MB') => 'diskspace_mb',
+  );
+
+  $data = array(
+    'order_by' => !empty($sort_map[$session['order']]) ? $sort_map[$session['order']] : 'diskspace_mb',
+    'order_direction' => $session['sort'],
+    'offset' => $session['page'],
+  );
+
+  // Get response.
+  $response = MediaMosaCkConnectorStatsWrapper::request_stats_datausage_video($session['type'], $session['month'], $session['year'], $data);
+
+  $header = array(
+    array('field' => 'container_type', 'data' => t('Container Type'), 'class' => array('uds-container-type')),
+    array('field' => 'type', 'data' => t('Type'), 'class' => array('uds-type')),
+    array('field' => 'diskspace_mb', 'data' => t('Disk space used, MB'), 'class' => array('uds-size'), 'sort' => 'desc'),
+  );
+
+  $item_count_total = 0;
+  $rows = array();
+  if (!empty($response)) {
+    $item_count_total = (int) $response->xml->header->item_count_total;
+
+    foreach ($response->xml->items->item as $item) {
+      $rows[] = array(
+        array('data' => $item->container_type, 'class' => array('uds-container-type')),
+        array('data' => $item->type, 'class' => array('uds-type')),
+        array('data' => $item->diskspace_mb, 'class' => array('uds-size')),
+      );
+    }
+  }
+
+  // Our listing.
+  $form['list'] = array(
+    '#theme' => 'mediamosa_ck_stats_table',
+    '#header' => $header,
+    '#rows' => $rows,
+    '#empty' => t('No data available.'),
+    // Pager.
+    '#page' => $session['page'],
+    '#item_count_total' => $item_count_total,
+    '#item_limit' => $session['limit'],
+    // Top
+    '#title' => t('Total: @total', array('@total' => $item_count_total)),
+    //'#description' => t(''),
+  );
+  return $form;
+}
+
+/**
+ * Form builder; disk space listing page.
+ *
+ */
+function mediamosa_ck_stats_newest_mediafiles_form() {
+  // Include our css.
+  drupal_add_css(drupal_get_path('module', 'mediamosa_ck.stats') . '/mediamosa_ck.stats.css');
+
+  // Note no 'field' elements in header cause table is always sorted by date, desc order.
+  $header = array(
+    array('data' => t('Mediafile ID'), 'class' => array('newest-id')),
+    array('data' => t('Asset ID'), 'class' => array('newest-id')),
+    array('data' => t('Owner'), 'class' => array('newest-id')),
+    array('data' => t('Created'), 'class' => array('newest-date')),
+  );
+
+  // Get response.
+  $response = MediaMosaCkConnectorStatsWrapper::request_stats_newest_mediafiles();
+  $item_count_total = (int) $response->xml->header->item_count_total;
+
+  $rows = array();
+  if (!empty($response)) {
+    foreach ($response->xml->items->item as $item) {
+      $rows[] = array(
+        array('data' => $item->mediafile_id, 'class' => array('newest-id')),
+        array('data' => $item->asset_id, 'class' => array('newest-id')),
+        array('data' => $item->owner_id, 'class' => array('newest-id')),
+        array('data' => $item->created, 'class' => array('newest-date')),
+      );
+    }
+  }
+
+  // Our listing.
+  $form['list'] = array(
+    '#theme' => 'mediamosa_ck_stats_table',
+    '#header' => $header,
+    '#rows' => $rows,
+    '#empty' => t('No data available.'),
+    // Top
+    '#description' => t(''),
+    '#title' => t('Latest @total mediafiles', array('@total' => $item_count_total)),
+  );
+
+  return $form;
+}
+
+// THEME functions are below
+
+/**
+ * Implements hook_theme().
+ *
+ * Based on mediamosa_maintenance_theme().
+ */
+function mediamosa_ck_stats_theme() {
+  return array(
+    'mediamosa_ck_stats_table' => array(
+      'variables' => array(
+        // Table
+        'header' => NULL,
+        'rows' => NULL,
+        'attributes' => array(),
+        'caption' => NULL,
+        'colgroups' => array(),
+        'sticky' => TRUE,
+        'empty' => '',
+        // Pager (optional)
+        'page' => 0,
+        'item_count_total' => 0,
+        'item_limit' => MEDIAMOSA_CK_STATS_PER_PAGE,
+        'element' => 0,
+        'quantity' => 10,
+        // Note (small font, bottom right).
+        'note' => NULL,
+        // caption bottom, right.
+        'caption_bottom' => NULL,
+        // Title, description (top).
+        'title' => NULL,
+        'description' => NULL,
+        // Summary.
+        'summary' => NULL,
+      ),
+    ),
+    'mediamosa_ck_stats_pager' => array(
+      'variables' => array(
+        'page' => 0,
+        'item_count_total' => 0,
+        'item_limit' => MEDIAMOSA_CK_STATS_PER_PAGE,
+        'element' => 0,
+        'quantity' => 10,
+      ),
+    ),
+  );
+}
+
+/**
+ * Our table wrapper.
+ *
+ * @param array $variables
+ */
+function theme_mediamosa_ck_stats_table($variables) {
+  drupal_add_css(drupal_get_path('module', 'mediamosa_ck.stats') . '/mediamosa_ck.stats.css');
+
+  $pager_variables = array();
+  foreach (array('page', 'item_count_total', 'item_limit', 'element', 'quantity') as $var) {
+    if (isset($variables[$var])) {
+      $pager_variables[$var] = $variables[$var];
+    }
+  }
+
+  if (!empty($pager_variables['item_count_total'])) {
+    $build['pager_top'] = theme('mediamosa_ck_stats_pager', $pager_variables);
+  }
+
+  $table_variables = array();
+  foreach (array('header', 'rows', 'attributes', 'caption', 'colgroups', 'sticky', 'empty') as $var) {
+    if (isset($variables[$var])) {
+      $table_variables[$var] = $variables[$var];
+    }
+  }
+
+  if (!empty($variables['title'])) {
+    $build['title'] = '<h1>' . check_plain($variables['title']) . '</h1>';
+  }
+
+  if (!empty($variables['description'])) {
+    $build['description'] = '<p>' . check_plain($variables['description']) . '</p>';
+  }
+
+  // Show summary.
+  if (isset($variables['summary']) && is_array($variables['summary']) && !empty($variables['summary'])) {
+    foreach ($variables['summary'] as $summary_item) {
+      if (isset($summary_item['title']) && isset($summary_item['data'])) {
+        $variables['rows'][] = array(
+          array('data' => $summary_item['title'], 'class' => 'mfes-table-summary-right', 'colspan' => count($variables['header'])-1),
+          array('data' => $summary_item['data'], 'class' => 'mfes-table-summary'),
+        );
+      }
+    }
+  }
+
+  $build['table'] = theme('table', $variables);
+
+  if (!empty($variables['note'])) {
+    $build['note'] = '<div align="right"><sup><small>' . check_plain($variables['note']) . '</small></sup><div>';
+  }
+
+  if (!empty($variables['caption_bottom'])) {
+    $build['caption_bottom'] = '<div align="right">' . check_plain($variables['caption_bottom']) . '</div>';
+  }
+
+  if (!empty($pager_variables['item_count_total'])) {
+    $build['pager_bottom'] = theme('mediamosa_ck_stats_pager', $pager_variables);
+  }
+
+  return implode('', $build);
+}
+
+/**
+ * Our pager wrapper.
+ *
+ * @param array $variables
+ */
+function theme_mediamosa_ck_stats_pager($variables) {
+  global $pager_page_array, $pager_total, $pager_total_items, $pager_limits;
+
+  $page = $variables['page'];
+  $item_count_total = $variables['item_count_total'];
+  $item_limit = $variables['item_limit'];
+  $element = $variables['element'];
+  $quantity = $variables['quantity'];
+
+  $pager_page_array = array($element => $page);
+
+  // Total items.
+  $pager_total_items[$element] = $item_count_total;
+
+  // Number of pagelinks.
+  $pager_total[$element] = ceil($item_count_total / $item_limit);
+
+  // Page limit.
+  $pager_limits[$element] = $item_limit;
+
+  return theme('pager', array('quantity' => $quantity));
+}
+
+/**
+ * This function returns a trimmed string, optionally in an HTML <span> tag.
+ *
+ * @param $text
+ *   text to trim
+ * @param $length
+ *   length limitation
+ * @param $plain
+ *   Keep plain or make HTML.
+ */
+function _mediamosa_ck_stats_trim_string($text, $length = FALSE, $plain = FALSE) {
+
+  // To big to fit?
+  if ($length && drupal_strlen($text) > $length) {
+    return $plain ? drupal_substr($text, 0, $length - 1) . '...' : strtr('<span title="@text">@text</span>', array('@text' => check_plain(drupal_substr($text, 0, $length - 1)) . '&hellip;'));
+  }
+
+  return $plain ? $text : check_plain($text);
+}
+
+/**
+ * Get and set the session.
+ */
+function _mediamosa_ck_stats_filter_session($form_name, $filter_form_state = array()) {
+  // Get session.
+  $session = isset($_SESSION[$form_name]) ? $_SESSION[$form_name] : array();
+
+  // Get these from _GET if present.
+  foreach (array('order', 'sort', 'page') as $param) {
+    unset($session[$param]);
+    if (isset($_GET[$param])) {
+      $session[$param] = $_GET[$param];
+    }
+  }
+
+  foreach (array('year', 'month', 'type') as $param) {
+    if (isset($filter_form_state['input'][$param])) {
+      $session[$param] = $filter_form_state['input'][$param];
+    }
+  }
+
+  // Set defaults.
+  $session += array(
+    'page' => 0,
+    'limit' => MEDIAMOSA_CK_STATS_PER_PAGE,
+    'month' => date('n'),
+    'year' => date('Y'),
+    'type' => MEDIAMOSA_CK_STATS_DATAUSAGE_TYPE_CONTAINER,
+    'order' => '',
+    'sort' => 'DESC',
+  );
+  $session['offset'] = $session['page'] * MEDIAMOSA_CK_STATS_PER_PAGE;
+
+  // Set it again.
+  $_SESSION[$form_name] = $session;
+
+  return $session;
+}

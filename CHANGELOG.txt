@@ -1,0 +1,6 @@
+
+Changelog MediaMosa Construction Set
+------------------------------------
+- Added code to return play link.
+- Fixed upload to MediaMosa.
+- Ticket 488, 490, 491, 494: ACL, still and transcode forms and REST calls.

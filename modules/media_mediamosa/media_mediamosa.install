@@ -1,0 +1,58 @@
+<?php
+// $Id$
+
+/**
+ * MediaMosa is Open Source Software to build a Full Featured, Webservice
+ * Oriented Media Management and Distribution platform (http://mediamosa.org)
+ *
+ * Copyright (C) 2011 SURFnet BV (http://www.surfnet.nl) and Kennisnet
+ * (http://www.kennisnet.nl)
+ *
+ * MediaMosa is based on the open source Drupal platform and
+ * was originally developed by Madcap BV (http://www.madcap.nl)
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, you can find it at:
+ * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+ */
+
+/**
+ * @file
+ * The install file for media_mediamosa module.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function media_mediamosa_install() {
+}
+
+/**
+ * Implements hook_enable().
+ */
+function media_mediamosa_enable() {
+  _media_mediamosa_metadata_link_fields();
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function media_mediamosa_uninstall() {
+  // Take care about eliminating our Metadata fields.
+
+  // Unfortunatelly in D7 there are no parameters to turn off cache-rebuild.
+  _media_mediamosa_metadata_unlink_fields();
+
+  // Clean up own variables
+  db_delete('variable')
+    ->condition('name', 'media_mediamosa_%', 'LIKE')
+    ->execute();
+}
