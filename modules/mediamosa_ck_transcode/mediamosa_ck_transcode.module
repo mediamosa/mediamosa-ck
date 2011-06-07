@@ -169,7 +169,7 @@ function mediamosa_ck_transcode_mediamosa_ck_configuration_collect() {
 /**
  * Implements hook_mediamosa_ck_configuration_collect_submit().
  */
-function mediamosa_ck_transcode_mediamosa_ck_configuration_collect_submit($form, &$form_state) {
+function mediamosa_ck_transcode_mediamosa_ck_configuration_collect_submit($form, $form_state) {
   $values = $form_state['values'];
 
   mediamosa_connector::variable_set('media_mediamosa_transcode_profile_default', $values['media_mediamosa_transcode_profile_default']);
@@ -195,15 +195,15 @@ function mediamosa_ck_transcode_mediamosa_ck_configuration_collect_submit($form,
 /**
  * Show the transcodes + form.
  */
-function _mediamosa_ck_transcoding_form($form, &$form_state) {
+function _mediamosa_ck_transcoding_form($form, $form_state) {
 
   $form = array();
 
   // Add the transcode form.
-  $form = array_merge($form, _mediamosa_ck_transcode_generate_form($form, &$form_state));
+  $form = array_merge($form, _mediamosa_ck_transcode_generate_form($form, $form_state));
 
   // Add the transcode listing.
-  $form = array_merge($form, _mediamosa_ck_transcode_list_form($form, &$form_state));
+  $form = array_merge($form, _mediamosa_ck_transcode_list_form($form, $form_state));
 
   return $form;
 }
@@ -211,7 +211,7 @@ function _mediamosa_ck_transcoding_form($form, &$form_state) {
 /**
  * Menu callback.
  */
-function _mediamosa_ck_transcode_generate_form($form, &$form_state) {
+function _mediamosa_ck_transcode_generate_form($form, $form_state) {
   $fid = arg(1);
   $collapsed = TRUE;
   $with_none = FALSE;
@@ -306,7 +306,7 @@ function mediamosa_ck_transcode_media_mediamosa_upload_collect_($collapsed = TRU
   return $form;
 }
 
-function _mediamosa_ck_transcode_generate_form_submit($form, &$form_state) {
+function _mediamosa_ck_transcode_generate_form_submit($form, $form_state) {
   $fid = arg(1);
 
   // Collect the data.
@@ -341,7 +341,7 @@ function _mediamosa_ck_transcode_generate_form_submit($form, &$form_state) {
 /**
  * Form definition for transcodings tab.
  */
-function _mediamosa_ck_transcode_list_form($form, &$form_state) {
+function _mediamosa_ck_transcode_list_form($form, $form_state) {
 
   $form = array();
   $fid = arg(1);
@@ -499,7 +499,7 @@ function _mediamosa_ck_transcode_profiles() {
 /**
  * Confirm deletion of a job.
  */
-function _mediamosa_ck_transcode_job_delete($form, &$form_state, $owner_id, $job_id, $fid) {
+function _mediamosa_ck_transcode_job_delete($form, $form_state, $owner_id, $job_id, $fid) {
   // Extra check against direct call by URL.
   if (!user_access(MEDIAMOSA_CK_PERMISSION_DELETE_MEDIAMOSA_JOBS)) {
     drupal_access_denied();
@@ -533,7 +533,7 @@ function _mediamosa_ck_transcode_job_delete($form, &$form_state, $owner_id, $job
  *
  * @see _mediamosa_ck_transcode_job_delete
  */
-function _mediamosa_ck_transcode_job_delete_submit($form, &$form_state) {
+function _mediamosa_ck_transcode_job_delete_submit($form, $form_state) {
 
   // Get ids.
   $owner_id = $form_state['values']['owner_id'];
@@ -550,7 +550,7 @@ function _mediamosa_ck_transcode_job_delete_submit($form, &$form_state) {
 /**
  * Confirm deletion of mediafile.
  */
-function _mediamosa_ck_transcode_mediafile_delete($form, &$form_state, $owner_id, $mediafile_id, $media_id) {
+function _mediamosa_ck_transcode_mediafile_delete($form, $form_state, $owner_id, $mediafile_id, $media_id) {
   // Extra check against direct call by URL.
   if (!user_access(MEDIAMOSA_CK_PERMISSION_DELETE_MEDIAMOSA_MEDIAFILES)) {
     drupal_access_denied();
@@ -584,7 +584,7 @@ function _mediamosa_ck_transcode_mediafile_delete($form, &$form_state, $owner_id
  *
  * @see _mediamosa_ck_transcode_mediafile_delete
  */
-function _mediamosa_ck_transcode_mediafile_delete_submit($form, &$form_state) {
+function _mediamosa_ck_transcode_mediafile_delete_submit($form, $form_state) {
 
   // Get ids.
   $owner_id = $form_state['values']['owner_id'];
