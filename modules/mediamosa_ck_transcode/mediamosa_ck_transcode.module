@@ -277,12 +277,12 @@ function mediamosa_ck_transcode_media_mediamosa_upload_collect_($collapsed = TRU
     }
   }
 
-  if (mediamosa_connector::variable_get('media_mediamosa_transcode_profile_default', NULL)) {
-    $transcode_profile_default = mediamosa_connector::variable_get('media_mediamosa_transcode_profile_default', NULL);
+  if (variable_get('media_mediamosa_transcode_profile_default', NULL)) {
+    $transcode_profile_default = variable_get('media_mediamosa_transcode_profile_default', NULL);
   }
 
   // None is available only for existing mediafiles.
-  $transcode_options = mediamosa_connector::variable_get('media_mediamosa_transcode_profile_default_options_value', $options);
+  $transcode_options = variable_get('media_mediamosa_transcode_profile_default_options_value', $options);
   if (!$with_none) {
     unset($transcode_options['none']);
   }
