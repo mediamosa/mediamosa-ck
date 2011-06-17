@@ -52,12 +52,12 @@ class MediaMediaMosaFileStyles extends FileStyles {
     return $this->set('fullscreen', $value);
   }
 
-  function get_image_uri() {
+  function getImageUri() {
     $image_uri = $this->get('image_uri');
     if ($image_uri) {
       return $image_uri;
     }
-    $object = $this->get_object();
+    $object = $this->getObject();
 
     if ($object->uri) {
       // Get the asset_id and the local path, where the still image may exists.
@@ -99,7 +99,7 @@ class MediaMediaMosaFileStyles extends FileStyles {
   }
 
   function video($effect) {
-    $params = MediaMosaStreamWrapper::mediamosa_parse_url($this->get_uri());
+    $params = MediaMosaStreamWrapper::mediamosa_parse_url($this->getUri());
     $asset_id = $params['asset_id'];
     $mediafile_id = $params['mediafile_id'];
     $mediafile_id_transcoded = $mediafile_id;
@@ -117,13 +117,13 @@ class MediaMediaMosaFileStyles extends FileStyles {
 
     $options = array(
       'autostart' => $this->get_autoplay(),
-      'height' => $this->get_height(),
-      'width' => $this->get_width(),
+      'height' => $this->getHeight(),
+      'width' => $this->getWidth(),
       //'fullscreen' => $this->get_fullscreen(),
-      'response' => 'object',
+      'response' => 'metafile',
     );
     $output = MediaMosaCkConnectorWrapper::request_get_play_link($asset_id, $mediafile_id_transcoded, $user_id, $options);
 
-    $this->set_output($output);
+    $this->setOutput($output);
   }
 }
