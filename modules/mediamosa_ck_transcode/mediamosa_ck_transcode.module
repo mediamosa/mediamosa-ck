@@ -355,7 +355,8 @@ function _mediamosa_ck_transcode_list_form($form, $form_state) {
   );
 
   $media_data = MediaMosaStreamWrapper::mediamosa_parse_url_from_fid($fid);
-  $media = media_load($fid);
+  $media_query = media_multi_load("{$fid}");
+  $media = $media_query[$fid];
 
   if ($media) {
     try {

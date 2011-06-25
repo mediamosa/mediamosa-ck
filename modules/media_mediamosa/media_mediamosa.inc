@@ -166,7 +166,8 @@ function _media_mediamosa_file_type_check($fid) {
     return FALSE;
   }
 
-  $media = media_load($fid);
+  $media_query = media_multi_load("{$fid}");
+  $media = $media_query[$fid];
   if (!$media || !isset($media->uri)) {
     return FALSE;
   }

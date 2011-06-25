@@ -292,8 +292,9 @@ function _media_mediamosa_metadata_update_media($asset, $media_id) {
   $metadata = array_merge($asset['dublin_core'], $asset['qualified_dublin_core']);
 
   // To distinct data in Drupal and in Mediamosa we use drupal_ prefix for the Drupal side variables.
+  $media_query = media_multi_load("{$media_id}");
+  $drupal_media = $media_query[$media_id];
 
-  $drupal_media = media_load($media_id);
   $drupal_uri = MediaMosaStreamWrapper::mediamosa_parse_url($drupal_media->uri);
   if (empty($drupal_uri)) {
     return;

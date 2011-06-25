@@ -410,7 +410,11 @@ function media_mediamosa_media_edit_submit($form, &$form_state) {
 
   global $user;
 
-  $media = media_load($form_state['values']['fid']);
+  $fid = $form_state['values']['fid'];
+
+  $media_query = media_multi_load("{$fid}");
+  $media = $media_query[$fid];
+
   // Now we have Mediamosa URI in $media->uri .
 
   $uri = MediaMosaStreamWrapper::mediamosa_parse_url($media->uri);
