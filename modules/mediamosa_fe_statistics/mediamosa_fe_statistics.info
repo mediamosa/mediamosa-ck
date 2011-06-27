@@ -1,8 +1,0 @@
-; $Id $
-name = "Mediamosa Frontend Statistics"
-description = "This module enables various Mediamosa statistics for frontend applications."
-package = "Mediamosa"
-version = "6.x-0.2"
-core = 6.x
-dependencies[] = mediamosa_sdk
-dependencies[] = mediamosa_connector
