@@ -1404,7 +1404,7 @@ function _media_mediamosa_generate_video_output($mediafile_id, $node_type, $auto
         );
       }
       else {
-        $output .= t('Video in progress! Comming soon!');
+        $output .= t('Video transcode in progress, please wait.');
       }
     }
   }
@@ -1440,7 +1440,7 @@ function _media_mediamosa_generate_video_output($mediafile_id, $node_type, $auto
         $output .= theme('job_progress_bar', $mediafile_id, $node_type, 100 * $job_transcode['progress'], t('The mediafile is under transcoding. Please, wait.'));
       }
       else {
-        $output .= t('Video in progress! Comming soon!');
+        $output .= t('Video transcode in progress, please wait.');
       }
     }
     elseif ($response->xml->header->request_result_id == ERRORCODE_NOT_AUTHORIZED) {

@@ -264,11 +264,10 @@ function media_mediamosa_cron() {
     return FALSE;
   }
 
-
+  watchdog('cron-sync', 'number of assets: ' . count($assets));
   // Check the response.
 
   foreach ($assets as $key => $asset) {
-
     if ($asset['is_empty_asset'] == 'TRUE') {
       watchdog('Mediamosa CK', "Ignore empty asset @asset_id.", array('@asset_id' => $asset['asset_id']), WATCHDOG_DEBUG);
       continue;
@@ -278,7 +277,12 @@ function media_mediamosa_cron() {
     $create = FALSE;
 
     // We store the nid in the group id value.
-    $nid = $asset['group_id'];
+    // $nid = $asset['group_id']; // unwanted, we store the asset_id in the ega instead, disable for old behaviour.
+
+    // we look for asset_id in mediafields...
+    $asset_id = $asset['asset_id'];
+    $nid = db_result(db_query_range("SELECT nid FROM {content_type_mediamosa_videocontent} WHERE field_mediamosa_videofile_embed = '$asset_id' ", 0, 1));
+
     if (!$nid) {
       // New asset without node.
       $create = TRUE;
@@ -301,7 +305,7 @@ function media_mediamosa_cron() {
       // Create a new node.
       $node = new stdClass();
       // Temporary title.
-      $node->title = t('node has no title');
+      @$node->title = $asset['dublin_core']['title']; // t('node has no title');
       $node->type = $type;
       $node->status = 1;
       $node->uid = 1;
@@ -319,10 +323,10 @@ function media_mediamosa_cron() {
       }
 
       // Set the nid in $assets array.
-      //$assets[$key]['group_id'] = $nid;
-      $asset['group_id'] = $nid;
-      _media_mediamosa_reference_id_update($asset['asset_id'], $nid, $asset['owner_id']);
-
+      // $assets[$key]['group_id'] = $nid;
+      // $asset['group_id'] = $nid;
+      // _media_mediamosa_reference_id_update($asset['asset_id'], $nid, $asset['owner_id']);
+      // remark: old behaviour; we now use the asset_id from the client app.
     }
 
     // Check mostly for the case that node ID in our system occupied for other content type.
