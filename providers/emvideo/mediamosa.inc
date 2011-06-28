@@ -164,38 +164,8 @@ function emvideo_mediamosa_thumbnail($field, $item, $formatter, $node, $width, $
   }
 
   $asset_id = $item['value'];
-  $mediafile = _media_mediamosa_get_mediafile_original($asset_id);
-  $mediafile_id = $mediafile['mediafile_id'];
-
-  $thumbnail = drupal_get_path('module', 'media_mediamosa') . '/images/still.png';
-
-  // Get the basic data and the still.
-  $mediafile = _media_mediamosa_mediafile_get($mediafile_id);
-  if (!empty($mediafile['still'])) {
-
-    // Fix the problem with 1 or 2+ items in array.
-    $tmp = isset($mediafile['still'][0]) ? $mediafile['still'] : array(0 => $mediafile['still']);
-    unset($mediafile['still']);
-    $mediafile['still'] = $tmp;
-
-    $stills = $mediafile['still'];
-    foreach ($stills as $still) {
-      if ((string)$still['still_default'] == 'TRUE') {
-        // Get the default.
-        $thumbnail = (string) $still['still_ticket'];
-      }
-      elseif (!$thumbnail) {
-        // If no thumbnail yet, then get the first one.
-        $thumbnail = (string) $still['still_ticket'];
-      }
-    }
-  }
-
-  // Get the stills.
-  if (!$thumbnail) {
-    $asset = _media_mediamosa_asset_get($assset_id);
-    $thumbnail = (string) $asset['vpx_still_url'];
-  }
+  $asset = _media_mediamosa_asset_get($asset_id);
+  $thumbnail = (string) $asset['vpx_still_url'];
 
   return $thumbnail;
 }
