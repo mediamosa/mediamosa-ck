@@ -1,0 +1,10 @@
+name = "MediaMosa CK: Statistics"
+description = "This module allows the admin to view various MediaMosa statistics."
+package = "MediaMosa - Construction Kit"
+version = "7.x-2.0-dev"
+core = 7.x
+
+dependencies[] = mediamosa_sdk
+dependencies[] = media_mediamosa
+
+files[] = mediamosa_ck_stats.connector.wrapper.class.inc

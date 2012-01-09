@@ -1,0 +1,238 @@
+<?php
+/**
+ * MediaMosa is a Full Featured, Webservice Oriented Media Management and
+ * Distribution platform (http://www.vpcore.nl)
+ *
+ * Copyright (C) 2011 SURFnet BV (http://www.surfnet.nl)
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, you can find it at:
+ * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+ */
+
+/**
+ * Implements hook_views_api().
+ */
+function mediamosa_ck_views_views_api() {
+  list($module, $api) = func_get_args();
+  if ($module == 'views' && $api == 'views_default') {
+    return array('version' => '3.0');
+  }
+}
+
+
+/**
+ * Implements hook_views_plugins().
+ */
+function mediamosa_ck_views_views_plugins() {
+  return array(
+    'module' => 'mediamosa_ck_views',
+    'query' => array(
+      'mediamosa_asset_get' => array(
+        'title' => t('MediaMosa Asset Get'),
+        'help' => t('This view can be used to display one single MediaMosa asset.'),
+        'handler' => 'mediamosa_ck_views_rest_asset_get',
+      ),
+      'mediamosa_asset_featured' => array(
+        'title' => t('MediaMosa Asset Featured'),
+        'help' => t('Query will be run on MediaMosa REST interface and processed back for usage in views.'),
+        'handler' => 'mediamosa_ck_views_rest_asset_featured',
+      ),
+      'mediamosa_asset_new' => array(
+        'title' => t('MediaMosa Asset New'),
+        'help' => t('Query will be run on MediaMosa REST interface and processed back for usage in views.'),
+        'handler' => 'mediamosa_ck_views_rest_asset_new',
+      ),
+      'mediamosa_asset_popular' => array(
+        'title' => t('MediaMosa Asset Popular'),
+        'help' => t('Query will be run on MediaMosa REST interface and processed back for usage in views.'),
+        'handler' => 'mediamosa_ck_views_rest_asset_popular',
+      ),
+      'mediamosa_asset_search' => array(
+        'title' => t('MediaMosa Asset Search'),
+        'help' => t('Query will be run on MediaMosa REST interface and processed back for usage in views.'),
+        'handler' => 'mediamosa_ck_views_rest_asset_search',
+      ),
+      'mediamosa_collection_search' => array(
+        'title' => t('MediaMosa Collection Search'),
+        'help' => t('Query will be run on MediaMosa REST interface and processed back for usage in views.'),
+        'handler' => 'mediamosa_ck_views_rest_collection_search',
+      ),
+      'mediamosa_collection_get' => array(
+        'title' => t('MediaMosa Collection Get'),
+        'help' => t('Will retrieve the collection data from MediaMosa.'),
+        'handler' => 'mediamosa_ck_views_rest_collection_get',
+      ),
+      'mediamosa_collection_asset' => array(
+        'title' => t('MediaMosa Collection Assets'),
+        'help' => t('Will retrieve the assets within the collection.'),
+        'handler' => 'mediamosa_ck_views_rest_collection_asset',
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_views_data().
+ */
+function mediamosa_ck_views_views_data() {
+  // Asset get.
+  $data['mediamosa_asset_get'] = mediamosa_ck_views_rest_asset_get::get_views_data('MediaMosa: Asset Detail', 'mediamosa_asset_get');
+
+  // Asset featured.
+  $data['mediamosa_asset_featured'] = mediamosa_ck_views_rest_asset_featured::get_views_data('MediaMosa: Asset Featured', 'mediamosa_asset_featured');
+
+  // Asset search REST call (/asset).
+  $data['mediamosa_asset_search'] = mediamosa_ck_views_rest_asset_search::get_views_data('MediaMosa: Asset Search', 'mediamosa_asset_search');
+
+  // Asset new.
+  $data['mediamosa_asset_new'] = mediamosa_ck_views_rest_asset_new::get_views_data('MediaMosa: Asset New', 'mediamosa_asset_new');
+
+  // Asset popular.
+  $data['mediamosa_asset_popular'] = mediamosa_ck_views_rest_asset_popular::get_views_data('MediaMosa: Asset Popular', 'mediamosa_asset_popular');
+
+  // Collection search REST call (/collection).
+  $data['mediamosa_collection_search'] = mediamosa_ck_views_rest_collection_search::get_views_data('MediaMosa: Collection Search', 'mediamosa_collection_search');
+
+  // Collection get REST call (/collection/coll_id).
+  $data['mediamosa_collection_get'] = mediamosa_ck_views_rest_collection_get::get_views_data('MediaMosa: Collection Get', 'mediamosa_collection_get');
+
+  // Collection assets.
+  $data['mediamosa_collection_asset'] = mediamosa_ck_views_rest_collection_asset::get_views_data('MediaMosa: Collection Assets', 'mediamosa_collection_asset');
+
+  return $data;
+}
+
+
+/**
+ * Implements hook_theme().
+ */
+function mediamosa_ck_theme() {
+  return array(
+    'mediamosa_ck_view_theme_asset_mediafiles' => array(
+      'variables' => array(
+        // Table
+        'mediafiles' => array(),
+      ),
+    ),
+    'mediamosa_ck_view_theme_asset_collections' => array(
+      'variables' => array(
+        // Table
+        'collections' => array(),
+        'collection_path' => 'collection/[coll_id]',
+      ),
+    ),
+    'mediamosa_ck_view_theme_asset_metadata' => array(
+      'variables' => array(
+        // Table
+        'metadata' => array(),
+      ),
+    ),
+    'mediamosa_ck_view_theme_asset_technical_metadata' => array(
+      'variables' => array(
+        // Table
+        'technical_metadata' => array(),
+      ),
+    ),
+  );
+}
+
+/**
+ * The theme used to generate a listing of mediafiles in the views using
+ * mediamosa_ck_views_field_text_mediafiles.
+ *
+ * @param array $variables
+ *   Data used for the theme.
+ */
+function theme_mediamosa_ck_view_theme_asset_mediafiles($variables) {
+  // Empty.
+  $output = array();
+
+  // Loop.
+  foreach ($variables['mediafiles'] as $mediafile) {
+    if (empty($mediafile['metadata']['container_type'])) {
+      continue; // No analysed yet.
+    }
+
+    $type = drupal_strtoupper($mediafile['metadata']['container_type']);
+    $output[] = '<li>' . $type . '</li>';
+  }
+
+
+  return empty($output) ? '' : '<ul>' . implode('', $output) . '</ul>';
+}
+
+/**
+ * The theme used to generate a listing of collections in the views using
+ * mediamosa_ck_views_field_text_collections.
+ *
+ * @param array $variables
+ *   Data used for the theme.
+ */
+function theme_mediamosa_ck_view_theme_asset_collections($variables) {
+  // Empty.
+  $output = array();
+
+  if (empty($variables['collections'])) {
+    return;
+  }
+
+  // Loop.
+  foreach ($variables['collections'] as $collection) {
+    $output[] = '<li>' . l($collection['title'], strtr($variables['collection_path'], array('[coll_id]' => $collection['coll_id']))) . '</li>';
+  }
+
+  return empty($output) ? '' : '<ul>' . implode('', $output) . '</ul>';
+}
+
+/**
+ * The theme used to generate a listing of collections in the views using
+ * mediamosa_ck_views_field_text_metadata.
+ *
+ * @param array $variables
+ *   Data used for the theme.
+ */
+function theme_mediamosa_ck_view_theme_asset_metadata($variables) {
+  // Empty.
+  $rows = array();
+
+  ksort($variables['metadata']);
+
+  foreach ($variables['metadata'] as $name => $value) {
+    $name = drupal_ucfirst(str_replace('_', ' ', $name));
+
+    $rows[] = array('name' => t($name), 'value' => (empty($value) ? ' ' : nl2br(check_plain(t($value)))));
+  }
+
+  return theme('table', array('rows' => $rows));
+}
+
+/**
+ * The theme used to generate a listing of collections in the views using
+ * mediamosa_ck_views_field_text_technical_metadata.
+ *
+ * @param array $variables
+ *   Data used for the theme.
+ */
+function theme_mediamosa_ck_view_theme_asset_technical_metadata($variables) {
+  // Empty.
+  $rows = array();
+
+  ksort($variables['technical_metadata']);
+
+  foreach ($variables['technical_metadata'] as $name => $value) {
+    $name = drupal_ucfirst(str_replace('_', ' ', $name));
+
+    $rows[] = array('name' => t($name), 'value' => (empty($value) ? ' ' : t($value)));
+  }
+
+  return theme('table', array('rows' => $rows));
+}

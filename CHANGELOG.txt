@@ -1,0 +1,29 @@
+
+Mediamosa CK, 7.x-2.x-dev
+-------------------------
+- Update info to reflect dependencies.
+- Moved functions to mediamosa_ck.connector class.
+- Updated function names to reflect their purposes.
+- Added collection views.
+- Added player view handler.
+- Change metadata post to make action optional instead of fixed.
+- Extend asset get view.
+- Added view for asset get.
+- Fixed stream class for displaying stills.
+- Extended the views REST calls for dates, stills.
+- Added basis mediamosa_ck_views
+- Re-done .info dependencies.
+- Removed dsm() function.
+- Added comment on deprecated usage of response2array.
+- Updated all version dependencies on Media 2.0, File entity 2.0.
+- Updated modules to work with Media 2.0 and File Entity 2.0.
+- Added custom request function that is used with custom restview
+module.
+- Added new sync class for sync related functions.
+
+Mediamosa CK, 7.x-1.x-dev
+-------------------------
+- Added code to return play link.
+- Fixed upload to MediaMosa.
+- Ticket 488, 490, 491, 494: ACL, still and transcode forms and REST
+calls.

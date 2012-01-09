@@ -1,0 +1,11 @@
+You have completed the installation of the MediaMosa Construction Kit. 
+
+But before you proceed, setup the cron job for this website first. You can read how to configure your cron on page http://drupal.org/cron/.
+
+We recommend that you check the MediaMosa Construction Kit settings on !url_mmck_settings.
+
+During the setup you had the option to setup the MediaMosa Connector. If you have skipped it during setup, you can set it up on !url_mediamosa_connector.
+
+Once MediaMosa Connector is setup, you can either wait until all mediafiles are synchronized to Drupal Media, or visit the MediaMosa Construction Kit settings page and use start synchronizing batch. 
+
+To integrate MediaMosa videos in your HTML editor, we have setup wysiwyg module with default settings. You can review these settings on !url_wysiwyg.

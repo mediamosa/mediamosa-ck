@@ -1,0 +1,20 @@
+name = "Media: MediaMosa"
+description = "Enables MediaMosa integration with Media API."
+package = "MediaMosa - Construction Kit"
+version = "7.x-2.0-dev"
+core = 7.x
+
+; Dependencies (module names)
+dependencies[] = field_group
+
+dependencies[] = mediamosa_ck
+dependencies[] = media_internet (>1.99)
+
+files[] = MediamosaMediaBrowserUpload.class.inc
+files[] = media_mediamosa.class.inc
+files[] = media_mediamosa.connector.wrapper.class.inc
+files[] = media_mediamosa.internetbase.handler.class.inc
+files[] = media_mediamosa.stream.wrapper.class.inc
+files[] = media_mediamosa.styles.class.inc
+files[] = media_mediamosa.sync.class.inc
+files[] = media_mediamosa.thumb.wrapper.class.inc
