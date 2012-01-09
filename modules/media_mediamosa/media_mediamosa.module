@@ -81,6 +81,15 @@ function media_mediamosa_theme() {
       'variables' => array('style_name' => NULL),
       'file' => 'media_mediamosa.theme.inc',
     ),
+    'media_mediamosa_video' => array(
+      'variables' => array(
+        'uri' => NULL,
+        'width' => NULL,
+        'height' => NULL,
+        'autoplay' => NULL,
+      ),
+      'file' => 'media_mediamosa.theme.inc',
+    ),
   );
 }
 

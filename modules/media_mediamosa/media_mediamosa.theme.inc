@@ -63,3 +63,22 @@ function theme_media_mediamosa_preview_style($variables) {
   $variables['object'] = file_uri_to_object($variables['uri']);
   return theme('styles', $variables);
 }
+
+/**
+ * Theme media player object
+ */
+function theme_media_mediamosa_video($variables) {
+  $uri_arr = MediamosaStreamWrapper::mediamosa_parse_url($variables['uri']);
+
+  // Take user_id of current watcher.
+  $user_id = mediamosa_ck::session_user_id();
+
+  // Response.
+  $options['response'] = 'object';
+  $options['width'] = $variables['width'];
+  $options['height'] = $variables['height'];
+  $options['autoplay'] = FALSE;
+
+  // Accept as is.
+  return MediaMosaCkConnectorWrapper::get_play_link($uri_arr['asset_id'], $uri_arr['mediafile_id'], $user_id, $options);
+}
