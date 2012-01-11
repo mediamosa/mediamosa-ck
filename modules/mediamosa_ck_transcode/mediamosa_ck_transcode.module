@@ -222,7 +222,7 @@ function _mediamosa_ck_transcode_generate_form_helper(&$form, $collapsed = TRUE,
   $options = array(
     'none' => t('---'),
   );
-  $transcode_profile_default = MEDIA_MEDIAMOSA_TRANSCODE_PROFILE_DEFAULT;
+  $transcode_profile_default = mediamosa_ck_transcode::MEDIA_MEDIAMOSA_TRANSCODE_PROFILE_DEFAULT;
   if (isset($profiles->xml->items->item)) {
     foreach ($profiles->xml->items->item as $profile_id => $profile) {
       $options[(int) $profile->profile_id] = (string) $profile->profile;
