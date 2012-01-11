@@ -31,7 +31,7 @@ class mediamosa_ck extends mediamosa_sdk {
   /**
    * Create or return the current connector.
    *
-   * @param boolean $reset_session
+   * @param $reset_session
    *  TRUE / FALSE to reset session.
    *
    * @return MediaMosaCkConnectorWrapper
@@ -114,91 +114,175 @@ class mediamosa_ck extends mediamosa_sdk {
     return $user->mail;
   }
 
-  /*
-   * *
+  /**
+   * Builds static unique ID for entries in static array. Use for storing REST
+   * call output based on the (asset/mediafile) ID and its options used for the
+   * REST call.
+   */
+  static public function build_static_id($rest_options) {
+    // Should make it unique enough.
+    return sha1(print_r($rest_options, TRUE));
+  }
+
+  /**
    * Do request to MediaMosa.
    *
    * @param string $uri
-   *  The REST uri
-   *
-   * @param array $options
-   *  Options for REST call.
-   *
-   * @param boolean $check
-   *  Do result check.
+   *   The REST uri
+   * @param $options
+   *   Options for REST call.
+   * @param $check
+   *   Do result check, will display drupal message when needed.
+   * @param $cached
+   *   Cache the result for REST call result.
+   * @param $reset
+   *   Reset the cache.
    *
    * @return string
    */
-  static public function request($uri, array $options = array(), $check = FALSE) {
-    $result = FALSE;
-
+  static public function request($uri, array $options = array(), $check = FALSE, $cached = FALSE, $reset = FALSE) {
     // Get the connection class object.
     $mediamosa_connector = self::get_connector();
 
     // Do the request.
     if ($mediamosa_connector) {
-      $result = $mediamosa_connector->request($uri, $options);
+      // Only GET will be supported for caching.
+      if ($options['method'] != 'GET' && $cached) {
+        assert(0); // Do not set for other than GET.
+        $cached = FALSE;
+      }
 
+      if ($cached) {
+        // Reset the cache first?
+        if ($reset) {
+          drupal_static_reset('mediamosa_ck_requests');
+        }
+
+        $rest_calls = &drupal_static('mediamosa_ck_requests', array());
+        $static_id = self::build_static_id($options);
+
+        // Stored?
+        if (!isset($rest_calls[$uri][$static_id])) {
+          // Store it.
+          $rest_calls[$uri][$static_id] = $mediamosa_connector->request($uri, $options);
+        }
+
+        // Check the result, shows drupal message when needed.
+        if ($check) {
+          mediamosa_connector::check_result($rest_calls[$uri][$static_id], FALSE, '%message');
+        }
+
+        // Return the result.
+        return $rest_calls[$uri][$static_id];
+      }
+
+      $result = $mediamosa_connector->request($uri, $options);
       if ($check) {
         mediamosa_connector::check_result($result, FALSE, '%message');
       }
-    }
 
-    return $result;
+      return $result;
+    }
+    elseif (!empty($options['fatal'])) {
+      throw new Exception('Unable to load connector');
+    }
   }
 
   /**
    * Do GET request to MediaMosa.
    *
    * @param string $uri
-   *  The REST uri
-   *
+   *   The REST uri
    * @param array $options
-   *  Options for REST call.
-   *
+   *   Options for REST call.
    * @param boolean $check
-   *  Do result check.
+   *   Do result check.
+   * @param $cached
+   *   Cache the result for REST call result.
+   * @param $reset
+   *   Reset the cache.
    *
-   * @return string
+   * @return
+   *   The response object.
    */
-  static public function request_get($uri, array $options = array(), $check = FALSE) {
+  static public function request_get($uri, array $options = array(), $check = FALSE, $cached = FALSE, $reset = FALSE) {
     $options['method'] = 'GET';
-    return self::request($uri, $options, $check);
+    return self::request($uri, $options, $check, $cached, $reset);
+  }
+
+  /**
+   * Do cached GET request to MediaMosa.
+   *
+   * @param string $uri
+   *   The REST uri
+   * @param array $options
+   *   Options for REST call.
+   * @param boolean $check
+   *   Do result check.
+   * @param $reset
+   *   Reset the cache.
+   *
+   * @return
+   *   The response object.
+   */
+  static public function request_get_cached($uri, array $options = array(), $check = FALSE, $reset = FALSE) {
+    return self::request_get($uri, $options, $check, TRUE, $reset);
   }
 
   /**
    * Do GET request to MediaMosa but any error is fatal (expecting 601 code).
    *
-   * @param string $uri
-   *  The REST uri
+   * @param $uri
+   *   The REST uri
+   * @param $options
+   *   Options for REST call.
+   * @param $check
+   *   Do result check.
+   * @param $cached
+   *   Cache the result for REST call result.
+   * @param $reset
+   *   Reset the cache.
    *
-   * @param array $options
-   *  Options for REST call.
-   *
-   * @param boolean $check
-   *  Do result check.
-   *
-   * @return string
+   * @return
+   *   The response object.
    */
-  static public function request_get_fatal($uri, array $options = array(), $check = FALSE) {
+  static public function request_get_fatal($uri, array $options = array(), $check = FALSE, $cached = FALSE, $reset = FALSE) {
     $options['method'] = 'GET';
     $options['fatal'] = TRUE;
-    return self::request($uri, $options, $check);
+    return self::request($uri, $options, $check, $cached, $reset);
+  }
+
+  /**
+   * Do GET request to MediaMosa but any error is fatal (expecting 601 code).
+   *
+   * @param $uri
+   *   The REST uri
+   * @param $options
+   *   Options for REST call.
+   * @param $check
+   *   Do result check.
+   * @param $reset
+   *   Reset the cache.
+   *
+   * @return
+   *   The response object.
+   */
+  static public function request_get_fatal_cached($uri, array $options = array(), $check = FALSE, $reset = FALSE) {
+    return self::request_get_fatal($uri, $options, $check, TRUE, $reset);
   }
 
   /**
    * Do POST request to MediaMosa.
    *
-   * @param string $uri
-   *  The REST uri
+   * @param $uri
+   *   The REST uri
+   * @param $options
+   *   Options for REST call.
+   * @param $check
+   *   Do result check.
    *
-   * @param array $options
-   *  Options for REST call.
-   *
-   * @param boolean $check
-   *  Do result check.
-   *
-   * @return string
+   * @return
+   *   The response object.
    */
   static public function request_post($uri, array $options = array(), $check = FALSE) {
     $options['method'] = 'POST';
@@ -210,14 +294,13 @@ class mediamosa_ck extends mediamosa_sdk {
    *
    * @param string $uri
    *  The REST uri
-   *
    * @param array $options
    *  Options for REST call.
-   *
    * @param boolean $check
    *  Do result check.
    *
-   * @return string
+   * @return
+   *   The response object.
    */
   static public function request_post_fatal($uri, array $options = array(), $check = FALSE) {
     $options['method'] = 'POST';
@@ -342,6 +425,40 @@ class mediamosa_ck extends mediamosa_sdk {
     }
 
     return $query;
+  }
+
+  /**
+   * Convert any date into unix timestamp.
+   *
+   * @param $any_date
+   *   The date to convert.
+   *
+   * @return
+   *   The number of seconds since 1970 (UTC/GMT).
+   */
+  static public function date2unix($any_date) {
+    // Parse the date, date_parse is new in 5.2.
+    $date_parsed = date_parse($any_date);
+
+    // Convert to integer
+    return gmmktime($date_parsed['hour'], $date_parsed['minute'], $date_parsed['second'], $date_parsed['month'], $date_parsed['day'], $date_parsed['year']);
+  }
+
+  /**
+   * Converts mediafile duration format into unix timestamp.
+   *
+   * @param $any_date
+   *   The date to convert.
+   *
+   * @return
+   *   The number of seconds since 1970 (UTC/GMT).
+   */
+  static public function duration2unix($mediafile_duration) {
+    // Split into pieces.
+    list($hour, $minute, $second, $milisecond) = preg_split("/[:.]/", $mediafile_duration, 4);
+
+    // Convert to # of seconds.
+    return ((int) $hour * 3600) + ((int) $minute * 60) + (int) $second; + round((int) $milisecond / 100);
   }
 
   /**

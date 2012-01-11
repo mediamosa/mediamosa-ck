@@ -18,28 +18,35 @@
  * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  */
 
-class mediamosa_ck_views_field_text_collections extends views_handler_field_xss {
+class mediamosa_ck_views_field_collection_actions extends views_handler_field_xss {
 
   function option_definition() {
     $options = parent::option_definition();
 
-    $options['collection_theme'] = array('default' => 'mediamosa_ck_view_theme_asset_collections');
-    $options['collection_path'] = array('default' => 'collection/[coll_id]');
+    $options['collection_actions_theme'] = array('default' => 'mediamosa_ck_view_theme_collection_actions');
+    $options['action_path_edit'] = array('default' => 'collection/edit/[coll_id]');
+    $options['action_path_delete'] = array('default' => 'collection/delete/[coll_id]');
 
     return $options;
   }
 
   function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
-    $form['collection_theme'] = array(
+    $form['collection_actions_theme'] = array(
       '#title' => t('Theme function to use'),
       '#type' => 'textfield',
-      '#default_value' => $this->options['collection_theme'],
+      '#default_value' => $this->options['collection_actions_theme'],
     );
-    $form['collection_path'] = array(
-      '#title' => t('Path of the collection'),
+    $form['action_path_edit'] = array(
+      '#title' => t('Path of the collection for edit page'),
       '#type' => 'textfield',
-      '#default_value' => $this->options['collection_path'],
+      '#default_value' => $this->options['action_path_edit'],
+      '#description' => t('Use [coll_id] to fill in the collection ID.'),
+    );
+    $form['action_path_delete'] = array(
+      '#title' => t('Path of the collection for delete page'),
+      '#type' => 'textfield',
+      '#default_value' => $this->options['action_path_delete'],
       '#description' => t('Use [coll_id] to fill in the collection ID.'),
     );
   }
@@ -53,11 +60,17 @@ class mediamosa_ck_views_field_text_collections extends views_handler_field_xss 
    *   Optional name of the field where the value is stored.
    */
   function get_value($values, $field = NULL) {
-
     // Get the data.
-    $collections = parent::get_value($values, $field);
+    $coll_id = $values->coll_id;
 
-    return theme($this->options['collection_theme'], array('collections' => $collections, 'collection_path' => $this->options['collection_path']));
+    return theme(
+      $this->options['collection_actions_theme'],
+      array(
+        'coll_id' => $coll_id,
+        'action_path_edit' => $this->options['action_path_edit'],
+        'action_path_delete' => $this->options['action_path_delete'],
+      )
+    );
   }
 
 

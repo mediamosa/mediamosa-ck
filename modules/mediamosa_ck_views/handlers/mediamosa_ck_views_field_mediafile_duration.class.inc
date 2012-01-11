@@ -19,10 +19,10 @@
  */
 
 /**
- * Fork of views_handler_field_date.
+ * Fork of views_handler_field_mediafile_duration.
  */
 
-class mediamosa_ck_views_field_date extends views_handler_field {
+class mediamosa_ck_views_field_mediafile_duration extends views_handler_field {
   function option_definition() {
     $options = parent::option_definition();
 
@@ -69,7 +69,7 @@ class mediamosa_ck_views_field_date extends views_handler_field {
     $value = $this->get_value($values);
 
     // Convert to time.
-    $value = mediamosa_ck::date2unix($value);
+    $value = mediamosa_ck::duration2unix($value);
 
     $format = $this->options['date_format'];
     if (in_array($format, array('custom', 'raw time ago', 'time ago', 'raw time hence', 'time hence', 'raw time span', 'time span', 'raw time span', 'inverse time span', 'time span'))) {

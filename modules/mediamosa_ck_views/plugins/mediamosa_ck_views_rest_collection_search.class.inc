@@ -52,6 +52,7 @@ class mediamosa_ck_views_rest_collection_search extends mediamosa_ck_views_rest 
     // Now process the xml into an object views can work with.
     foreach($xml->xpath('items/item') as $item) {
       $object = new stdClass();
+      $object->is_owner = mediamosa_ck::session_user_id() == $item->owner_id;
 
       foreach ($fields as $field) {
         if (isset($item->{$field['name']})) {

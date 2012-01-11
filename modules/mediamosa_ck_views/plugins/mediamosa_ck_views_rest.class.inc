@@ -268,7 +268,7 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
     $data += array(
       'owner_id' => array(
         'title' => t('Owner'),
-        'help' => t('The owner of the collection.'),
+        'help' => t('The owner of the object.'),
         'field' => array(
           'handler' => 'mediamosa_ck_views_field_text',
         ),
@@ -282,9 +282,17 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
 
       'group_id' => array(
         'title' => t('Group'),
-        'help' => t('The user group of the collection.'),
+        'help' => t('The user group of the object.'),
         'field' => array(
           'handler' => 'mediamosa_ck_views_field_text',
+        ),
+      ),
+
+      'is_owner' => array(
+        'title' => t('Is owner'),
+        'help' => t('A boolean value to indicate ownership of the object. TRUE / Yes will allow the user to edit or delete the object.'),
+        'field' => array(
+          'handler' => 'mediamosa_ck_views_field_boolean',
         ),
       ),
     );
@@ -300,10 +308,10 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
           'handler' => 'mediamosa_ck_views_field_text',
           'click sortable' => TRUE,
         ),
-        'filter' => array(
-          'handler' => 'mediamosa_ck_views_filter_text',
-          'mediamosa_filter_keys' => array('filter_key' => 'granted'),
-        ),
+//        'filter' => array(
+//          'handler' => 'mediamosa_ck_views_filter_text',
+//          'mediamosa_filter_keys' => array('filter_key' => 'granted'),
+//        ),
         'sort' => array(
           'handler' => 'mediamosa_ck_views_sort',
         ),
@@ -408,6 +416,7 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
           'handler' => 'mediamosa_ck_views_sort',
         ),
       ),
+
       'changed' => array(
         'title' => t('Changed'),
         'help' => t('The date when collection was changed.'),
@@ -419,6 +428,14 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
 //        ),
         'sort' => array(
           'handler' => 'mediamosa_ck_views_sort',
+        ),
+      ),
+
+      'actions' => array(
+        'title' => t('Actions'),
+        'help' => t('Allowed administration links.'),
+        'field' => array(
+          'handler' => 'mediamosa_ck_views_field_collection_actions',
         ),
       ),
     );
@@ -442,7 +459,7 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
         ),
         'filter' => array(
           'handler' => 'mediamosa_ck_views_filter_text',
-          'mediamosa_filter_keys' => array('filter_key' => 'granted'),
+  //        'mediamosa_filter_keys' => array('filter_key' => 'granted'),
         ),
         'sort' => array(
           'handler' => 'mediamosa_ck_views_sort',
@@ -485,8 +502,8 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
       ),
 
       'videotimestamp' => array(
-        'title' => t('Videotimestamp'),
-        'help' => t('When asset got a video.'),
+        'title' => t('Created'),
+        'help' => t('When asset got media.'),
         'field' => array(
           'handler' => 'mediamosa_ck_views_field_date',
         ),
@@ -496,7 +513,7 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
       ),
 
       'videotimestampmodified' => array(
-        'title' => t('Videotimestamp modified'),
+        'title' => t('Changed'),
         'help' => t('When asset was modified.'),
         'field' => array(
           'handler' => 'mediamosa_ck_views_field_date',
@@ -529,6 +546,17 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
         'help' => t('The video (or media) player allows you to get either a play link (URL) or the HTML object code to include a player.'),
         'field' => array(
           'handler' => 'mediamosa_ck_views_field_player',
+        ),
+      ),
+
+      'mediafile_duration' => array(
+        'title' => t('Mediafile duration'),
+        'help' => t('The duration of the original mediafile.'),
+        'field' => array(
+          'handler' => 'mediamosa_ck_views_field_mediafile_duration',
+        ),
+        'sort' => array(
+          'handler' => 'mediamosa_ck_views_sort',
         ),
       ),
     );

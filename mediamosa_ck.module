@@ -60,3 +60,41 @@ function mediamosa_ck_menu() {
 
   return $items;
 }
+
+/**
+ * Implements hook_date_formats().
+ */
+function mediamosa_ck_date_format_types() {
+  // Define the MediaMosa CK date format types.
+  return array(
+    'mediamosa_ck_normal' => t('MediaMosa Site Builder - Normal'),
+    'mediamosa_ck_mf_duration' => t('MediaMosa Site Builder - Mediafile duration'),
+  );
+}
+
+/**
+ * Implements hook_date_formats().
+ */
+function mediamosa_ck_date_formats() {
+  return array(
+    array(
+      'type' => 'mediamosa_ck_normal',
+      'format' => 'd-m-Y',
+    ),
+    array(
+      'type' => 'mediamosa_ck_normal',
+      'format' => 'm-d-Y',
+      'locales' => array('en', 'en-us'),
+    ),
+    array(
+      'type' => 'mediamosa_ck_mf_duration',
+      'format' => 'i:s',
+      'locales' => array('en', 'en-us'),
+    ),
+    array(
+      'type' => 'mediamosa_ck_mf_duration',
+      'format' => 'H:i:s',
+      'locales' => array('en', 'en-us'),
+    ),
+  );
+}

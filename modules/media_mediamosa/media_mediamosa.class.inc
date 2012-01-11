@@ -78,23 +78,6 @@ class MediaMediaMosa {
     return $str_date;
   }
 
-  /**
-   * Convert any date into unix timestamp.
-   *
-   * @param $any_date
-   *   The date to convert.
-   *
-   * @return
-   *   The number of seconds since 1970 (UTC/GMT).
-   */
-  static public function date2unix($any_date) {
-    // Parse the date, date_parse is new in 5.2.
-    $date_parsed = date_parse($any_date);
-
-    // Convert to integer
-    return gmmktime($date_parsed['hour'], $date_parsed['minute'], $date_parsed['second'], $date_parsed['month'], $date_parsed['day'], $date_parsed['year']);
-  }
-
    /**
    * Create Drupal media object in accordance with given asset info.
    *

@@ -63,6 +63,9 @@ class mediamosa_ck_views_rest_collection_get extends mediamosa_ck_views_rest {
         }
       }
 
+      // Is owner of collection?
+      $object->is_owner = mediamosa_ck::session_user_id() == $item->owner_id;
+
       $view->result[] = $object;
     }
 

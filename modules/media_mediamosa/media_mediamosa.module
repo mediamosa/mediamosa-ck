@@ -81,15 +81,6 @@ function media_mediamosa_theme() {
       'variables' => array('style_name' => NULL),
       'file' => 'media_mediamosa.theme.inc',
     ),
-    'media_mediamosa_video' => array(
-      'variables' => array(
-        'uri' => NULL,
-        'width' => NULL,
-        'height' => NULL,
-        'autoplay' => NULL,
-      ),
-      'file' => 'media_mediamosa.theme.inc',
-    ),
   );
 }
 
@@ -530,7 +521,7 @@ function _media_mediamosa_sync_batch_finished($success, $results, $operations) {
       // We are synced, set cron to last modified date (if any).
       $videotimestampmodified = MediaMosaConnectorMediaWrapper::get_highest_videotimestamp_modified();
       if (!empty($videotimestampmodified)) {
-        $time_last = MediaMediaMosa::date2unix($videotimestampmodified) + 1;
+        $time_last = mediamosa_ck::date2unix($videotimestampmodified) + 1;
         variable_set('media_mediamosa_sync_time_' . MediaMosaConnectorMediaWrapper::build_connection_id(), $time_last);
         variable_set('media_mediamosa_sync_offset_' . MediaMosaConnectorMediaWrapper::build_connection_id(), 0);
       }

@@ -76,12 +76,26 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
   }
 
   /**
+   * Convert the MediaMosa variant of boolean string to boolean version.
+   *
+   * @param $str
+   *   'TRUE', 'true', 'FALSE', 'false'.
+   *
+   * @return
+   *   The boolean value.
+   */
+  static public function string2bool($str) {
+    return (drupal_strtoupper($str) === 'TRUE' ? TRUE : FALSE);
+  }
+
+  /**
    * Create a upload ticket and return the upload POST URL.
    */
   static public function create_upload_ticket(array $options = array()) {
 
     $options += array(
       'transcode_inherits_acl' => TRUE,
+      'create_still' => FALSE,
     );
 
     try {
@@ -115,19 +129,23 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       // Get the Action url from the result.
       $action = (string) $response->xml->items->item->action;
 
-      // Inherit ACL.
-      if ($options['transcode_inherits_acl']) {
+      // Inherit ACL / Create still.
+      if ($options['transcode_inherits_acl'] || $options['create_still']) {
         // Rebuild url.
         $parse_url = parse_url($action);
 
         // Split up query_string.
         $parse_url['query'] = mediamosa_ck::parse_query(empty($parse_url['query']) ? '' : $parse_url['query']);
 
-        // Set inherit acl.
-        $parse_url['query']['transcode_inherits_acl'] = 'TRUE';
+        if ($options['transcode_inherits_acl']) {
+          // Set inherit acl.
+          $parse_url['query']['transcode_inherits_acl'] = 'TRUE';
+        }
 
-        // Set inherit acl.
-        $parse_url['query']['create_still'] = 'TRUE';
+        if ($options['create_still']) {
+          // Set inherit acl.
+          $parse_url['query']['create_still'] = 'TRUE';
+        }
 
         // Rebuild.
         $parse_url['query'] = mediamosa_ck::http_build_query($parse_url['query']);
@@ -278,28 +296,29 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @param array $options
    *  - show_stills (Default TRUE).
    *    TRUE / FALSE to include stills.
+   * @param $cached
+   *   Cache the result for REST call result.
+   * @param $reset
+   *   Reset the cache.
+   *
+   * @return SimpleXMLElement
+   *   The XML response object.
    */
-  static public function get_mediafile($mediafile_id, array $options = array(), $reset = FALSE) {
+  static public function get_mediafile($mediafile_id, array $options = array(), $cached = TRUE, $reset = FALSE) {
+
+    // Set the default options for the REST call.
+    $options += array(
+      'show_stills' => TRUE,
+    );
 
     // Save results.
     $mediafiles = &drupal_static(__CLASS__ . '::' . __FUNCTION__, array());
 
-    if ($reset) {
-      $mediafiles = array();
-    }
-    elseif (empty($mediafiles[$mediafile_id])) {
-      $options += array(
-        'show_stills' => TRUE,
-      );
+    // Convert bool to strings.
+    $options = self::bool2string($options, array('show_stills'));
 
-      // Convert bool to strings.
-      $options = self::bool2string($options, array('show_stills'));
-
-      // Create the asset.
-      $mediafiles[$mediafile_id] = mediamosa_ck::request_get_fatal('mediafile/' . rawurlencode($mediafile_id), $options)->xml;
-    }
-
-    return $mediafiles[$mediafile_id];
+    // Get the mediafile.
+    return mediamosa_ck::request_get_fatal('mediafile/' . rawurlencode($mediafile_id), $options)->xml;
   }
 
   /**
@@ -312,8 +331,16 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    *    TRUE / FALSE to include stills.
    *  - show_collections (Default FALSE).
    *    TRUE / FALSE to include collections.
+   * @param $cached
+   *   Cache the result for REST call result.
+   * @param $reset
+   *   Reset the cache.
+   *
+   * @return SimpleXMLElement
+   *   The XML response object.
    */
-  static public function get_asset($asset_id, array $options = array()) {
+  static public function get_asset($asset_id, array $options = array(), $cached = TRUE, $reset = FALSE) {
+    // The options for the REST call.
     $options += array(
       'show_stills' => TRUE,
       'show_collections' => FALSE,
@@ -322,7 +349,63 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
     // Convert bool to strings.
     $options = self::bool2string($options, array('show_stills', 'show_collections'));
 
-    return mediamosa_ck::request_get_fatal('asset/' . rawurlencode($asset_id), array('data' => $options))->xml;
+    // Do the REST call.
+    return mediamosa_ck::request_get_fatal('asset/' . rawurlencode($asset_id), array('data' => $options), FALSE, $cached, $reset)->xml;
+  }
+
+  // Transcode statuses used with get_asset_current_used_transcode_profiles().
+  const TRANSCODE_STATUS_FINISHED = 'FINISHED';
+
+  /**
+   * Returns a list of the transcode profiles that are used.
+   *
+   * @param $asset_id
+   *   The asset ID.
+   * @param $options
+   *   Options (reserved).
+   *
+   * @return
+   *   Array with info about the current used transcode profiles.
+   */
+  static public function get_asset_current_used_transcode_profiles($asset_id, array $options = array()) {
+    // Data.
+    $current_used_transcode_profiles = array();
+
+    try {
+      // Get existing mediafiles.
+      $asset = MediaMosaCkConnectorWrapper::get_asset($asset_id);
+
+      // Loop through the mediafiles.
+      foreach ($asset->xpath('items/item/mediafiles/mediafile') as $mediafile) {
+        // Skip original.
+        if (MediaMosaSbConnectorWrapper::string2bool($mediafile->is_original_file)) {
+          continue;
+        }
+
+        // Collect the transcodes, ignore mediafiles that are not created using
+        // a transcode profile.
+        if (!empty($mediafile->transcode_profile_id)) {
+          $current_used_transcode_profiles[$mediafile->transcode_profile_id] = array('id' => $mediafile->transcode_profile_id, 'status' => self::TRANSCODE_STATUS_FINISHED);
+        }
+      }
+
+      try {
+        // Now get the (running) jobs.
+        $xml = self::get_asset_jobs($asset_id);
+        print '<pre>Debug in ' . __FILE__ . ', line ' . __LINE__ . "\n"; // @TODO: Remove me!
+        print htmlspecialchars(print_r($xml, TRUE));
+        print '</pre>';
+      }
+      catch (Exception $e) {
+        mediamosa_ck::watchdog_error('Unable to get jobs; !message.', array('!message' => $e->getMessage()));
+      }
+
+    }
+    catch (Exception $e) {
+      mediamosa_ck::watchdog_error('Unable to find existing mediafiles.');
+    }
+
+    return $current_used_transcode_profiles;
   }
 
   /**
@@ -330,15 +413,18 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    *
    * @param $asset_id
    *   The asset_id.
+   * @param $options
+   *   - get_original_only
+   *     Only get for the original mediafile the ID(s).
    *
    * @return
    *   Array with IDs of mediafiles.
    */
   static public function get_asset_mediafile_ids($asset_id, array $options = array()) {
+    // Options for the REST call.
     $options += array(
       'get_original_only' => FALSE,
     );
-
 
     $mediafile_ids = array();
 
@@ -349,7 +435,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       foreach ($asset->xpath('items/item/mediafiles/mediafile') as $mediafile) {
         // Only original IDs?
         if ($options['get_original_only']) {
-          if (drupal_strtoupper($mediafile->is_original_file) != 'TRUE') {
+          if (!MediaMosaCkConnectorWrapper::string2bool($mediafile->is_original_file)) {
             continue;
           }
         }
@@ -358,9 +444,28 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       }
     }
     catch (Exception $e) {
+      mediamosa_ck::watchdog_error('Unable to get mediafile IDs; !message.', array('!message' => $e->getMessage()));
     }
 
     return $mediafile_ids;
+  }
+
+  /**
+   * Return the mediafile IDs of the original(s).
+   *
+   * @param $asset_id
+   *   The asset_id.
+   * @param $options
+   *   The options of the REST call.
+   *
+   * @return
+   *   Array with IDs of mediafiles.
+   */
+  static public function get_asset_mediafile_ids_original($asset_id, array $options = array()) {
+    // Options for the REST call.
+    $options['get_original_only'] = TRUE;
+
+    return self::get_asset_mediafile_ids($asset_id, $options);
   }
 
   /**
@@ -371,34 +476,31 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @param array $options
    *  - hide_empty_assets
    *    TRUE / FALSE include empty assets (have no mediafiles).
+   * @param $cached
+   *   Cache the result for REST call result.
+   * @param $reset
+   *   Reset the cache.
+   *
+   * @return SimpleXMLElement
+   *   The result XML.
    */
-  static public function get_collection($coll_id, array $options = array(), $reset = FALSE) {
+  static public function get_collection($coll_id, array $options = array(), $cached = TRUE, $reset = FALSE) {
 
-    // Save results.
-    $collections = &drupal_static(__CLASS__ . '::' . __FUNCTION__, array());
+    $options += array(
+      'hide_empty_assets' => TRUE,
+    );
 
-    if ($reset) {
-      $collections = array();
+    // Convert bool to strings.
+    $options = self::bool2string($options, array('hide_empty_assets'));
+
+    try {
+      // Get the collection.
+      return mediamosa_ck::request_get_fatal('collection/' . rawurlencode($coll_id),  array('data' => $options), FALSE, $cached, $reset)->xml;
     }
-    elseif (empty($collections[$coll_id])) {
-      $options += array(
-        'hide_empty_assets' => TRUE,
-      );
-
-      // Convert bool to strings.
-      $options = self::bool2string($options, array('hide_empty_assets'));
-
-      try {
-        // Get the collection.
-        $collections[$coll_id] = mediamosa_ck::request_get_fatal('collection/' . rawurlencode($coll_id),  array('data' => $options))->xml;
-      }
-      catch (Exception $e) {
-        mediamosa_ck::watchdog_error('Unable to find collection; !message.', array('!message' => $e->getMessage()));
-        return FALSE;
-      }
+    catch (Exception $e) {
+      mediamosa_ck::watchdog_error('Unable to find collection; !message.', array('!message' => $e->getMessage()));
+      return FALSE;
     }
-
-    return $collections[$coll_id];
   }
 
   /**
@@ -442,7 +544,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
     try {
       // If no user_id is present, then we need the owner from the asset_id. We
       // don't fix this by using the is_app_admin, because it will then allow to
-      // play unapropriate videos.
+      // play unappropriate videos.
       if (empty($user_id)) {
         $user_id = self::get_asset_owner($asset_id);
       }
@@ -468,13 +570,38 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
   }
 
   /**
-   * Get job for mediafile.
+   * Get jobs of mediafile.
    *
    * @param $mediafile_id
+   *   The mediafile ID.
+   * @param $user_id
+   *   The owner of the mediafile.
    *
    * @return $jobs
    */
-  static public function get_job($mediafile_id, $user_id = NULL) {
+  static public function get_asset_jobs($asset_id, $user_id = FALSE) {
+    if (!$user_id) {
+      $user_id = mediamosa_ck::session_user_id();
+    }
+
+    $data = array(
+      'user_id' => $user_id,
+    );
+
+    return mediamosa_ck::request_get_fatal('asset/' . rawurlencode($asset_id) . '/joblist', array('data' => $data))->xml;
+  }
+
+  /**
+   * Get jobs of mediafile.
+   *
+   * @param $mediafile_id
+   *   The mediafile ID.
+   * @param $user_id
+   *   The owner of the mediafile.
+   *
+   * @return $jobs
+   */
+  static public function get_mediafile_jobs($mediafile_id, $user_id = FALSE) {
     if (!$user_id) {
       $mediafile = MediaMosaCkConnectorWrapper::get_mediafile($mediafile_id);
       $user_id = (string) $mediafile->items->item->owner_id;
@@ -490,7 +617,8 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
   /**
    * Get transcode profiles.
    *
-   * @return $profiles
+   * @return SimpleXMLElement
+   *   The XML response object.
    */
   static public function get_transcode_profiles() {
     // Return the transcode profiles.
@@ -500,7 +628,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
 
       try {
         // Do request.
-        $transcode_profiles = mediamosa_ck::request_get_fatal('transcode/profile', array('data' => $data))->xml;
+        $transcode_profiles = mediamosa_ck::request_get_fatal_cached('transcode/profile', array('data' => $data))->xml;
       }
       catch (Exception $e) {
         mediamosa_ck::watchdog_error('Unable to retrieve the transcode profiles; !message.', array('!message' => $e->getMessage()));
@@ -512,12 +640,140 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
   }
 
   /**
+   * Return the default transcode profile set by CK. When not set, find the
+   * MediaMosa default.
+   *
+   * @return
+   *   The transcode profile ID.
+   */
+  static public function get_default_transcode_profile() {
+
+    $transcode_profile_default = mediamosa_connector::variable_get('media_mediamosa_transcode_profile_default');
+    if (!$transcode_profile_default) {
+
+      // Get the profiles.
+      $profiles = self::get_transcode_profiles();
+      if (!$profiles) {
+        mediamosa_ck::watchdog_error(t('Unable to retrieve transcode profiles.'));
+      }
+
+      $transcode_profile_default = 0;
+      if ($profiles && isset($profiles->items->item)) {
+        foreach ($profiles->items->item as $profile_id => $profile) {
+          // Store the first one as default.
+          if (empty($transcode_profile_default)) {
+            $transcode_profile_default = (int) $profile->profile_id;
+          }
+
+          // Set to default?
+          if (self::string2bool((string) $profile->default)) {
+            $transcode_profile_default = (int) $profile->profile_id;
+            // FIFO.
+            break;
+          }
+        }
+      }
+    }
+
+    return $transcode_profile_default;
+  }
+
+  /**
+   * Return the allowed transcode profiles.
+   *
+   * @param $options
+   *   - refresh_title (default TRUE)
+   *     Reload the titles from MediaMosa.
+   *
+   * @return
+   *   The transcode profile ID.
+   */
+  static public function get_allowed_transcode_profiles(array $options = array()) {
+    // Default options.
+    $options += array(
+      'refresh_title' => TRUE,
+    );
+
+    // Get the allowed transcode profile.
+    $transcode_profiles_allowed = mediamosa_connector::variable_get('media_mediamosa_transcode_profiles_allowed', array());
+    if (!empty($transcode_profiles_allowed) && !$options['refresh_title']) {
+      return $transcode_profiles_allowed;
+    }
+
+    // Get the profiles.
+    $profiles = MediaMosaCkConnectorTranscodeWrapper::get_transcode_profiles();
+    if (!$profiles) {
+      mediamosa_ck::watchdog_error(t('Unable to retrieve transcode profiles.'));
+    }
+
+    // No allowed set? Then get them all and allow them all.
+    if (empty($transcode_profiles_allowed)) {
+      // Get the profiles.
+      foreach ($profiles->items->item as $profile_id => $profile) {
+        $transcode_profiles_allowed[(int) $profile->profile_id] = t((string) $profile->profile);
+      }
+    }
+    else {
+      // Get the profiles.
+      foreach ($profiles->items->item as $profile_id => $profile) {
+        // Reset the title.
+        if (!empty($transcode_profiles_allowed[(int) $profile->profile_id])) {
+          $transcode_profiles_allowed[(int) $profile->profile_id] = t((string) $profile->profile);
+        }
+      }
+    }
+
+    // Store them for later retrieval.
+    if (!empty($transcode_profiles_allowed)) {
+      mediamosa_connector::variable_set('media_mediamosa_transcode_profiles_allowed', $transcode_profiles_allowed);
+    }
+
+    return $transcode_profiles_allowed;
+  }
+
+  /**
+   * Create transcoded mediafile.
+   *
+   * @param $mediafile_id
+   *   The mediafile ID of the original.
+   * @param $user_id
+   *   The owner of the asset.
+   * @param $options
+   *   The options for the REST call.
+   *
+   * @return
+   *   Returns FALSE for failure.
+   */
+  static public function create_transcode($mediafile_id, $options = array()) {
+    // Check the parameters.
+    if (empty($mediafile_id)) {
+      return FALSE;
+    }
+
+    $options += array(
+      'user_id' => mediamosa_ck::session_user_id(),
+    );
+
+    try {
+      // Do request.
+      return mediamosa_ck::request_post_fatal('mediafile/' . rawurlencode($mediafile_id) . '/transcode', array('data' => $options));
+    }
+    catch (Exception $e) {
+      mediamosa_ck::watchdog_error('Unable to start a transcode; @message.', array('@message' => $e->getMessage()));
+    }
+
+    return FALSE;
+  }
+
+  /**
    * Update the metadata for given asset ID.
    *
    * @param $asset_id
+   *   The ID of the asset.
    * @param $options
+   *   The options for the REST call.
    */
-  static public function update_metadata($asset_id, array $options) {
+  static public function update_metadata($asset_id, array $options = array()) {
 
     // Add action.
     $options += array(

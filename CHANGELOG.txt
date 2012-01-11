@@ -1,6 +1,16 @@
 
 Mediamosa CK, 7.x-2.x-dev
 -------------------------
+- Renamed MediaMosaCkConnectorWrapper::get_job() to
+  MediaMosaCkConnectorWrapper::get_mediafile_jobs().
+- Moved mediamosa_ck_transcode::get_default_transcode_profile() to the
+  MediaMosaCkConnectorWrapper class.
+- Moved mediamosa_ck_transcode::get_allowed_transcode_profiles() to the
+  MediaMosaCkConnectorWrapper class.
+- Moved mediamosa_ck_transcode::create_transcode() to the
+  MediaMosaCkConnectorWrapper class.
+- Switched from storing the Drupal user ID as owner to Drupal email address as
+  owner of the Mediafiles and other MediaMosa objects.
 - Update info to reflect dependencies.
 - Moved functions to mediamosa_ck.connector class.
 - Updated function names to reflect their purposes.
@@ -17,13 +27,11 @@ Mediamosa CK, 7.x-2.x-dev
 - Added comment on deprecated usage of response2array.
 - Updated all version dependencies on Media 2.0, File entity 2.0.
 - Updated modules to work with Media 2.0 and File Entity 2.0.
-- Added custom request function that is used with custom restview
-module.
+- Added custom request function that is used with custom restview module.
 - Added new sync class for sync related functions.
 
 Mediamosa CK, 7.x-1.x-dev
 -------------------------
 - Added code to return play link.
 - Fixed upload to MediaMosa.
-- Ticket 488, 490, 491, 494: ACL, still and transcode forms and REST
-calls.
+- Ticket 488, 490, 491, 494: ACL, still and transcode forms and REST calls.

@@ -10,7 +10,11 @@ dependencies[] = mediamosa_ck_transcode (>=1.99)
 
 features[ctools][] = "views:views_default:3.0"
 
+files[] = handlers/mediamosa_ck_views_field_asset_actions.class.inc
+files[] = handlers/mediamosa_ck_views_field_boolean.class.inc
+files[] = handlers/mediamosa_ck_views_field_collection_actions.class.inc
 files[] = handlers/mediamosa_ck_views_field_date.class.inc
+files[] = handlers/mediamosa_ck_views_field_mediafile_duration.class.inc
 files[] = handlers/mediamosa_ck_views_field_player.class.inc
 files[] = handlers/mediamosa_ck_views_field_still.class.inc
 files[] = handlers/mediamosa_ck_views_field_text.class.inc

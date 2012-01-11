@@ -69,7 +69,7 @@ class mediamosa_ck_views_field_still extends views_handler_field {
       '#title' => t('Select image style'),
       '#type' => 'select',
       '#options' => $styles,
-      '#default_value' => !empty($this->options['still_style']),
+      '#default_value' => $this->options['still_style'],
     );
     parent::options_form($form, $form_state);
   }

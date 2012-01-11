@@ -287,13 +287,13 @@ class MediaMediaMosaSync {
       // offset found with this videotimestamp and store it, so the next time the
       // videotimestampmodified is used again but with the next unsynced results.
       if ($asset_last && $asset_last['videotimestampmodified'] == $videotimestampmodified) {
-        $time_last = MediaMediaMosa::date2unix($videotimestampmodified);
+        $time_last = mediamosa_ck::date2unix($videotimestampmodified);
         variable_set('media_mediamosa_sync_time_' . MediaMosaConnectorMediaWrapper::build_connection_id(), $time_last);
         variable_set('media_mediamosa_sync_offset_' . MediaMosaConnectorMediaWrapper::build_connection_id(), $offset + 1);
       }
       else {
         // Next time we'll take everything that is new or changed.
-        $time_last = MediaMediaMosa::date2unix($videotimestampmodified) + 1;
+        $time_last = mediamosa_ck::date2unix($videotimestampmodified) + 1;
         variable_set('media_mediamosa_sync_time_' . MediaMosaConnectorMediaWrapper::build_connection_id(), $time_last);
         variable_set('media_mediamosa_sync_offset_' . MediaMosaConnectorMediaWrapper::build_connection_id(), 0);
       }

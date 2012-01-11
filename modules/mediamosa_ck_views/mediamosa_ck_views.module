@@ -121,6 +121,7 @@ function mediamosa_ck_theme() {
       'variables' => array(
         // Table
         'mediafiles' => array(),
+        'asset_path' => 'asset/[asset_id]/[mediafile_id]',
       ),
     ),
     'mediamosa_ck_view_theme_asset_collections' => array(
@@ -140,6 +141,22 @@ function mediamosa_ck_theme() {
       'variables' => array(
         // Table
         'technical_metadata' => array(),
+      ),
+    ),
+    'mediamosa_ck_view_theme_collection_actions' => array(
+      'variables' => array(
+        // Table
+        'coll_id' => '',
+        'action_path_edit' => 'collection/edit/[coll_id]',
+        'action_path_delete' => 'collection/delete/[coll_id]',
+      ),
+    ),
+    'mediamosa_ck_view_theme_asset_actions' => array(
+      'variables' => array(
+        // Table
+        'asset_id' => '',
+        'action_path_edit' => 'asset/edit/[asset_id]',
+        'action_path_delete' => 'asset/delete/[asset_id]',
       ),
     ),
   );
@@ -162,10 +179,16 @@ function theme_mediamosa_ck_view_theme_asset_mediafiles($variables) {
       continue; // No analysed yet.
     }
 
-    $type = drupal_strtoupper($mediafile['metadata']['container_type']);
-    $output[] = '<li>' . $type . '</li>';
-  }
+    // Build the link.
+    $path = strtr($variables['asset_path'], array('[asset_id]' => $mediafile['asset_id'], '[mediafile_id]' => $mediafile['mediafile_id']));
 
+    // Get filename.
+    $output[] = '<li>';
+    $output[] = t(drupal_strtoupper($mediafile['metadata']['container_type']));
+    $output[] = ' ';
+    $output[] = empty($mediafile['filename']) ? t('No filename present') : (l(trim($mediafile['filename']), $path));
+    $output[] = '</li>';
+  }
 
   return empty($output) ? '' : '<ul>' . implode('', $output) . '</ul>';
 }
@@ -235,4 +258,38 @@ function theme_mediamosa_ck_view_theme_asset_technical_metadata($variables) {
   }
 
   return theme('table', array('rows' => $rows));
+}
+
+/**
+ * The theme used to generate links to the edit/delete pages for collections.
+ *
+ * @param array $variables
+ *   Data used for the theme.
+ */
+function theme_mediamosa_ck_view_theme_collection_actions($variables) {
+  // Empty.
+  $output = array();
+
+  // @todo ; owner check.
+  $output[] = '<li>' . l(t('edit'), strtr($variables['action_path_edit'], array('[coll_id]' => $variables['coll_id']))) . '</li>';
+  $output[] = '<li>' . l(t('delete'), strtr($variables['action_path_delete'], array('[coll_id]' => $variables['coll_id']))) . '</li>';
+
+  return empty($output) ? t('No actions') : '<ul>' . implode('', $output) . '</ul>';
+}
+
+/**
+ * The theme used to generate links to the edit/delete pages for assets.
+ *
+ * @param array $variables
+ *   Data used for the theme.
+ */
+function theme_mediamosa_ck_view_theme_asset_actions($variables) {
+  // Empty.
+  $output = array();
+
+  // @todo ; owner check.
+  $output[] = '<li>' . l(t('edit'), strtr($variables['action_path_edit'], array('[asset_id]' => $variables['asset_id']))) . '</li>';
+  $output[] = '<li>' . l(t('delete'), strtr($variables['action_path_delete'], array('[asset_id]' => $variables['asset_id']))) . '</li>';
+
+  return empty($output) ? t('No actions') : '<ul>' . implode('', $output) . '</ul>';
 }

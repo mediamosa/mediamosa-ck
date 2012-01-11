@@ -76,6 +76,7 @@ class mediamosa_ck_views_rest_asset_get extends mediamosa_ck_views_rest {
       $object = new stdClass();
       $object->asset_id = (string) $item->asset_id;
       $object->granted = drupal_strtoupper((string) $item->granted) == 'TRUE' ? 'TRUE' : 'FALSE';
+      $object->is_owner = mediamosa_ck::session_user_id() == $item->owner_id;
 
       // Asset Metadata.
       foreach (mediamosa_ck::get_metadata_fields() as $set => $metadata) {

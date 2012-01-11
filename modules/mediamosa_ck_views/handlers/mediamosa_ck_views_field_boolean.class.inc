@@ -1,13 +1,9 @@
 <?php
 /**
- * MediaMosa is Open Source Software to build a Full Featured, Webservice
- * Oriented Media Management and Distribution platform (http://mediamosa.org)
+ * MediaMosa is a Full Featured, Webservice Oriented Media Management and
+ * Distribution platform (http://www.vpcore.nl)
  *
- * Copyright (C) 2011 SURFnet BV (http://www.surfnet.nl) and Kennisnet
- * (http://www.kennisnet.nl)
- *
- * MediaMosa is based on the open source Drupal platform and
- * was originally developed by Madcap BV (http://www.madcap.nl)
+ * Copyright (C) 2011 SURFnet BV (http://www.surfnet.nl)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -21,3 +17,7 @@
  * with this program; if not, you can find it at:
  * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  */
+
+class mediamosa_ck_views_field_boolean extends views_handler_field_boolean {
+
+}

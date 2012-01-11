@@ -31,34 +31,6 @@
 
 class MediaMosaCkConnectorTranscodeWrapper extends MediaMosaCkConnectorWrapper {
   /**
-   * Create transcoded mediafile.
-   *
-   * @param string $mediafile_id
-   * @param string $user_id
-   * @param array $data
-   */
-  static public function create_transcode($mediafile_id, $user_id, $data = array()) {
-    // Check the parameters.
-    if (empty($mediafile_id) || empty($user_id)) {
-      return FALSE;
-    }
-
-    $data += array(
-      'user_id' => $user_id,
-    );
-
-    try {
-      // Do request.
-      return mediamosa_ck::request_post_fatal('mediafile/' . rawurlencode($mediafile_id) . '/transcode', array('data' => $data));
-    }
-    catch (Exception $e) {
-      mediamosa_ck::watchdog_error('Unable to start a transcode; @message.', array('@message' => $e->getMessage()));
-    }
-
-    return FALSE;
-  }
-
-  /**
    * Retrieving profile names.
    *
    * @deprecated: uses deprecated function response2array().

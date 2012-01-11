@@ -112,7 +112,7 @@ class mediamosa_ck_views_field_player extends views_handler_field {
 
     // Not specified? Then use default transcode profile ID.
     if (empty($mediafile_id_to_play)) {
-      $options['profile_id'] = mediamosa_ck_transcode::get_default_transcode_profile();
+      $options['profile_id'] = MediaMosaCkConnectorWrapper::get_default_transcode_profile();
     }
 
     // Both not empty.
