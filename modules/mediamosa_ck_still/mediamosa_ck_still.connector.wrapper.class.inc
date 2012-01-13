@@ -30,33 +30,9 @@
  */
 
 class MediaMosaCkConnectorStillWrapper extends MediaMosaCkConnectorWrapper {
-  /**
-   * Still create.
-   *
-   * @param $mediafile_id
-   * @param $user_id
-   * @param $data
-   *   An array with all the still parameters.
-   */
-  static public function still_create($mediafile_id, $user_id, $data = array()) {
-    // Check the parameters.
-    if (empty($mediafile_id) || empty($user_id)) {
-      return FALSE;
-    }
 
-    $data += array(
-      'user_id' => $user_id,
-    );
-
-    try {
-      // Do request.
-      return mediamosa_ck::request_post_fatal('mediafile/' . rawurlencode($mediafile_id) . '/still/create', array('data' => $data));
-    }
-    catch (Exception $e) {
-      mediamosa_ck::watchdog_error('Unable to start a still process, reason; @message.', array('@message' => $e->getMessage()));
-    }
-
-    return FALSE;
+  static public function still_create($mediafile_id, $user_id, array $data = array()) {
+    return parent::create_mediafile_still($mediafile_id, $user_id, $data);
   }
 
   /**
@@ -68,7 +44,7 @@ class MediaMosaCkConnectorStillWrapper extends MediaMosaCkConnectorWrapper {
    * @param string $user_id
    * @param array $data
    */
-  static public function still_default($asset_id, $mediafile_id, $still_id, $user_id, $data = array()) {
+  static public function still_default($asset_id, $mediafile_id, $still_id, $user_id, array $data = array()) {
     // Check the parameters.
     if (empty($asset_id) || empty($mediafile_id) || empty($still_id) || empty($user_id)) {
       return FALSE;

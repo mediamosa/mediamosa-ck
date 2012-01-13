@@ -30,6 +30,11 @@
  */
 class MediaMosaCkConnectorWrapper extends mediamosa_connector {
 
+  // ------------------------------------------------------------------- Consts.
+  // Transcode statuses used with get_asset_current_used_transcode_profiles().
+  const TRANSCODE_STATUS_FINISHED = 'FINISHED';
+
+  // ---------------------------------------------------------------- Functions.
   /**
    * Check the connector settings.
    */
@@ -95,7 +100,9 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
 
     $options += array(
       'transcode_inherits_acl' => TRUE,
-      'create_still' => FALSE,
+      'create_still' => mediamosa_ck::setting_mediafile_upload_create_still(),
+      'is_downloadable' => mediamosa_ck::setting_mediafile_downloadable(),
+      'transcode' => array(),
     );
 
     try {
@@ -108,10 +115,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
 
       // Downloadable setting.
       // Off until the is_empty_asset bug is fixed in MediaMosa.
-      //$data_create_mediafile['is_downloadable'] = mediamosa_ck::setting_mediafile_downloadable() ? 'TRUE' : 'FALSE';
-
-      // Create still after upload?
-      $data_create_mediafile['create_still'] = mediamosa_ck::setting_mediafile_upload_create_still() ? 'TRUE' : 'FALSE';
+      //$data_create_mediafile['is_downloadable'] = $options['is_downloadable'] ? 'TRUE' : 'FALSE';
 
       // Get optional tag.
       $tag = mediamosa_ck::setting_mediafile_tag();
@@ -130,7 +134,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       $action = (string) $response->xml->items->item->action;
 
       // Inherit ACL / Create still.
-      if ($options['transcode_inherits_acl'] || $options['create_still']) {
+      if ($options['transcode_inherits_acl'] || $options['create_still'] || !empty($options['transcode'])) {
         // Rebuild url.
         $parse_url = parse_url($action);
 
@@ -143,8 +147,13 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
         }
 
         if ($options['create_still']) {
-          // Set inherit acl.
-          $parse_url['query']['create_still'] = 'TRUE';
+          // Set create still.
+          $parse_url['query']['create_still'] = $options['create_still'] ? 'TRUE' : 'FALSE';
+        }
+
+        if (!empty($options['transcode'])) {
+          // Set create still.
+          $parse_url['query']['transcode'] = $options['transcode'];
         }
 
         // Rebuild.
@@ -322,7 +331,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
   }
 
   /**
-   * Get the asset.
+   * Get the asset. By default is this call cached(!).
    *
    * @param string $asset_id
    *  ID of the asset to get.
@@ -353,9 +362,6 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
     return mediamosa_ck::request_get_fatal('asset/' . rawurlencode($asset_id), array('data' => $options), FALSE, $cached, $reset)->xml;
   }
 
-  // Transcode statuses used with get_asset_current_used_transcode_profiles().
-  const TRANSCODE_STATUS_FINISHED = 'FINISHED';
-
   /**
    * Returns a list of the transcode profiles that are used.
    *
@@ -385,20 +391,24 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
         // Collect the transcodes, ignore mediafiles that are not created using
         // a transcode profile.
         if (!empty($mediafile->transcode_profile_id)) {
-          $current_used_transcode_profiles[$mediafile->transcode_profile_id] = array('id' => $mediafile->transcode_profile_id, 'status' => self::TRANSCODE_STATUS_FINISHED);
+          $current_used_transcode_profiles[(int) $mediafile->transcode_profile_id] = array(
+            'transcode_profile_id' => (int) $mediafile->transcode_profile_id,
+            'status' => self::TRANSCODE_STATUS_FINISHED,
+            'mediafile_id' => (string) $mediafile->mediafile_id,
+            'owner_id' => (string) $mediafile->owner_id,
+            'is_downloadable' => MediaMosaCkConnectorWrapper::string2bool($mediafile->is_downloadable),
+          );
         }
       }
 
-      try {
-        // Now get the (running) jobs.
-        $xml = self::get_asset_jobs($asset_id);
-        print '<pre>Debug in ' . __FILE__ . ', line ' . __LINE__ . "\n"; // @TODO: Remove me!
-        print htmlspecialchars(print_r($xml, TRUE));
-        print '</pre>';
-      }
-      catch (Exception $e) {
-        mediamosa_ck::watchdog_error('Unable to get jobs; !message.', array('!message' => $e->getMessage()));
-      }
+// off until jobs REST will give back transcode jobs with used profile ID.
+//      try {
+//        // Now get the (running) jobs.
+//        $xml = self::get_asset_jobs($asset_id);
+//      }
+//      catch (Exception $e) {
+//        mediamosa_ck::watchdog_error('Unable to get jobs; !message.', array('!message' => $e->getMessage()));
+//      }
 
     }
     catch (Exception $e) {
@@ -797,7 +807,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * Update a asset.
    *
    * @param $options
-   *   The options for the collection.
+   *   The options for the asset.
    *
    * @return type
    */
@@ -811,15 +821,40 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       $options = self::bool2string($options, array('isprivate'));
 
       // Create the asset.
-      $response = mediamosa_ck::request_post_fatal('asset/' . rawurlencode($asset_id), array('data' => $options));
-
-      // Return the collection ID.
-      return TRUE;
+      return mediamosa_ck::request_post_fatal('asset/' . rawurlencode($asset_id), array('data' => $options));
     }
     catch (Exception $e) {
       mediamosa_ck::watchdog_error('Unable to update asset; !message.', array('!message' => $e->getMessage()));
-      return FALSE;
     }
+
+    return FALSE;
+  }
+
+  /**
+   * Update a mediafile.
+   *
+   * @param $options
+   *   The options for the mediafile.
+   *
+   * @return type
+   */
+  static public function update_mediafile($mediafile_id, array $options = array()) {
+    try {
+      $options += array(
+        'user_id' => mediamosa_ck::session_user_id(),
+      );
+
+      // Convert bool to strings.
+      $options = self::bool2string($options, array('is_downloadable', 'transcode_inherits_acl'));
+
+      // Create the asset.
+      return mediamosa_ck::request_post_fatal('mediafile/' . rawurlencode($mediafile_id), array('data' => $options));
+    }
+    catch (Exception $e) {
+      mediamosa_ck::watchdog_error('Unable to update mediafile; !message.', array('!message' => $e->getMessage()));
+    }
+
+    return FALSE;
   }
 
   /**
@@ -900,12 +935,12 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       'offset' => 0,
       // Number of items in result set.
       'limit' => 10,
-      // cql search query. Do not provide sortBy in query(!).
+      // cql search query. Do not provide sortBy in query(!), use order_by and order_direction.
       'cql' => '',
       // Order/sort by field.
-      'orderby' => 'videotimestampmodified',
-      // Direction either descending or ascending.
-      'direction' => 'ascending',
+      'order_by' => 'videotimestampmodified',
+      // Direction either desc or asc.
+      'order_direction' => 'asc',
       // Search within these collection(s).
       'coll_id' => array(),
     );
@@ -914,9 +949,12 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
     $cql = empty($options['cql']) ? array() : array($options['cql']);
 
     // Always sortby videotimestampmodified.
-    if (!empty($options['orderby'])) {
-      $cql[] = 'sortby ' . $options['orderby'] . !empty($options['direction']) ? '/' . $options['direction'] : '';
+    if (!empty($options['order_by'])) {
+      $cql[] = 'sortby ' . $options['order_by'] . (!empty($options['order_direction']) ? '/' . ($options['order_direction'] == 'asc' ? 'ascending' : 'descending') : '');
     }
+    // Skip these.
+    unset($options['order_by']);
+    unset($options['order_direction']);
 
     // Settings for REST call.
     $data = array(
@@ -930,18 +968,17 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
     );
 
     // Add our options to $data.
-    $data = array_merge($data, $options);
+    $data = array_merge($options, $data);
 
     try {
-      $response = mediamosa_ck::request_get_fatal('asset', array('data' => $data));
+      return mediamosa_ck::request_get_fatal('asset', array('data' => $data));
     }
     catch (Exception $e) {
-      mediamosa_ck::watchdog_error('Error search assets (time_last = @time_last). Message: !message.', array('@time_last' => format_date($time_last), '!message' => $e->getMessage()), WATCHDOG_ERROR);
-      return FALSE;
+      mediamosa_ck::watchdog_error('Error search assets. Message: !message.', array('!message' => $e->getMessage()), WATCHDOG_ERROR);
     }
 
-    // Get the assets.
-    return !empty($response) ? $response : array();
+    // Got here, then return FALSE.
+    return FALSE;
   }
 
   /**
@@ -1128,7 +1165,36 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       $response = mediamosa_ck::request_post_fatal('collection/' . rawurlencode($coll_id) . '/asset_relation/delete', array('data' => $options));
     }
     catch (Exception $e) {
-      mediamosa_ck::watchdog_error('Unable to create collection; !message.', array('!message' => $e->getMessage()));
+      mediamosa_ck::watchdog_error('Unable to delete asset relation(s) with collection; !message.', array('!message' => $e->getMessage()));
+      return FALSE;
+    }
+
+    // Is ok?
+    return $response->code == 200 && $response->xml->header->request_result_id == 601;
+  }
+
+  /**
+   * Add one or assets to the collection.
+   *
+   * @param $coll_id
+   *   The collection ID.
+   * @param $user_id
+   *   The owner of the collection.
+   * @param $asset_ids
+   *   Array of asset_ids to put into collection.
+   */
+  static public function create_collection_asset_relations($coll_id, $user_id, array $asset_ids, array $options = array()) {
+    // Options.
+    $options = array(
+      'user_id' => $user_id,
+      'asset_id' => $asset_ids,
+    );
+
+    try {
+      $response = mediamosa_ck::request_post_fatal('collection/' . rawurlencode($coll_id) . '/asset_relation', array('data' => $options));
+    }
+    catch (Exception $e) {
+      mediamosa_ck::watchdog_error('Unable to add asset(s) to collection; !message.', array('!message' => $e->getMessage()));
       return FALSE;
     }
 
@@ -1169,5 +1235,70 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
     }
 
     return $response->code == 200 && $response->xml->header->request_result_id == 601;
+  }
+
+  /**
+   * Create a still for specific mediafile.
+   *
+   * @param $mediafile_id
+   *   The mediafile ID.
+   * @param $user_id
+   *   The owner of the mediafile.
+   * @param $data
+   *   Array with all the still parameters.
+   *
+   * @return mediamosa_connector_response
+   *   Returns FALSE when failure or mediamosa_connector_response.
+   */
+  static public function create_mediafile_still($mediafile_id, $user_id, $data = array()) {
+    // Check the parameters.
+    if (empty($mediafile_id) || empty($user_id)) {
+      return FALSE;
+    }
+
+    $data += array(
+      'user_id' => $user_id,
+    );
+
+    try {
+      // Do request.
+      return mediamosa_ck::request_post_fatal('mediafile/' . rawurlencode($mediafile_id) . '/still/create', array('data' => $data));
+    }
+    catch (Exception $e) {
+      mediamosa_ck::watchdog_error('Unable to start a still process, reason; @message.', array('@message' => $e->getMessage()));
+    }
+
+    return FALSE;
+  }
+
+  /**
+   * Delete still(s) from a asset.
+   *
+   * @param $asset_id
+   *   The asset ID.
+   * @param $user_id
+   *   The user ID.
+   * @param $options
+   *   The REST call options.
+   */
+  static public function delete_asset_still($asset_id, $user_id, array $options = array()) {
+    // Check the parameters.
+    if (empty($asset_id)) {
+      return FALSE;
+    }
+
+    $options += array(
+      'user_id' => $user_id,
+    );
+
+    try {
+      // Do request.
+      return mediamosa_ck::request_post_fatal('asset/' . rawurlencode($asset_id) . '/still/delete', array('data' => $options));
+    }
+    catch (Exception $e) {
+      mediamosa_ck::watchdog_error('Unable to delete stills, reason; @message.', array('@message' => $e->getMessage()));
+    }
+
+    return FALSE;
   }
 }

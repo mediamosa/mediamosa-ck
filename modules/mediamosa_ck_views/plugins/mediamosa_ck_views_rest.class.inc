@@ -91,6 +91,13 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
   }
 
   /**
+   * Is called when sort option is added/used.
+   */
+  public function add_orderby($table, $field = NULL, $order = 'ASC', $alias = '', $params = array()) {
+    $this->orderby[$table . '.' . $field] = array('orderby' => $field, 'order' => $order, 'params' => $params);
+  }
+
+  /**
    * Executes the query and fills the associated view object with according
    * values.
    *

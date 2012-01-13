@@ -111,7 +111,7 @@ class mediamosa_ck extends mediamosa_sdk {
     global $user;
 
     // We use mail address as owner.
-    return $user->mail;
+    return isset($user->mail) ? $user->mail : '';
   }
 
   /**

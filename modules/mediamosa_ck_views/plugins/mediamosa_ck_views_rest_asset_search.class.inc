@@ -44,6 +44,13 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest {
       'hide_empty_assets' => 'TRUE',
     );
 
+    // Mediamosa only supports one param order, so take the first.
+    $orderby = empty($this->orderby) ? FALSE : reset($this->orderby);
+    if ($orderby) {
+      $options['order_by'] = $orderby['orderby'];
+      $options['order_direction'] = $orderby['order'] == 'ASC' ? 'asc' : 'desc';
+    }
+
     // Do the search.
     $response = MediaMosaCkConnectorWrapper::search_asset($options);
 
@@ -125,5 +132,24 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest {
     self::get_views_data_metadata($data);
 
     return $data;
+  }
+
+  /**
+   * Is called when sort option is added/used.
+   */
+  public function add_orderby($table, $field = NULL, $order = 'ASC', $alias = '', $params = array()) {
+
+    // Some fields have another orderby field...
+    $translate = array(
+      'viewed' => 'numofviews',
+      'played' => 'numofplays',
+    );
+
+    // See if we have alias.
+    if (isset($translate[$field])) {
+      $field = $translate[$field];
+    }
+
+    parent::add_orderby($table, $field, $order, $alias, $params);
   }
 }

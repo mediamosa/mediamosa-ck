@@ -39,7 +39,7 @@ function media_mediamosa_file_formatter_info() {
     'settings callback' => 'media_mediamosa_file_formatter_video_settings',
   );
   $formatters['media_mediamosa_image'] = array(
-    'label' => t('MediaMosa Preview Image'),
+    'label' => t('YouTube Preview Image'),
     'file types' => array('video'),
     'default settings' => array(
       'image_style' => '',

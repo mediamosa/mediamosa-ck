@@ -29,4 +29,14 @@
  */
 class mediamosa_ck_views_rest_asset_popular extends mediamosa_ck_views_rest_asset_search {
 
+  protected function do_rest_call($view, $params, array $options = array()) {
+
+    // If not set, use default for order;
+    if (empty($this->orderby)) {
+      $this->orderby[__CLASS__ . '.' . 'numofviews'] = array('orderby' => 'viewed', 'order' => 'DESC', 'params' => array());
+    }
+
+    // Call parent.
+    parent::do_rest_call($view, $params, $options);
+  }
 }

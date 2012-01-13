@@ -1,6 +1,9 @@
 
 Mediamosa CK, 7.x-2.x-dev
 -------------------------
+- Moved code in MediaMosaCkConnectorStillWrapper::still_create() to
+  MediaMosaSbConnectorWrapper::create_mediafile_still() and still_create() now
+  calls parent::create_mediafile_still().
 - Renamed MediaMosaCkConnectorWrapper::get_job() to
   MediaMosaCkConnectorWrapper::get_mediafile_jobs().
 - Moved mediamosa_ck_transcode::get_default_transcode_profile() to the
