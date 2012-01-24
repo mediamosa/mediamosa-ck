@@ -1,11 +1,9 @@
 <?php
-// $Id$
-
 /**
- * MediaMosa is a Full Featured, Webservice Oriented Media Management and
- * Distribution platform (http://www.vpcore.nl)
+ * MediaMosa is Open Source Software to build a Full Featured, Webservice
+ * Oriented Media Management and Distribution platform (http://mediamosa.org)
  *
- * Copyright (C) 2011 SURFnet BV (http://www.surfnet.nl) and Kennisnet
+ * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl) and Kennisnet
  * (http://www.kennisnet.nl)
  *
  * MediaMosa is based on the open source Drupal platform and
@@ -230,7 +228,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @param $acl_domain_realm
    *   A string with domains and realms. Function is responsible to determine
    *   correct type for each element.
-   * @param $acl_user_ids
+   * @param $acl_user_id
    *   A string with users. This can be anything as MediaMosa does not care
    *   about the content of a user_id.
    */
@@ -511,6 +509,30 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       mediamosa_ck::watchdog_error('Unable to find collection; !message.', array('!message' => $e->getMessage()));
       return FALSE;
     }
+  }
+
+  /**
+   * Return with array of the collections.
+   *
+   * @todo:
+   *   Limit is 200.
+   */
+  static public function get_collections_for_options($options = array()) {
+    $options += array(
+      'offset' => 0,
+      'limit' => 200, // Get max allowed per rest call.
+    );
+
+    // Get it.
+    $collections = array();
+    $xml = self::search_collection($options);
+    if ($xml) {
+      foreach ($xml->xpath('items/item') as $collection) {
+        $collections[(string) $collection->coll_id] = (string) check_plain($collection->title);
+      }
+    }
+
+    return $collections;
   }
 
   /**
@@ -1300,5 +1322,26 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
     }
 
     return FALSE;
+  }
+
+  /**
+   * Get the user. By default is this call cached(!).
+   *
+   * @param string $user_id
+   *   ID of the user to get.
+   * @param $options
+   *   Reserverd
+   * @param $cached
+   *   Cache the result for REST call result.
+   * @param $reset
+   *   Reset the cache.
+   *
+   * @return SimpleXMLElement
+   *   The XML response object.
+   */
+  static public function get_user($user_id, array $options = array(), $cached = TRUE, $reset = FALSE) {
+
+    // Do the REST call.
+    return mediamosa_ck::request_get_fatal('user/' . rawurlencode($user_id), array(), FALSE, $cached, $reset)->xml;
   }
 }

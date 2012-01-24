@@ -18,45 +18,7 @@
  * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  */
 
-class mediamosa_ck_views_field_text_metadata extends views_handler_field {
-
-  function option_definition() {
-    $options = parent::option_definition();
-
-    $options['metadata_theme'] = array('default' => 'mediamosa_ck_view_theme_asset_metadata');
-
-    return $options;
-  }
-
-  function render($values) {
-    return $this->get_value($values);
-  }
-
-  function options_form(&$form, &$form_state) {
-    parent::options_form($form, $form_state);
-    $form['metadata_theme'] = array(
-      '#title' => t('Theme function to use'),
-      '#type' => 'textfield',
-      '#default_value' => $this->options['metadata_theme'],
-    );
-  }
-
-  /**
-   * Get the value that's supposed to be rendered.
-   *
-   * @param $values
-   *   An object containing all retrieved values.
-   * @param $field
-   *   Optional name of the field where the value is stored.
-   */
-  function get_value($values, $field = NULL) {
-
-    // Get the data.
-    $mediafiles = parent::get_value($values, $field);
-
-    return theme($this->options['metadata_theme'], array('metadata' => $mediafiles));
-  }
-
+class mediamosa_ck_views_field_owner extends views_handler_field {
   // The following methods express strong SQLisms in the base field handler
   // class. Override and blank them out.
   function pre_render() {
@@ -79,5 +41,21 @@ class mediamosa_ck_views_field_text_metadata extends views_handler_field {
     if (!empty($this->additional_fields)) {
       $this->add_additional_fields($this->additional_fields);
     }
+  }
+
+  function render($values) {
+    // Must exist.
+    assert(isset($values->owner_id));
+
+    // Lookup the owner.
+    $user = mediamosa_ck::lookup_user_with_mail($values->owner_id);
+
+    if (empty($user)) {
+      $user = new stdClass();
+      $user->uid = 0;
+      $user->name = '<no name>'; // @todo into view options.
+    }
+
+    return theme('mediamosa_ck_views_theme_owner', array('uid' => $user->uid, 'name' => $user->name));
   }
 }

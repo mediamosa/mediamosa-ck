@@ -1,9 +1,9 @@
 <?php
 /**
- * MediaMosa is a Full Featured, Webservice Oriented Media Management and
- * Distribution platform (http://www.vpcore.nl)
+ * MediaMosa is Open Source Software to build a Full Featured, Webservice
+ * Oriented Media Management and Distribution platform (http://mediamosa.org)
  *
- * Copyright (C) 2011 SURFnet BV (http://www.surfnet.nl)
+ * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -209,7 +209,7 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
       );
 
       foreach ($metadata['fields'] as $name => $type) {
-        //
+        // 3 types; date, text and integer.
         switch ($type) {
           case 'DATETIME':
             $data[$set . '_' . $name] = array(
@@ -226,7 +226,6 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
             break;
 
           case 'CHAR':
-          case 'INT':
           default:
             $data[$set . '_' . $name] = array(
               'title' => t($set . '.' . $name),
@@ -238,6 +237,22 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
               'filter' => array(
                 'handler' => 'mediamosa_ck_views_filter_text',
               ),
+              'sort' => array(
+                'handler' => 'mediamosa_ck_views_sort',
+              ),
+            );
+
+          case 'INT':
+            $data[$set . '_' . $name] = array(
+              'title' => t($set . '.' . $name),
+              'help' => t('Metadata field in @set_label.', array('@set_label' => $metadata['title'])),
+              'field' => array(
+                'handler' => 'mediamosa_ck_views_field_text',
+                'click sortable' => TRUE,
+              ),
+//              'filter' => array(
+//                'handler' => 'mediamosa_ck_views_filter_text',
+//              ),
               'sort' => array(
                 'handler' => 'mediamosa_ck_views_sort',
               ),
@@ -277,10 +292,10 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
         'title' => t('Owner'),
         'help' => t('The owner of the object.'),
         'field' => array(
-          'handler' => 'mediamosa_ck_views_field_text',
+          'handler' => 'mediamosa_ck_views_field_owner',
         ),
         'filter' => array(
-          'handler' => 'mediamosa_ck_views_filter_text',
+          'handler' => 'mediamosa_ck_views_filter_owner',
         ),
         'sort' => array(
           'handler' => 'mediamosa_ck_views_sort',
@@ -315,10 +330,6 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
           'handler' => 'mediamosa_ck_views_field_text',
           'click sortable' => TRUE,
         ),
-//        'filter' => array(
-//          'handler' => 'mediamosa_ck_views_filter_text',
-//          'mediamosa_filter_keys' => array('filter_key' => 'granted'),
-//        ),
         'sort' => array(
           'handler' => 'mediamosa_ck_views_sort',
         ),
@@ -416,9 +427,6 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
         'field' => array(
           'handler' => 'mediamosa_ck_views_field_date',
         ),
-//        'filter' => array(
-//          'handler' => 'mediamosa_ck_views_filter_text',
-//        ),
         'sort' => array(
           'handler' => 'mediamosa_ck_views_sort',
         ),
@@ -430,9 +438,6 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
         'field' => array(
           'handler' => 'mediamosa_ck_views_field_date',
         ),
-//        'filter' => array(
-//          'handler' => 'mediamosa_ck_views_filter_text',
-//        ),
         'sort' => array(
           'handler' => 'mediamosa_ck_views_sort',
         ),
@@ -463,10 +468,6 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
         'field' => array(
           'handler' => 'mediamosa_ck_views_field_text',
           'click sortable' => TRUE,
-        ),
-        'filter' => array(
-          'handler' => 'mediamosa_ck_views_filter_text',
-  //        'mediamosa_filter_keys' => array('filter_key' => 'granted'),
         ),
         'sort' => array(
           'handler' => 'mediamosa_ck_views_sort',
@@ -534,6 +535,15 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
       'title' => array(
         'title' => t('Title'),
         'help' => t('The title of the asset. Is for display purpose only.'),
+        'field' => array(
+          'handler' => 'mediamosa_ck_views_field_text',
+          'click sortable' => FALSE,
+        ),
+      ),
+
+      'description' => array(
+        'title' => t('Description'),
+        'help' => t('The description of the asset. Is for display purpose only.'),
         'field' => array(
           'handler' => 'mediamosa_ck_views_field_text',
           'click sortable' => FALSE,

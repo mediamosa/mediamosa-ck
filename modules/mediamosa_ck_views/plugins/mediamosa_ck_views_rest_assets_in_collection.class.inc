@@ -24,32 +24,26 @@
  * uses the Views 3 plugin option to query another source instead of the normal
  * Drupal database.
  *
- * View is based on the REST call 'asset'.
+ * View will return the most popular assets.
  *
  */
-class mediamosa_ck_views_rest_collection_asset extends mediamosa_ck_views_rest_asset_search {
+class mediamosa_ck_views_rest_assets_in_collection extends mediamosa_ck_views_rest_asset_search {
 
-  /**
-   * Execute the REST call.
-   *
-   * @param $view
-   *   The view object.
-   * @param $params
-   *   Array of options and settings.
-   */
   protected function do_rest_call($view, $params, array $options = array()) {
-    // Get the asset_id.
-    $coll_id = empty($view->args) ? '' : $view->args[0];
 
-    if (empty($coll_id)) {
+    // If not set, use default for order;
+    if (empty($this->orderby)) {
+      $this->orderby[__CLASS__ . '.' . 'numofviews'] = array('orderby' => 'videotimestamp', 'order' => 'ASC', 'params' => array());
+    }
+
+    if (empty($view->args)) {
       return;
     }
 
-    // Set the collection (unless already set).
-    $options += array(
-      'coll_id' => array($coll_id),
-    );
+    // Expect first argument to be the collection ID.
+    $options['cql'] = 'coll_id="^' . reset($view->args) . '^"';
 
+    // Call parent.
     parent::do_rest_call($view, $params, $options);
   }
 }

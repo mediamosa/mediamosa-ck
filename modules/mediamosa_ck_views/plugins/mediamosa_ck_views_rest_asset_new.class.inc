@@ -1,9 +1,9 @@
 <?php
 /**
- * MediaMosa is a Full Featured, Webservice Oriented Media Management and
- * Distribution platform (http://www.vpcore.nl)
+ * MediaMosa is Open Source Software to build a Full Featured, Webservice
+ * Oriented Media Management and Distribution platform (http://mediamosa.org)
  *
- * Copyright (C) 2011 SURFnet BV (http://www.surfnet.nl)
+ * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -30,6 +30,7 @@
 class mediamosa_ck_views_rest_asset_new extends mediamosa_ck_views_rest_asset_search {
 
   protected function do_rest_call($view, $params, array $options = array()) {
+
     // If not set, use default for order;
     if (empty($this->orderby)) {
       $this->orderby[__CLASS__ . '.' . 'viewed'] = array('orderby' => 'videotimestamp', 'order' => 'DESC', 'params' => array());
@@ -37,5 +38,15 @@ class mediamosa_ck_views_rest_asset_new extends mediamosa_ck_views_rest_asset_se
 
     // Call parent.
     parent::do_rest_call($view, $params, $options);
+  }
+
+  /**
+   * Returns the default value for mediamosa_is_public_list option.
+   *
+   * @return
+   *   Returns TRUE by default.
+   */
+  public function mediamosa_option_is_public_list_default() {
+    return TRUE;
   }
 }

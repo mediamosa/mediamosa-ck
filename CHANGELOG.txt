@@ -1,6 +1,12 @@
 
 Mediamosa CK, 7.x-2.x-dev
 -------------------------
+- New, Popular and featured now correctly show only videos that can be shown on
+  public list (Assets that are marked is_public).
+- Added query option to asset_search view for 'is_public', to include only
+  public media.
+- Added query option to asset_search view for 'hide_empty_assets', to exclude
+  empty assets from the view results.
 - Moved code in MediaMosaCkConnectorStillWrapper::still_create() to
   MediaMosaSbConnectorWrapper::create_mediafile_still() and still_create() now
   calls parent::create_mediafile_still().

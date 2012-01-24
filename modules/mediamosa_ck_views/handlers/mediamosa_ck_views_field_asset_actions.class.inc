@@ -1,9 +1,9 @@
 <?php
 /**
- * MediaMosa is a Full Featured, Webservice Oriented Media Management and
- * Distribution platform (http://www.vpcore.nl)
+ * MediaMosa is Open Source Software to build a Full Featured, Webservice
+ * Oriented Media Management and Distribution platform (http://mediamosa.org)
  *
- * Copyright (C) 2011 SURFnet BV (http://www.surfnet.nl)
+ * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -23,9 +23,9 @@ class mediamosa_ck_views_field_asset_actions extends views_handler_field_xss {
   function option_definition() {
     $options = parent::option_definition();
 
-    $options['asset_actions_theme'] = array('default' => 'mediamosa_ck_view_theme_asset_actions');
-    $options['action_path_edit'] = array('default' => 'asset/edit/[coll_id]');
-    $options['action_path_delete'] = array('default' => 'asset/delete/[coll_id]');
+    $options['asset_actions_theme'] = array('default' => 'mediamosa_ck_views_theme_asset_actions');
+    $options['action_path_edit'] = array('default' => 'asset/edit/[asset_id]');
+    $options['action_path_delete'] = array('default' => 'asset/delete/[asset_id]');
 
     return $options;
   }
@@ -61,7 +61,7 @@ class mediamosa_ck_views_field_asset_actions extends views_handler_field_xss {
    */
   function get_value($values, $field = NULL) {
     // Get the data.
-    $coll_id = $values->asset_id;
+    $asset_id = $values->asset_id;
 
     return theme(
       $this->options['asset_actions_theme'],

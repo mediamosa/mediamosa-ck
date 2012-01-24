@@ -18,10 +18,23 @@
  * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  */
 
-/**
- * Implements hook_enable().
- */
-function mediamosa_ck_views_enable() {
-  variable_set('date_format_mediamosa_ck_mf_duration', 'i:s');
-  variable_set('date_format_mediamosa_ck_normal', 'd-m-Y');
+class mediamosa_ck_views_filter_text_exact extends mediamosa_ck_views_filter {
+
+  /**
+   * Add input to filter data.
+   */
+  public function query() {
+    parent::_cql_exact();
+  }
+
+  /**
+   * Provide a simple textfield for equality
+   */
+  public function value_form(&$form, &$form_state) {
+    $form['value'] = array(
+      '#type' => 'textfield',
+      '#title' => t($this->definition['title']),
+      '#default_value' => $this->value,
+    );
+  }
 }

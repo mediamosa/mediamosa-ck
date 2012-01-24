@@ -1,9 +1,9 @@
 <?php
 /**
- * MediaMosa is a Full Featured, Webservice Oriented Media Management and
- * Distribution platform (http://www.vpcore.nl)
+ * MediaMosa is Open Source Software to build a Full Featured, Webservice
+ * Oriented Media Management and Distribution platform (http://mediamosa.org)
  *
- * Copyright (C) 2011 SURFnet BV (http://www.surfnet.nl)
+ * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -35,7 +35,10 @@ class mediamosa_ck_views_rest_asset_get extends mediamosa_ck_views_rest {
    * @param $view
    *   The view object.
    * @param $params
-   *   Array of options and settings.
+   *   Array of view options and settings.
+   * @param $options
+   *   Options that can be used for overrides on the view params and REST call
+   *   related options.
    */
   protected function do_rest_call($view, $params, array $options = array()) {
     // Total results.
@@ -49,12 +52,11 @@ class mediamosa_ck_views_rest_asset_get extends mediamosa_ck_views_rest {
     }
 
     // Specific for playing.
-    $mediafile_id = empty($view->args[1]) ? '' : $view->args[1];
+    $mediafile_id_to_play = empty($view->args[1]) ? '' : $view->args[1];
 
-    $options += array(
-      'show_stills' => TRUE,
-      'show_collections' => TRUE,
-    );
+    // Stills and collections are needed by code.
+    $options['show_stills'] = TRUE;
+    $options['show_collections'] = TRUE;
 
     try {
       // Get the asset.
@@ -71,11 +73,20 @@ class mediamosa_ck_views_rest_asset_get extends mediamosa_ck_views_rest {
       'owner_id', 'group_id',
     );
 
+    // The name of the title/description field to use in metadata.
+    $title_name = mediamosa_ck::get_metadata_title();
+    $description_name = mediamosa_ck::get_metadata_description();
+
     // Now process the xml into an object views can work with.
-    foreach($xml->xpath('items/item') as $item) {
+    $item = reset($xml->xpath('items/item'));
+    if (!empty($item)) {
       $object = new stdClass();
+
+      // If mediafile_id_to_play is set, the set it in the object.
+      $object->mediafile_id_to_play = $mediafile_id_to_play ? $mediafile_id_to_play : FALSE;
+
       $object->asset_id = (string) $item->asset_id;
-      $object->granted = drupal_strtoupper((string) $item->granted) == 'TRUE' ? 'TRUE' : 'FALSE';
+      $object->granted = MediaMosaCkConnectorWrapper::string2bool((string) $item->granted) ? 'TRUE' : 'FALSE';
       $object->is_owner = mediamosa_ck::session_user_id() == $item->owner_id;
 
       // Asset Metadata.
@@ -111,18 +122,19 @@ class mediamosa_ck_views_rest_asset_get extends mediamosa_ck_views_rest {
         $object->mediafiles[(string) $mediafile['mediafile_id']] = $mediafile;
 
         // Find original and copy its technical metadata.
-        if (drupal_strtoupper($mediafile['is_original_file']) == 'TRUE' ) {
+        if (MediaMosaCkConnectorWrapper::string2bool((string) $mediafile['is_original_file'])) {
           $object->technical_metadata = $mediafile['metadata'];
           $object->mediafile_id_original = $mediafile['mediafile_id'];
         }
       }
 
-      // The name of the field to use.
-      $title_name = mediamosa_ck::get_metadata_title();
+      // Get the title value.
+      $object->title = empty($object->{$title_name}) ? t('<no title>') : $object->{$title_name};
 
-      // @todo need to get default value when title is empty.
-      $object->title = $object->{$title_name};
+      // Get the description value.
+      $object->description = empty($object->{$description_name}) ? t('<no description>') : $object->{$description_name};
 
+      // Although its one object, will put into an array anyway.
       $view->result[] = $object;
     }
 

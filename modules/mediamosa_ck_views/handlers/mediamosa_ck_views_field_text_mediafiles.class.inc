@@ -1,9 +1,9 @@
 <?php
 /**
- * MediaMosa is a Full Featured, Webservice Oriented Media Management and
- * Distribution platform (http://www.vpcore.nl)
+ * MediaMosa is Open Source Software to build a Full Featured, Webservice
+ * Oriented Media Management and Distribution platform (http://mediamosa.org)
  *
- * Copyright (C) 2011 SURFnet BV (http://www.surfnet.nl)
+ * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -23,7 +23,8 @@ class mediamosa_ck_views_field_text_mediafiles extends views_handler_field_xss {
   function option_definition() {
     $options = parent::option_definition();
 
-    $options['mediafile_theme'] = array('default' => 'mediamosa_ck_view_theme_asset_mediafiles');
+    $options['mediafile_theme'] = array('default' => 'mediamosa_ck_views_theme_asset_mediafiles');
+    $options['mediafile_path'] = array('default' => 'asset/detail/[asset_id]');
 
     return $options;
   }
@@ -34,6 +35,12 @@ class mediamosa_ck_views_field_text_mediafiles extends views_handler_field_xss {
       '#title' => t('Theme function to use'),
       '#type' => 'textfield',
       '#default_value' => $this->options['mediafile_theme'],
+    );
+    $form['mediafile_path'] = array(
+      '#title' => t('Path of the asset'),
+      '#type' => 'textfield',
+      '#default_value' => $this->options['asset_path'],
+      '#description' => t('Use [asset_id] to fill in the asset ID.'),
     );
   }
 

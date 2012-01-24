@@ -1,9 +1,9 @@
 <?php
 /**
- * MediaMosa is a Full Featured, Webservice Oriented Media Management and
- * Distribution platform (http://www.vpcore.nl)
+ * MediaMosa is Open Source Software to build a Full Featured, Webservice
+ * Oriented Media Management and Distribution platform (http://mediamosa.org)
  *
- * Copyright (C) 2011 SURFnet BV (http://www.surfnet.nl) and Kennisnet
+ * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl) and Kennisnet
  * (http://www.kennisnet.nl)
  *
  * MediaMosa is based on the open source Drupal platform and
@@ -524,6 +524,22 @@ class mediamosa_ck extends mediamosa_sdk {
   }
 
   /**
+   * Returns the metadata field that is used for title.
+   *
+   * @see get_asset_title()
+   */
+  static public function get_metadata_description() {
+    return 'dc.description';
+  }
+
+  /**
+   * Return the fields that are used for searching.
+   */
+  static public function get_metadata_search_fields() {
+    return array('dc.title', 'dc.description');
+  }
+
+  /**
    * Returns the title of the asset using the metadata.
    *
    * @param simplexmlelement $asset
@@ -541,5 +557,121 @@ class mediamosa_ck extends mediamosa_sdk {
     }
 
     return $title;
+  }
+
+  /**
+   * Lookup the Drupal user using his name. Although I would like to use
+   * user_load_by_name(), I better use something I can pre-cache when a lot of
+   * users need to be looked up.
+   *
+   * @param $name
+   *   The name of the Drupal user.
+   *
+   * @return
+   *   The user array.
+   */
+  static public function lookup_user_with_name($name) {
+    // Precache.
+    self::precache_users_with_names(array($name));
+
+    // Get the users.
+    $users_names = &drupal_static('mediamosa_ck_cache_drupal_users_names', array());
+
+    // Get the user from the cache.
+    return isset($users_names[$name]) ? $users_names[$name] : NULL;
+  }
+
+  /**
+   * Lookup the Drupal users using his name. Although I would like to use
+   * user_load_by_name(), I better use something I can pre-cache when a lot of
+   * users need to be looked up. Also we only need mail, uid and name from the
+   * users table.
+   *
+   * @param $names
+   *   The names of the Drupal users to precache.
+   */
+  static public function precache_users_with_names(array $names) {
+    // Store static. Storing it twice does not cost lost more memory, as the
+    // users are objects, and these are referenced.
+    $users_names = &drupal_static('mediamosa_ck_cache_drupal_users_names', array());
+    $users_mails = &drupal_static('mediamosa_ck_cache_drupal_users_mails', array());
+    $query = NULL;
+
+    // Now see who we miss.
+    foreach ($names as $name) {
+      if (!isset($users_names[$name])) {
+        if (!isset($query)) {
+          $query = db_select('users', 'u')->fields('u', array('mail', 'uid', 'name'));
+        }
+
+        $query->condition('name', $name);
+      }
+    }
+
+    // Any new users not in cache?
+    if (isset($query)) {
+      $result = $query->execute();
+      foreach ($result as $user) {
+        $users_names[$user->name] = $user;
+        $users_mails[$user->mail] = $user;
+      }
+    }
+  }
+
+  /**
+   * Lookup the Drupal user using his mail address.
+   *
+   * @param $mail
+   *   The mail address of the Drupal user.
+   *
+   * @return
+   *   The user array.
+   */
+  static public function lookup_user_with_mail($mail) {
+    // Precache.
+    self::precache_users_with_mails(array($mail));
+
+    // Get the users.
+    $users_mails = &drupal_static('mediamosa_ck_cache_drupal_users_mails', array());
+
+    // Get the user from the cache.
+    return isset($users_mails[$mail]) ? $users_mails[$mail] : NULL;
+  }
+
+  /**
+   * Lookup the Drupal users using his name. Although I would like to use
+   * user_load_by_name(), I better use something I can pre-cache when a lot of
+   * users need to be looked up. Also we only need mail, uid and name from the
+   * users table.
+   *
+   * @param $mails
+   *   The mail address of the Drupal users to precache.
+   */
+  static public function precache_users_with_mails(array $mails) {
+    // Store static. Storing it twice does not cost lost more memory, as the
+    // users are objects, and these are referenced.
+    $users_names = &drupal_static('mediamosa_ck_cache_drupal_users_names', array());
+    $users_mails = &drupal_static('mediamosa_ck_cache_drupal_users_mails', array());
+    $query = NULL;
+
+    // Now see who we miss.
+    foreach ($mails as $mail) {
+      if (!isset($users_mails[$mail])) {
+        if (!isset($query)) {
+          $query = db_select('users', 'u')->fields('u', array('mail', 'uid', 'name'));
+        }
+
+        $query->condition('mail', $mail);
+      }
+    }
+
+    // Any new users not in cache?
+    if (isset($query)) {
+      $result = $query->execute();
+      foreach ($result as $user) {
+        $users_names[$user->name] = $user;
+        $users_mails[$user->mail] = $user;
+      }
+    }
   }
 }

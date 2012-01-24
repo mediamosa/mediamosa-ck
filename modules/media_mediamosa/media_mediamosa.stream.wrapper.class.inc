@@ -1,11 +1,9 @@
 <?php
-// $Id$
-
 /**
- * MediaMosa is a Full Featured, Webservice Oriented Media Management and
- * Distribution platform (http://www.vpcore.nl)
+ * MediaMosa is Open Source Software to build a Full Featured, Webservice
+ * Oriented Media Management and Distribution platform (http://mediamosa.org)
  *
- * Copyright (C) 2011 SURFnet BV (http://www.surfnet.nl) and Kennisnet
+ * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl) and Kennisnet
  * (http://www.kennisnet.nl)
  *
  * MediaMosa is based on the open source Drupal platform and
@@ -131,8 +129,8 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
   /**
    * The mimetype returned is based on the URI and content we return.
    *
-   * @param string $uri
-   * @param string $mapping
+   * @param $url
+   * @param $mapping
    */
   static public function getMimeType($url, $mapping = NULL) {
     $mimetypes = &drupal_static(__CLASS__ . '::' . __FUNCTION__);

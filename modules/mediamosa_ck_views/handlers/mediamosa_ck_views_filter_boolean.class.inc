@@ -1,9 +1,9 @@
 <?php
 /**
- * MediaMosa is a Full Featured, Webservice Oriented Media Management and
- * Distribution platform (http://www.vpcore.nl)
+ * MediaMosa is Open Source Software to build a Full Featured, Webservice
+ * Oriented Media Management and Distribution platform (http://mediamosa.org)
  *
- * Copyright (C) 2011 SURFnet BV (http://www.surfnet.nl)
+ * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -18,7 +18,7 @@
  * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  */
 
-class mediamosa_ck_views_filter_boolean extends views_handler_filter {
+class mediamosa_ck_views_filter_boolean extends mediamosa_ck_views_filter {
 
   // exposed filter options
   var $always_multiple = TRUE;
@@ -54,11 +54,11 @@ class mediamosa_ck_views_filter_boolean extends views_handler_filter {
    * dynamic for some reason, child classes should use a guard to reduce
    * database hits as much as possible.
    */
-  function get_value_options() {
+  public function get_value_options() {
     $this->value_options = array('TRUE' => t('True'), 'FALSE' => t('False'));
   }
 
-  function option_definition() {
+  public function option_definition() {
     $options = parent::option_definition();
 
     $options['value']['default'] = FALSE;
@@ -66,11 +66,11 @@ class mediamosa_ck_views_filter_boolean extends views_handler_filter {
     return $options;
   }
 
-  function operator_form(&$form, &$form_state) {
+  public function operator_form(&$form, &$form_state) {
     $form['operator'] = array();
   }
 
-  function value_form(&$form, &$form_state) {
+  public function value_form(&$form, &$form_state) {
     if (empty($this->value_options)) {
       // Initialize the array of possible values for this filter.
       $this->get_value_options();
@@ -105,13 +105,13 @@ class mediamosa_ck_views_filter_boolean extends views_handler_filter {
     }
   }
 
-  function value_validate($form, &$form_state) {
+  public function value_validate($form, &$form_state) {
     if ($form_state['values']['options']['value'] == 'All' && !empty($form_state['values']['options']['expose']['required'])) {
       form_set_error('value', t('You must select a value unless this is an non-required exposed filter.'));
     }
   }
 
-  function admin_summary() {
+  public function admin_summary() {
     if (!empty($this->options['exposed'])) {
       return t('exposed');
     }
@@ -125,14 +125,14 @@ class mediamosa_ck_views_filter_boolean extends views_handler_filter {
     return $this->value_options[!empty($this->value)];
   }
 
-  function expose_options() {
+  public function expose_options() {
     parent::expose_options();
     $this->options['expose']['operator_id'] = '';
     $this->options['expose']['label'] = $this->value_value;
     $this->options['expose']['required'] = TRUE;
   }
 /*
-  function query() {
+  public function query() {
     $this->ensure_my_table();
     $field = "$this->table_alias.$this->real_field";
 
