@@ -124,6 +124,8 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
         'sort' => 'sort',
       );
 
+      //@todo: filter handling.
+
       // Copy needed fields.
       foreach ($param_fields as $param_field) {
         if (!empty($this->params[$param_field])) {
