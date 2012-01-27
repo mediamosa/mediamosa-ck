@@ -32,7 +32,10 @@ class mediamosa_ck_views_rest_collection_get extends mediamosa_ck_views_rest {
    * @param $view
    *   The view object.
    * @param $params
-   *   Array of options and settings.
+   *   View params.
+   * @param $options
+   *   Options for REST call.
+   *
    */
   public function do_rest_call($view, $params, array $options = array()) {
     // Total results.
@@ -66,6 +69,14 @@ class mediamosa_ck_views_rest_collection_get extends mediamosa_ck_views_rest {
       // Is owner of collection?
       $object->is_owner = mediamosa_ck::session_user_id() == $item->owner_id;
 
+      // Other rights.
+      $object->access_edit = $object->is_owner;
+      $object->access_delete = $object->is_owner;
+
+      // Allow other modules to alter the object.
+      drupal_alter('mediamosa_collection_view_object', $object);
+
+      // Add to result.
       $view->result[] = $object;
     }
 

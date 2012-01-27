@@ -311,8 +311,24 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
       ),
 
       'is_owner' => array(
-        'title' => t('Is owner'),
+        'title' => t('Access - Is owner'),
         'help' => t('A boolean value to indicate ownership of the object. TRUE / Yes will allow the user to edit or delete the object.'),
+        'field' => array(
+          'handler' => 'mediamosa_ck_views_field_boolean',
+        ),
+      ),
+
+      'access_edit' => array(
+        'title' => t('Access - Edit'),
+        'help' => t('A boolean value to indicate that the current user can edit the object. TRUE / Yes will allow the user to edit the object.'),
+        'field' => array(
+          'handler' => 'mediamosa_ck_views_field_boolean',
+        ),
+      ),
+
+      'access_delete' => array(
+        'title' => t('Access - Delete'),
+        'help' => t('A boolean value to indicate that the current user can delete the object. TRUE / Yes will allow the user to delete the object.'),
         'field' => array(
           'handler' => 'mediamosa_ck_views_field_boolean',
         ),
@@ -614,5 +630,4 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
       }
     }
   }
-
 }

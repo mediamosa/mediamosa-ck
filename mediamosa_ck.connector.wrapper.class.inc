@@ -318,14 +318,11 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       'show_stills' => TRUE,
     );
 
-    // Save results.
-    $mediafiles = &drupal_static(__CLASS__ . '::' . __FUNCTION__, array());
-
     // Convert bool to strings.
     $options = self::bool2string($options, array('show_stills'));
 
     // Get the mediafile.
-    return mediamosa_ck::request_get_fatal('mediafile/' . rawurlencode($mediafile_id), $options)->xml;
+    return mediamosa_ck::request_get_fatal('mediafile/' . rawurlencode($mediafile_id), $options, FALSE, $cached, $reset)->xml;
   }
 
   /**
@@ -382,7 +379,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       // Loop through the mediafiles.
       foreach ($asset->xpath('items/item/mediafiles/mediafile') as $mediafile) {
         // Skip original.
-        if (MediaMosaSbConnectorWrapper::string2bool($mediafile->is_original_file)) {
+        if (self::string2bool($mediafile->is_original_file)) {
           continue;
         }
 

@@ -1,15 +1,24 @@
 
 Mediamosa CK, 7.x-2.x-dev
 -------------------------
+- Added hook_mediamosa_asset_view_object_alter, for altering asset objects after
+  they where processed.
+- Added hook_mediamosa_collection_view_object_alter, for altering asset objects
+  after they where processed.
+- Added access_edit and access_delete on the asset and collection object. Better
+  to use these instead of the is_owner flag.
+- Renamed mediamosa_ck::get_metadata_title() to
+  mediamosa_ck::get_metadata_name_title(). Also see
+  mediamosa_ck::get_asset_title() for retrieving the title.
+- Renamed mediamosa_ck::get_metadata_description() to
+  mediamosa_ck::get_metadata_name_description(). Also see
+  mediamosa_ck::get_asset_description() for retrieving the description.
 - New, Popular and featured now correctly show only videos that can be shown on
   public list (Assets that are marked is_public).
 - Added query option to asset_search view for 'is_public', to include only
   public media.
 - Added query option to asset_search view for 'hide_empty_assets', to exclude
   empty assets from the view results.
-- Moved code in MediaMosaCkConnectorStillWrapper::still_create() to
-  MediaMosaSbConnectorWrapper::create_mediafile_still() and still_create() now
-  calls parent::create_mediafile_still().
 - Renamed MediaMosaCkConnectorWrapper::get_job() to
   MediaMosaCkConnectorWrapper::get_mediafile_jobs().
 - Moved mediamosa_ck_transcode::get_default_transcode_profile() to the

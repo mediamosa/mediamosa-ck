@@ -73,10 +73,6 @@ class mediamosa_ck_views_rest_asset_get extends mediamosa_ck_views_rest {
       'owner_id', 'group_id',
     );
 
-    // The name of the title/description field to use in metadata.
-    $title_name = mediamosa_ck::get_metadata_title();
-    $description_name = mediamosa_ck::get_metadata_description();
-
     // Now process the xml into an object views can work with.
     $item = reset($xml->xpath('items/item'));
     if (!empty($item)) {
@@ -88,6 +84,10 @@ class mediamosa_ck_views_rest_asset_get extends mediamosa_ck_views_rest {
       $object->asset_id = (string) $item->asset_id;
       $object->granted = MediaMosaCkConnectorWrapper::string2bool((string) $item->granted) ? 'TRUE' : 'FALSE';
       $object->is_owner = mediamosa_ck::session_user_id() == $item->owner_id;
+
+      // Other rights.
+      $object->access_edit = $object->is_owner;
+      $object->access_delete = $object->is_owner;
 
       // Asset Metadata.
       foreach (mediamosa_ck::get_metadata_fields() as $set => $metadata) {
@@ -129,10 +129,13 @@ class mediamosa_ck_views_rest_asset_get extends mediamosa_ck_views_rest {
       }
 
       // Get the title value.
-      $object->title = empty($object->{$title_name}) ? t('<no title>') : $object->{$title_name};
+      $object->title = mediamosa_ck::get_asset_title($object);
 
       // Get the description value.
-      $object->description = empty($object->{$description_name}) ? t('<no description>') : $object->{$description_name};
+      $object->description = mediamosa_ck::get_asset_description($object);
+
+      // Allow other modules to alter the object.
+      drupal_alter('mediamosa_asset_view_object', $object);
 
       // Although its one object, will put into an array anyway.
       $view->result[] = $object;
@@ -215,7 +218,6 @@ class mediamosa_ck_views_rest_asset_get extends mediamosa_ck_views_rest {
         ),
       );
     }
-
 
     return $data;
   }

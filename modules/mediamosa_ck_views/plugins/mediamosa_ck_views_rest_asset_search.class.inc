@@ -79,16 +79,18 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest {
     // Do the search.
     $response = MediaMosaCkConnectorWrapper::search_asset($options);
 
+    // Something went wrong, then stop the view generation.
+    if (empty($response)) {
+       $view->total_rows = 0;
+       return;
+    }
+
     $fields = array(
       'viewed', 'played',
       'videotimestamp', 'videotimestampmodified',
       'owner_id', 'group_id',
       'mediafile_duration',
     );
-
-    // The name of the title/description field to use in metadata.
-    $title_name = mediamosa_ck::get_metadata_title();
-    $description_name = mediamosa_ck::get_metadata_description();
 
     // For pre-caching.
     $owners = array();
@@ -99,6 +101,10 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest {
       $object->asset_id = (string) $item->asset_id;
       $object->granted = MediaMosaCkConnectorWrapper::string2bool($item->granted) ? 'TRUE' : 'FALSE';
       $object->is_owner = mediamosa_ck::session_user_id() == $item->owner_id;
+
+      // Other rights.
+      $object->access_edit = $object->is_owner;
+      $object->access_delete = $object->is_owner;
 
       foreach (mediamosa_ck::get_metadata_fields() as $set => $metadata) {
         foreach ($item->xpath($metadata['xpath']) as $metadata_value) {
@@ -115,10 +121,13 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest {
       }
 
       // Get the title value.
-      $object->title = empty($object->{$title_name}) ? t('<no title>') : $object->{$title_name};
+      $object->title = mediamosa_ck::get_asset_title($object);
 
       // Get the description value.
-      $object->description = empty($object->{$description_name}) ? t('<no description>') : $object->{$description_name};
+      $object->description = mediamosa_ck::get_asset_description($object);
+
+      // Allow other modules to alter the object.
+      drupal_alter('mediamosa_asset_view_object', $object);
 
       // Store the result.
       $view->result[] = $object;

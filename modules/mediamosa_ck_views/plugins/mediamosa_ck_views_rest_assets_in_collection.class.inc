@@ -41,7 +41,7 @@ class mediamosa_ck_views_rest_assets_in_collection extends mediamosa_ck_views_re
     }
 
     // Expect first argument to be the collection ID.
-    $options['cql'] = 'coll_id="^' . reset($view->args) . '^"';
+    $options['cql'] = 'coll_id=="^' . reset($view->args) . '^"';
 
     // Call parent.
     parent::do_rest_call($view, $params, $options);

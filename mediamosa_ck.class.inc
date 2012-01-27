@@ -515,20 +515,22 @@ class mediamosa_ck extends mediamosa_sdk {
   }
 
   /**
-   * Returns the metadata field that is used for title.
+   * Returns the metadata field that is used for title. Must be in format as
+   * SET.NAME and must be metadata.
    *
    * @see get_asset_title()
    */
-  static public function get_metadata_title() {
+  static public function get_metadata_name_title() {
     return 'dc.title';
   }
 
   /**
-   * Returns the metadata field that is used for title.
+   * Returns the metadata field that is used for title. Must be in format as
+   * SET.NAME and must be metadata.
    *
-   * @see get_asset_title()
+   * @see get_asset_description()
    */
-  static public function get_metadata_description() {
+  static public function get_metadata_name_description() {
     return 'dc.description';
   }
 
@@ -540,23 +542,90 @@ class mediamosa_ck extends mediamosa_sdk {
   }
 
   /**
-   * Returns the title of the asset using the metadata.
+   * Returns the (trimmed) title of the asset using the metadata.
    *
-   * @param simplexmlelement $asset
-   *   The asset in simplexmlelement.
+   * @param object $asset
+   *   The asset in simplexmlelement or other object.
+   * @param $default
+   *   Default value when empty (=== '').
    *
    * @return
    *   The title or ''.
    *
-   * @see get_metadata_title()
+   * @see get_metadata_name_title()
+   * @see get_metadata_name_description()
    */
-  static public function get_asset_title($asset) {
-    $title = '';
-    if (isset($asset->items) && isset($asset->items->item) && isset($asset->items->item->dublin_core) && isset($asset->items->item->dublin_core->title)) {
-      $title = trim((string) $asset->items->item->dublin_core->title);
+  static public function get_asset_title($asset, $default = '<no title>') {
+    return trim(self::get_asset_value($asset, self::get_metadata_name_title(), $default));
+  }
+
+  /**
+   * Returns the description of the asset using the metadata.
+   *
+   * @param object $asset
+   *   The asset in simplexmlelement or other object.
+   * @param $default
+   *   Default value when empty (=== '').
+   *
+   * @return
+   *   The title or ''.
+   *
+   * @see get_metadata_name_title()
+   * @see get_metadata_name_description()
+   */
+  static public function get_asset_description($asset, $default = '<no description>') {
+    return self::get_asset_value($asset, self::get_metadata_name_description(), $default);
+  }
+
+  /**
+   * Returns the a value of an asset using it scope name ([set].[name]). Used
+   * now for retieving metadata values.
+   *
+   * @param object $asset
+   *   The asset in simplexmlelement or other object.
+   * @param $field
+   *   The name of the field to retrieve.
+   * @param $default
+   *   The default value when value was not found or empty string (=== '').
+   *
+   * @return
+   *   The value or default.
+   *
+   * @see get_metadata_name_title()
+   */
+  static public function get_asset_value($asset, $field, $default = '') {
+    // Inside XML result?
+    if (isset($asset->items)) {
+      return self::get_asset_value($asset->items->item, $field, $default);
     }
 
-    return $title;
+    // Might be object that already has it set as [set].[name]
+    if (!empty($asset->{$field})) {
+      return $asset->{$field};
+    }
+
+    // See if field contains set.
+    if (strpos($field, '.') === FALSE) {
+      return $default;
+    }
+
+    // Need parts.
+    list($set, $name) = explode('.', $field, 2);
+
+     // Need metadata info.
+    $metadata_fields = self::get_metadata_fields();
+
+    // Field name is known metadata?
+    if ($asset instanceof SimpleXMLElement && isset($metadata_fields[$set]) && !empty($metadata_fields[$set]['fields'][$name])) {
+      $xpath = $metadata_fields[$set]['xpath'] . '/' . $name;
+      if ($asset->xpath($xpath)) {
+        return (string) reset($asset->xpath($xpath));
+      }
+    }
+
+    // Not found. In future version we can extend it more 'normal' fields.
+
+    return $default;
   }
 
   /**

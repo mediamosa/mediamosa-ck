@@ -31,6 +31,20 @@
 
 class MediaMosaCkConnectorStillWrapper extends MediaMosaCkConnectorWrapper {
 
+  /**
+   * Create a still for specific mediafile. Code moved to
+   * MediaMosaCkConnectorWrapper.
+   *
+   * @param $mediafile_id
+   *   The mediafile ID.
+   * @param $user_id
+   *   The owner of the mediafile.
+   * @param $data
+   *   Array with all the still parameters.
+   *
+   * @return mediamosa_connector_response
+   *   Returns FALSE when failure or mediamosa_connector_response.
+   */
   static public function still_create($mediafile_id, $user_id, array $data = array()) {
     return parent::create_mediafile_still($mediafile_id, $user_id, $data);
   }

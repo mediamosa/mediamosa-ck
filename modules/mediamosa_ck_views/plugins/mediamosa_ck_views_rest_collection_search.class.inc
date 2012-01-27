@@ -84,6 +84,14 @@ class mediamosa_ck_views_rest_collection_search extends mediamosa_ck_views_rest 
         }
       }
 
+      // Other rights.
+      $object->access_edit = $object->is_owner;
+      $object->access_delete = $object->is_owner;
+
+      // Allow other modules to alter the object.
+      drupal_alter('mediamosa_collection_view_object', $object);
+
+      // Add to result.
       $view->result[] = $object;
 
       // Store the owner for later.
