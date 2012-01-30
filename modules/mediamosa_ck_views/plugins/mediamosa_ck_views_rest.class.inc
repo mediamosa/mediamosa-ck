@@ -226,7 +226,7 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
             break;
 
           case 'CHAR':
-          case default:
+              default:
             $data[$set . '_' . $name] = array(
               'title' => t($set . '.' . $name),
               'help' => t('Metadata field in @set_label.', array('@set_label' => $metadata['title'])),
