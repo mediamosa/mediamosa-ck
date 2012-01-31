@@ -55,7 +55,7 @@ class mediamosa_ck_views_filter_boolean extends mediamosa_ck_views_filter {
    * database hits as much as possible.
    */
   public function get_value_options() {
-    $this->value_options = array('TRUE' => t('True'), 'FALSE' => t('False'));
+    $this->value_options = array(1 => t('True'), 0 => t('False'));
   }
 
   public function option_definition() {

@@ -226,7 +226,7 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
             break;
 
           case 'CHAR':
-          default:
+              default:
             $data[$set . '_' . $name] = array(
               'title' => t($set . '.' . $name),
               'help' => t('Metadata field in @set_label.', array('@set_label' => $metadata['title'])),
@@ -241,7 +241,7 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
                 'handler' => 'mediamosa_ck_views_sort',
               ),
             );
-
+            break;
           case 'INT':
             $data[$set . '_' . $name] = array(
               'title' => t($set . '.' . $name),
