@@ -348,10 +348,37 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
     $options += array(
       'show_stills' => TRUE,
       'show_collections' => FALSE,
+
+      // acl_realm.
+      'acl_realm' => '',
+      // acl_domain.
+      'acl_domain' => '',
+      // acl_group_ids.
+      'acl_group_id' => array(),
+      // acl_user_id.
+      'acl_user_id' => '',
     );
 
     // Convert bool to strings.
     $options = self::bool2string($options, array('show_stills', 'show_collections'));
+
+      // Build ACL for alter.
+    $acl = array(
+      'acl_realm' => $options['acl_realm'],
+      'acl_domain' => $options['acl_domain'],
+      'acl_group_id' => $options['acl_group_id'],
+      'acl_user_id' => empty($options['user_id']) ? $options['acl_user_id'] : $options['user_id'],
+    );
+    // Allow modules to modify the acl information.
+    drupal_alter('mediamosa_acl', $acl);
+
+    // Copy back.
+    $options['acl_realm'] = $acl['acl_realm'];
+    $options['acl_domain'] = $acl['acl_domain'];
+    $options['acl_group_id'] = $acl['acl_group_id'];
+    $options['acl_user_id'] = $acl['acl_user_id'];
+    unset($options['user_id']);
+
 
     // Do the REST call.
     return mediamosa_ck::request_get_fatal('asset/' . rawurlencode($asset_id), array('data' => $options), FALSE, $cached, $reset)->xml;
@@ -568,6 +595,13 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
     // Setup default.
     $options += array(
       'response' => 'plain',
+
+      // acl_realm.
+      'acl_realm' => '',
+      // acl_domain.
+      'acl_domain' => '',
+      // acl_group_ids.
+      'acl_group_id' => array(),
     );
 
     try {
@@ -585,6 +619,21 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       if (!empty($play_links[$asset_id][$mediafile_id][$response_type])) {
         return $play_links[$asset_id][$mediafile_id][$response_type];
       }
+
+      // Build ACL for alter.
+      $acl = array(
+        'acl_realm' => $options['acl_realm'],
+        'acl_domain' => $options['acl_domain'],
+        'acl_group_id' => $options['acl_group_id'],
+        'acl_user_id' => '',
+      );
+      // Allow modules to modify the acl information.
+      drupal_alter('mediamosa_acl', $acl);
+
+      // Copy back.
+      $options['acl_realm'] = $acl['acl_realm'];
+      $options['acl_domain'] = $acl['acl_domain'];
+      $options['acl_group_id'] = $acl['acl_group_id'];
 
       $xml = mediamosa_ck::request_get_fatal('asset/' . rawurlencode($asset_id) . '/play', array('data' => $options))->xml;
 
@@ -962,6 +1011,15 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       'order_direction' => 'asc',
       // Search within these collection(s).
       'coll_id' => array(),
+
+      // acl_realm.
+      'acl_realm' => '',
+      // acl_domain.
+      'acl_domain' => '',
+      // acl_group_ids.
+      'acl_group_id' => array(),
+      // acl_user_id.
+      'acl_user_id' => '',
     );
 
     // CQL search.
@@ -989,6 +1047,22 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
     // Add our options to $data.
     $data = array_merge($options, $data);
 
+    // Build ACL for alter.
+    $acl = array(
+      'acl_realm' => $data['acl_realm'],
+      'acl_domain' => $data['acl_domain'],
+      'acl_group_id' => $data['acl_group_id'],
+      'acl_user_id' => $data['acl_user_id'],
+    );
+    // Allow modules to modify the acl information.
+    drupal_alter('mediamosa_acl', $acl);
+
+    // Copy back.
+    $data['acl_realm'] = $acl['acl_realm'];
+    $data['acl_domain'] = $acl['acl_domain'];
+    $data['acl_group_id'] = $acl['acl_group_id'];
+    $data['acl_user_id'] = $acl['acl_user_id'];
+
     try {
       return mediamosa_ck::request_get_fatal('asset', array('data' => $data));
     }
@@ -1006,7 +1080,8 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @param $options
    *   Array with options for search.
    *
-   * @return $assets
+   * @return SimpleXMLElement
+   *   XML result
    */
   static public function search_collection(array $options = array()) {
 
@@ -1022,6 +1097,9 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       'orderby' => 'changed',
       // Direction either descending or ascending.
       'direction' => 'descending',
+
+      // acl_user_id.
+      'acl_user_id' => '',
     );
 
     // CQL search.
@@ -1045,6 +1123,20 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
 
     // Add our options to $data.
     $data = array_merge($data, $options);
+
+    // Build ACL for alter.
+    $acl = array(
+      'acl_realm' => '',
+      'acl_domain' => '',
+      'acl_group_id' => '',
+      'acl_user_id' => empty($data['user_id']) ? $data['acl_user_id'] : $data['user_id'],
+    );
+    // Allow modules to modify the acl information.
+    drupal_alter('mediamosa_acl', $acl);
+
+    // Copy back (only acl_user_id is used).
+    $data['user_id'] = $acl['acl_user_id'];
+    unset($data['acl_user_id']);
 
     try {
       return mediamosa_ck::request_get_fatal('collection', array('data' => $data))->xml;

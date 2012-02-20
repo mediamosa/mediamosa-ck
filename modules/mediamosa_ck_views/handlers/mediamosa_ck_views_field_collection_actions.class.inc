@@ -23,7 +23,7 @@ class mediamosa_ck_views_field_collection_actions extends views_handler_field_xs
   function option_definition() {
     $options = parent::option_definition();
 
-    $options['collection_actions_theme'] = array('default' => 'mediamosa_ck_view_theme_collection_actions');
+    $options['collection_actions_theme'] = array('default' => 'mediamosa_ck_views_theme_collection_actions');
     $options['action_path_edit'] = array('default' => 'collection/edit/[coll_id]');
     $options['action_path_delete'] = array('default' => 'collection/delete/[coll_id]');
 
