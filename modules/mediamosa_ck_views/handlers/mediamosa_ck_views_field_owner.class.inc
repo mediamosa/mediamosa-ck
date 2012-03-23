@@ -19,6 +19,25 @@
  */
 
 class mediamosa_ck_views_field_owner extends views_handler_field {
+  function option_definition() {
+    $options = parent::option_definition();
+
+    $options['user_empty_name'] = array('default' => '-');
+
+    return $options;
+  }
+
+  function options_form(&$form, &$form_state) {
+    $form['user_empty_name'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Default user name'),
+      '#description' => t(''),
+      '#default_value' => isset($this->options['user_empty_name']) ? $this->options['user_empty_name'] : '',
+    );
+
+    parent::options_form($form, $form_state);
+  }
+
   // The following methods express strong SQLisms in the base field handler
   // class. Override and blank them out.
   function pre_render() {
@@ -53,7 +72,7 @@ class mediamosa_ck_views_field_owner extends views_handler_field {
     if (empty($user)) {
       $user = new stdClass();
       $user->uid = 0;
-      $user->name = '<no name>'; // @todo into view options.
+      $user->name = $this->options['user_empty_name'];
     }
 
     return theme('mediamosa_ck_views_theme_owner', array('uid' => $user->uid, 'name' => $user->name));
