@@ -115,7 +115,7 @@ class mediamosa_ck extends mediamosa_sdk {
   }
 
   /**
-   * Builds static unique ID for entries in static array. Use for storing REST
+   * builds static unique ID for entries in static array. Use for storing REST
    * call output based on the (asset/mediafile) ID and its options used for the
    * REST call.
    */
@@ -455,10 +455,16 @@ class mediamosa_ck extends mediamosa_sdk {
    */
   static public function duration2unix($mediafile_duration) {
     // Split into pieces.
-    list($hour, $minute, $second, $milisecond) = preg_split("/[:.]/", $mediafile_duration, 4);
 
-    // Convert to # of seconds.
-    return ((int) $hour * 3600) + ((int) $minute * 60) + (int) $second; + round((int) $milisecond / 100);
+    if (preg_match('/(?P<hours>\d+):(?P<minutes>\d+):(?P<seconds>\d+).(?P<milliseconds>\d+)/', $mediafile_duration, $matches)) {
+      $hours = isset($matches['hours']) ? $matches['hours'] : '';
+      $minutes = isset($matches['minutes']) ? $matches['minutes'] : '';
+      $seconds = isset($matches['seconds']) ? $matches['seconds'] : '';
+      $milliseconds = isset($matches['milliseconds']) ? $matches['milliseconds'] : '';
+      // Convert to # of seconds.
+      return ((int) $hours * 3600) + ((int) $minutes * 60) + (int) $seconds + round((int) $milliseconds / 100);
+    }
+    return 0;
   }
 
   /**
