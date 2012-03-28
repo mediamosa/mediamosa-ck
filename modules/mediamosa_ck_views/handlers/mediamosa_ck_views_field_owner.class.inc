@@ -40,7 +40,7 @@ class mediamosa_ck_views_field_owner extends views_handler_field {
 
   // The following methods express strong SQLisms in the base field handler
   // class. Override and blank them out.
-  function pre_render() {
+  function pre_render(&$values) {
   }
 
   function add_additional_fields($fields = NULL) {

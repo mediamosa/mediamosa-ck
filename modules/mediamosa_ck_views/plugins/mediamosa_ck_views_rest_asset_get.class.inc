@@ -74,7 +74,8 @@ class mediamosa_ck_views_rest_asset_get extends mediamosa_ck_views_rest {
     );
 
     // Now process the xml into an object views can work with.
-    $item = reset($xml->xpath('items/item'));
+    $item = $xml->xpath('items/item');
+    $item = reset($item);
     if (!empty($item)) {
       $object = new stdClass();
 

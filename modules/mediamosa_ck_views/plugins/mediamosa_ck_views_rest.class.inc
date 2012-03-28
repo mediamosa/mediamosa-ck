@@ -35,8 +35,6 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
   // ----------------------------------------------------- Functions (abstract).
   // Execute the rest call.
   abstract protected function do_rest_call($view, $params, array $options = array());
-  // Return information for the views_data hook.
-  abstract static public function get_views_data($title, $class);
 
   // ---------------------------------------------------------------- Functions.
   /**
@@ -45,7 +43,7 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
    * @param $view
    *   The view object.
    */
-  public function build($view) {
+  public function build(&$view) {
     // Setup the view object.
     $view->init_pager();
 
@@ -107,7 +105,7 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
    * $view->execute_time,
    * $view->pager['current_page'].
    */
-  public function execute($view) {
+  public function execute(&$view) {
     try {
       $start = microtime(TRUE);
 
