@@ -111,7 +111,7 @@ class mediamosa_ck extends mediamosa_sdk {
     global $user;
 
     // We use mail address as owner.
-    return isset($user->mail) ? $user->mail : '';
+    return isset($user->mail) ? $user->mail : '<anonymous>';
   }
 
   /**
@@ -561,7 +561,7 @@ class mediamosa_ck extends mediamosa_sdk {
    * @see get_metadata_name_title()
    * @see get_metadata_name_description()
    */
-  static public function get_asset_title($asset, $default = '<no title>') {
+  static public function get_asset_title($asset, $default = '') {
     return trim(self::get_asset_value($asset, self::get_metadata_name_title(), $default));
   }
 
@@ -579,7 +579,7 @@ class mediamosa_ck extends mediamosa_sdk {
    * @see get_metadata_name_title()
    * @see get_metadata_name_description()
    */
-  static public function get_asset_description($asset, $default = '<no description>') {
+  static public function get_asset_description($asset, $default = '') {
     return self::get_asset_value($asset, self::get_metadata_name_description(), $default);
   }
 
@@ -625,7 +625,8 @@ class mediamosa_ck extends mediamosa_sdk {
     if ($asset instanceof SimpleXMLElement && isset($metadata_fields[$set]) && !empty($metadata_fields[$set]['fields'][$name])) {
       $xpath = $metadata_fields[$set]['xpath'] . '/' . $name;
       if ($asset->xpath($xpath)) {
-        return (string) reset($asset->xpath($xpath));
+        $ret_asset = $asset->xpath($xpath);
+        return (string) reset($ret_asset);
       }
     }
 
