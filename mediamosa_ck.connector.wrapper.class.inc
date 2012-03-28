@@ -370,7 +370,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       'acl_user_id' => empty($options['user_id']) ? $options['acl_user_id'] : $options['user_id'],
     );
     // Allow modules to modify the acl information.
-    drupal_alter('mediamosa_acl', $acl);
+    drupal_alter('mediamosa_ck_acl', $acl);
 
     // Copy back.
     $options['acl_realm'] = $acl['acl_realm'];
@@ -480,6 +480,24 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
     }
 
     return $mediafile_ids;
+  }
+
+  /**
+   * Return the first original mediafile ID.
+   *
+   * @param $asset_id
+   *   The asset_id.
+   * @param $options
+   *   The options of the REST call.
+   *
+   * @return
+   *   Mediafile_id.
+   */
+  static public function get_asset_mediafile_id_first_original($asset_id, array $options = array()) {
+    // Options for the REST call.
+    $options['get_original_only'] = TRUE;
+    $mfs = self::get_asset_mediafile_ids($asset_id, $options);
+    return reset($mfs);
   }
 
   /**
@@ -602,17 +620,15 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       'acl_domain' => '',
       // acl_group_ids.
       'acl_group_id' => array(),
+
+      // catch fatal errors?
+      'fatal' => FALSE,
+
+      // is_app_admin to bypass user authorisation.
+      'is_app_admin' => FALSE,
     );
 
     try {
-      // If no user_id is present, then we need the owner from the asset_id. We
-      // don't fix this by using the is_app_admin, because it will then allow to
-      // play unappropriate videos.
-      if (empty($user_id)) {
-        $user_id = self::get_asset_owner($asset_id);
-      }
-
-      $options['user_id'] = $user_id;
       $options['mediafile_id'] = $mediafile_id;
       $response_type = $options['response'];
 
@@ -625,26 +641,34 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
         'acl_realm' => $options['acl_realm'],
         'acl_domain' => $options['acl_domain'],
         'acl_group_id' => $options['acl_group_id'],
-        'acl_user_id' => '',
+        'acl_user_id' => $user_id,
       );
       // Allow modules to modify the acl information.
-      drupal_alter('mediamosa_acl', $acl);
+      drupal_alter('mediamosa_ck_acl', $acl);
 
       // Copy back.
       $options['acl_realm'] = $acl['acl_realm'];
       $options['acl_domain'] = $acl['acl_domain'];
       $options['acl_group_id'] = $acl['acl_group_id'];
 
-      $xml = mediamosa_ck::request_get_fatal('asset/' . rawurlencode($asset_id) . '/play', array('data' => $options))->xml;
+      $options['user_id'] = $user_id;
 
+      $options = self::bool2string($options, array('is_app_admin'));
+      if ($options['is_app_admin'] == 'TRUE') { // is_app_admin does not work for /play in 3.0.
+        $options['user_id'] = self::get_asset_owner($asset_id);
+      }
+      $xml = mediamosa_ck::request_get_fatal('asset/' . rawurlencode($asset_id) . '/play', array('data' => $options))->xml;
       $play_links[$asset_id][$mediafile_id][$response_type] = empty($xml->items->item->output) ? FALSE : (string) $xml->items->item->output;
+
       return $play_links[$asset_id][$mediafile_id][$response_type];
     }
     catch (Exception $e) {
-      // Don't display error to user, just log.
       mediamosa_ck::watchdog('Unable to create play ticket; @message.', array('@message' => $e->getMessage()));
-      return FALSE;
+      if ($options['fatal']) {
+        throw $e;
+      }
     }
+    return FALSE;
   }
 
   /**
@@ -1055,7 +1079,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       'acl_user_id' => $data['acl_user_id'],
     );
     // Allow modules to modify the acl information.
-    drupal_alter('mediamosa_acl', $acl);
+    drupal_alter('mediamosa_ck_acl', $acl);
 
     // Copy back.
     $data['acl_realm'] = $acl['acl_realm'];
@@ -1132,7 +1156,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       'acl_user_id' => empty($data['user_id']) ? $data['acl_user_id'] : $data['user_id'],
     );
     // Allow modules to modify the acl information.
-    drupal_alter('mediamosa_acl', $acl);
+    drupal_alter('mediamosa_ck_acl', $acl);
 
     // Copy back (only acl_user_id is used).
     $data['user_id'] = $acl['acl_user_id'];

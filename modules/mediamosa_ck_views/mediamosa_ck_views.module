@@ -173,5 +173,15 @@ function mediamosa_ck_views_theme() {
       ),
       'file' => 'mediamosa_ck_views.theme.inc',
     ),
+    'mediamosa_ck_views_player_image' => array(
+      'variables' => array(
+        'error_code' => 0,
+        'mediafile_id' => '',
+        'asset_id' => '',
+        'width' => '',
+        'height' => '',
+      ),
+      'file' => 'mediamosa_ck_views.theme.inc',
+    ),
   );
 }

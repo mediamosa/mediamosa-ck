@@ -21,7 +21,7 @@
 class mediamosa_ck_views_field_player extends views_handler_field {
   // The following methods express strong SQLisms in the base field handler
   // class. Override and blank them out.
-  function pre_render() {
+  function pre_render(&$values) {
   }
 
   function add_additional_fields($fields = NULL) {
@@ -96,6 +96,7 @@ class mediamosa_ck_views_field_player extends views_handler_field {
   }
 
   function render($values) {
+    global $user;
 
     // To render, asset_id must be present.
     if (empty($values->asset_id)) {
@@ -110,6 +111,11 @@ class mediamosa_ck_views_field_player extends views_handler_field {
 
     // Take user_id of current watcher.
     $user_id = mediamosa_ck::session_user_id();
+
+    // Determine admin user
+    if (user_access('access administration pages')) {
+      $options['is_app_admin'] = TRUE;
+    }
 
     // Response.
     $options['response'] = $this->options['response'];
@@ -126,7 +132,20 @@ class mediamosa_ck_views_field_player extends views_handler_field {
       $options['autostart'] = $this->options['player_autostart'] ? 'TRUE' : 'FALSE';
     }
 
-    // Accept as is.
-    return MediaMosaCkConnectorWrapper::get_play_link($values->asset_id, $mediafile_id_to_play, $user_id, $options);
+    try {
+      $options['fatal'] = TRUE;
+      $response = MediaMosaCkConnectorWrapper::get_play_link($values->asset_id, $mediafile_id_to_play, $user_id, $options);
+    }
+    catch (Exception $e) {
+      $response = theme('mediamosa_ck_views_player_image',
+        array(
+          'width' => $options['width'],
+          'height' => $options['height'],
+          'error_code' => $e->getCode(),
+          'asset_id' => $values->asset_id,
+          'mediafile_id' => $mediafile_id_to_play,
+        ));
+    }
+    return $response;
   }
 }
