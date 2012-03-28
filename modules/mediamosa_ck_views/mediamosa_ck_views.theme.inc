@@ -172,3 +172,26 @@ function theme_mediamosa_ck_views_theme_owner($variables) {
 
   return l($variables['name'], 'user/' . $variables['uid']);
 }
+
+/**
+ *
+ * @param type $variables
+ */
+function theme_mediamosa_ck_views_player_image($variables) {
+
+  $path = drupal_get_path('module', 'mediamosa_ck') . '/modules/mediamosa_ck_views/images/';
+  if ($variables['error_code'] == '1800') {
+    $image = $path .  'notgranted.png';
+  }
+  else {
+    $image = $path .  'notfound.png';
+  }
+  $response = theme('image',
+    array(
+      'path' => $image,
+      'alt' => 'Mediafile not found',
+      'attributes' => array('width' => $variables['width'], 'height' => $variables['height'], 'class' => 'mediafile-notfound'),
+    )
+  );
+  return $response;
+}
