@@ -1,0 +1,578 @@
+<?php
+/**
+ * MediaMosa is Open Source Software to build a Full Featured, Webservice
+ * Oriented Media Management and Distribution platform (http://mediamosa.org)
+ *
+ * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl) and Kennisnet
+ * (http://www.kennisnet.nl)
+ *
+ * MediaMosa is based on the open source Drupal platform and
+ * was originally developed by Madcap BV (http://www.madcap.nl)
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, you can find it at:
+ * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+ */
+
+
+/**
+ * @file
+ * This module enables transcoding for frontend applications.
+ */
+
+
+// Transcode generation permission.
+define('MEDIAMOSA_CK_TRANSCODE_PERMISSION_GENERATION', 'mediamosa_ck_transcode_permission_generation');
+
+// Transcode view permission.
+define('MEDIAMOSA_CK_PERMISSION_TRANSCODE_VIEW', 'mediamosa_ck_transcode_permission_view');
+
+define('MEDIAMOSA_CK_PERMISSION_DELETE_MEDIAMOSA_MEDIAFILES', 'delete mediamosa mediafiles');
+define('MEDIAMOSA_CK_PERMISSION_ANALYSE_MEDIAMOSA_MEDIAFILES', 'analyse mediamosa mediafiles');
+define('MEDIAMOSA_CK_PERMISSION_DELETE_MEDIAMOSA_JOBS', 'delete mediamosa jobs');
+
+/**
+ * Implements hook_theme().
+ */
+function mediamosa_ck_transcode_theme() {
+  return array(
+    'media_mediamosa_versions_failed_job_status' => array(
+      'variables' => array('job'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_menu().
+ */
+function mediamosa_ck_transcode_menu() {
+  $items = array();
+
+  $items['file/%/transcode'] = array(
+    'title' => 'Transcoding',
+    'type' => MENU_LOCAL_TASK,
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('_mediamosa_ck_transcoding_form', 1),
+    'access callback' => '_media_mediamosa_media_permission',
+    'access arguments' => array(1, MEDIAMOSA_CK_TRANSCODE_PERMISSION_GENERATION),
+  );
+
+  $items['file/owner/%/mediafile/%/delete/%'] = array(
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('_mediamosa_ck_transcode_mediafile_delete', 2, 4, 6),
+    'access arguments' => array(MEDIAMOSA_CK_PERMISSION_DELETE_MEDIAMOSA_MEDIAFILES),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['file/owner/%/mediafile/%/analyse/%'] = array(
+    'page callback' => '_mediamosa_ck_transcode_mediafile_analyse',
+    'page arguments' => array(2, 4, 6),
+    'access arguments' => array(MEDIAMOSA_CK_PERMISSION_ANALYSE_MEDIAMOSA_MEDIAFILES),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['file/owner/%/job/%/delete/%'] = array(
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('_mediamosa_ck_transcode_job_delete', 2, 4, 6),
+    'access arguments' => array(MEDIAMOSA_CK_PERMISSION_DELETE_MEDIAMOSA_JOBS),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function mediamosa_ck_transcode_permission() {
+  return array(
+    MEDIAMOSA_CK_TRANSCODE_PERMISSION_GENERATION =>  array(
+      'title' => t('Generate transcode for MediaMosa videos.'),
+      'description' => t('Users with this permission can transcode videos in the MediaMosa Construction Kit.'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_mediamosa_ck_configuration_collect().
+ *
+ * @return array with settings form.
+ */
+function mediamosa_ck_transcode_mediamosa_ck_configuration_collect() {
+
+  $form['transcode_profile'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Transcode profile parameter',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#description' => t('Select the default transcode profile(s) that is used by default with all uploads. The multi options are the allowed transcode profiles that can be used for transcoding.'),
+  );
+
+  // Build up the options.
+  $options = array(
+    0 => t('Select default profile'),
+  );
+
+  $profiles = MediaMosaCkConnectorTranscodeWrapper::get_transcode_profiles();
+  if ($profiles && isset($profiles->items->item)) {
+    foreach ($profiles->items->item as $profile_id => $profile) {
+      $options[(int) $profile->profile_id] = (string) $profile->profile;
+    }
+  }
+
+  $form['transcode_profile']['media_mediamosa_transcode_profile_default'] = array(
+    '#title' => t('Select your default transcode profile'),
+    '#type' => 'select',
+    '#options' => $options,
+    '#size' => 1,
+    '#default_value' => MediaMosaCkConnectorWrapper::get_default_transcode_profile(),
+  );
+
+  // Remove none.
+  unset($options[0]);
+
+  $form['transcode_profile']['media_mediamosa_transcode_profiles_allowed'] = array(
+    '#title' => t('Select your allowed transcode profiles'),
+    '#description' => t('By default, all transcodes are allowed.'),
+    '#type' => 'select',
+    '#options' => $options,
+    '#multiple' => TRUE,
+    '#default_value' => array_keys(MediaMosaCkConnectorWrapper::get_allowed_transcode_profiles()),
+  );
+
+  return $form;
+}
+
+/**
+ * Show the transcodes + form.
+ */
+function _mediamosa_ck_transcoding_form($form, &$form_state) {
+
+  $form = array();
+
+  // Add the transcode form.
+  $form = array_merge($form, _mediamosa_ck_transcode_generate_form($form, $form_state));
+
+  // Add the transcode listing.
+  $form = array_merge($form, _mediamosa_ck_transcode_list_form($form, $form_state));
+
+  return $form;
+}
+
+/**
+ * Menu callback.
+ */
+function _mediamosa_ck_transcode_generate_form($form, &$form_state) {
+  $fid = arg(1);
+  $collapsed = TRUE;
+  $form = array();
+
+  // Information from the current running transcode jobs.
+  $media_data = MediaMosaStreamWrapper::mediamosa_parse_url_from_fid($fid);
+  if (empty($media_data)) {
+    $form['message']['#markup'] = t('No valid file entry.');
+    return $form;
+  }
+
+  try {
+    _media_mediamosa_get_running_jobs($form, $media_data['mediafile_id'], MEDIA_MEDIAMOSA_JOB_TYPE_TRANSCODE);
+
+    // Merge with upload form.
+    _mediamosa_ck_transcode_generate_form_helper($form, $collapsed);
+
+    $form['mediamosa_file']['transcode_profile']['transcode_profile_for_old_mediafile'] = array(
+      '#type' => 'submit',
+      '#value' => t('Start transcode job'),
+    );
+
+    $form['#submit'][] = '_mediamosa_ck_transcode_generate_form_submit';
+  }
+  catch (Exception $e) {
+    $form['message']['#markup'] = t('No MediaMosa asset or mediafile was found, resync with MediaMosa.');
+  }
+
+  return $form;
+}
+
+/**
+ * Build the transcode job form helper.
+ */
+function _mediamosa_ck_transcode_generate_form_helper(&$form, $collapsed = TRUE) {
+  $form['mediamosa_file']['transcode_profile'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Starting a transcode job'),
+    '#description' => t('Select the transcode profile and start a transcode job. The original media will always be used as source for the transcoding. The new transcoded media becomes available as soon as the job finishes.'),
+    '#collapsible' => TRUE,
+    '#collapsed' => $collapsed,
+  );
+
+  // None is available only for existing mediafiles.
+  $transcode_options = MediaMosaCkConnectorWrapper::get_allowed_transcode_profiles();
+
+  // Default profile form.
+  $form['mediamosa_file']['transcode_profile']['transcode'] = array(
+    '#title' => t('Select your default transcode profile'),
+    '#type' => 'select',
+    '#options' => $transcode_options,
+    '#size' => 1,
+    '#required' => TRUE,
+    '#default_value' => MediaMosaCkConnectorWrapper::get_default_transcode_profile(),
+  );
+
+  // ACL rules are inherited.
+  $form['mediamosa_file']['transcode_profile']['transcode_inherits_acl'] = array(
+    '#type' => 'hidden',
+    '#value' => 'TRUE',
+  );
+}
+
+function _mediamosa_ck_transcode_generate_form_submit($form, &$form_state) {
+  $fid = arg(1);
+
+  // Collect the data.
+  $values = $form_state['values'];
+  $profile_id = $values['transcode'];
+
+  if (!$profile_id || !is_numeric($profile_id) || $profile_id < 1) {
+    drupal_set_message(t('You should choose a transcode profile first.'), 'warning');
+    return;
+  }
+
+  $media_data = MediaMosaStreamWrapper::mediamosa_parse_url_from_fid($fid);
+  if ($media_data) {
+    // Delete the old not original (transcoded) mediafiles.
+    _media_mediamosa_delete_mediafile_transcoded($media_data['asset_id']);
+
+    // Set the transcode.
+    $data = array(
+      'profile_id' => $profile_id,
+    );
+    MediaMosaCkConnectorTranscodeWrapper::create_transcode($media_data['mediafile_id'], $data);
+  }
+
+  // Notify the user about the new job.
+  drupal_set_message(t('Job was started. The new transcode will be available once the job has finished.'));
+
+  // Go to the view page.
+  drupal_goto('file/' . $fid . '/transcode');
+}
+
+/**
+ * Form definition for transcodings tab.
+ */
+function _mediamosa_ck_transcode_list_form($form, &$form_state) {
+
+  $form = array();
+  $fid = arg(1);
+
+  $headers = array(
+    'title' => array('data' => t('Profile')),
+    'filesize' => array('data' => t('File size')),
+    'container' => array('data' => t('Container')),
+    'picture_size' => array('data' => t('Width * Height @ fps')),
+    'operations' => array('data' => t('Operations')),
+  );
+
+  $media_data = MediaMosaStreamWrapper::mediamosa_parse_url_from_fid($fid);
+  // We don't have media_load() function anymore. Just use media_multi_load instead.
+  $multi_media = media_multi_load($fid);
+
+  if ($multi_media) {
+    foreach ($multi_media as $media) {
+      try {
+        $uri = MediaMosaStreamWrapper::mediamosa_parse_url($media->uri);
+
+        // Get the MediaFiles.
+        $mediafiles = MediaMosaConnectorMediaWrapper::get_asset_mediafiles($uri['asset_id'], array('fatal' => TRUE));
+
+        // Prepare transcode profiles list.
+        $profiles = _mediamosa_ck_transcode_profiles();
+
+        // Prepare rights.
+        $may_delete = user_access(MEDIAMOSA_CK_PERMISSION_DELETE_MEDIAMOSA_MEDIAFILES);
+        $may_analyse = user_access(MEDIAMOSA_CK_PERMISSION_ANALYSE_MEDIAMOSA_MEDIAFILES);
+
+        $rows = array();
+
+        foreach ($mediafiles as $mediafile) {
+          $metadata = $mediafile['metadata'];
+
+          if (empty($metadata['container_type']) && empty($metadata['filesize'])) {
+            // Empty mediafile, skip it.
+            continue;
+          }
+
+          if ($mediafile['is_original_file'] == 'TRUE') {
+            $row['title'] =  t('Original');
+          }
+          else {
+            $row['title'] = isset($profiles[$mediafile['transcode_profile_id']]) ? $profiles[$mediafile['transcode_profile_id']] : $mediafile['transcode_profile_id'];
+          }
+
+          $row['filesize'] = format_size($metadata['filesize']);
+          $row['bitrate'] = $metadata['container_type'] . ' @ ' . $metadata['bitrate'] . 'kbps';
+          $row['picture_size'] = $metadata['width'] ? $metadata['width'] . 'px * ' . $metadata['height'] . 'px @ ' . $metadata['fps'] . 'fps' : '';
+
+          $actions = array();
+          $parameters = array('@owner_id' => $mediafile['owner_id'], '@mediafile_id' => $mediafile['mediafile_id'], '@media_id' => $fid);
+          $actions[] = $may_delete ? l(t('Delete'), strtr('file/owner/@owner_id/mediafile/@mediafile_id/delete/@media_id', $parameters)) : '';
+          $actions[] = $may_analyse ? l(t('Analyze'), strtr('file/owner/@owner_id/mediafile/@mediafile_id/analyse/@media_id', $parameters)) : '';
+
+          $row['operations'] = implode(' - ', $actions);
+
+          // Lets sort items by creation date. ID is added for uniqueness.
+          $key = $mediafile['created'] . $mediafile['mediafile_id'];
+
+          $rows[$key] = $row;
+        }
+
+        ksort($rows);
+
+        $form['table_mediafiles'] = array(
+          '#type' => 'item',
+          '#markup' => theme('table', array('header' => $headers, 'rows' => $rows)),
+        );
+
+        $owner_id = empty($mediafiles) ? FALSE : $mediafiles[0]['owner_id'];
+        $jobs = MediaMosaCkConnectorTranscodeWrapper::get_asset_actual_jobs($uri['asset_id'], $owner_id);
+
+        $may_delete = user_access(MEDIAMOSA_CK_PERMISSION_DELETE_MEDIAMOSA_JOBS);
+
+        if ($jobs) {
+          $headers = array(
+            'id' => array('data' => t('Job ID')),
+            'type' => array('data' => t('Type')),
+            'status' => array('data' => t('Status')),
+            'started' => array('data' => t('Started')),
+          );
+
+          if ($may_delete) {
+            $headers['operations'] = array('data' => t('Operations'));
+          }
+
+
+          $rows = array();
+
+          foreach ($jobs as $job) {
+            $row = array();
+            $row['id'] = $job['id'];
+            $row['type'] = $job['job_type'];
+            $row['status'] = ($job['status'] == 'FAILED') && !empty($job['error_description']) ? theme('media_mediamosa_versions_failed_job_status', $job) : $job['status'];
+
+            if ($job['status'] == 'INPROGRESS') {
+              $row['status'] .= ', ' . (string)$job['progress'] * 100 . '%';
+            }
+
+            $row['started'] = $job['started_unix'] ? t('@time ago', array('@time' => format_interval(REQUEST_TIME  - $job['started_unix'], 1))) : '';
+
+            if ($may_delete) {
+              $parameters = array('@owner_id' => $mediafile['owner_id'], '@job_id' => $job['id'], '@media_id' => $fid);
+              $row['operations'] = $job['status'] == 'FAILED' ? l(t('Delete'), strtr('file/owner/@owner_id/job/@job_id/delete/@media_id', $parameters)) : '';
+            }
+
+            $rows[$job['id']] = $row;
+          }
+
+          ksort($rows);
+
+          $table = theme('table', array('header' => $headers, 'rows' => $rows));
+
+          $form['table_jobs'] = array(
+            '#type' => 'item',
+            '#markup' => $table,
+          );
+        }
+      }
+      catch (Exception $e) {
+        $form['message']['#markup'] = t('No MediaMosa asset or mediafile was found, resync with MediaMosa.');
+      }
+    }
+  }
+  else {
+    $form['message']['#markup'] = t('No valid file entry.');
+  }
+
+  return $form;
+}
+
+/**
+ * Retrieve a list of names of available transcode profiles.
+ *
+ * Please note - this function returns names only, not a full profile object.
+ *
+ * @return array, contais mapping id to name.
+ */
+function _mediamosa_ck_transcode_profiles() {
+
+  // Our static.
+  $transcode_profiles = &drupal_static(__FUNCTION__, array());
+
+  if (!empty($transcode_profiles)) {
+    return $transcode_profiles;
+  }
+
+  $items = MediaMosaCkConnectorTranscodeWrapper::get_profile_names();
+  foreach ($items as $item) {
+    $transcode_profiles[$item['profile_id']] = $item['profile'];
+  }
+
+  return $transcode_profiles;
+}
+
+/**
+ * Confirm deletion of a job.
+ */
+function _mediamosa_ck_transcode_job_delete($form, &$form_state, $owner_id, $job_id, $fid) {
+  // Extra check against direct call by URL.
+  if (!user_access(MEDIAMOSA_CK_PERMISSION_DELETE_MEDIAMOSA_JOBS)) {
+    drupal_access_denied();
+    return;
+  }
+
+  return confirm_form(
+    array(
+      'owner_id' => array(
+        '#type' => 'hidden',
+        '#value' => $owner_id,
+      ),
+      'job_id' => array(
+        '#type' => 'hidden',
+        '#value' => $job_id,
+      ),
+      'media_id' => array(
+        '#type' => 'hidden',
+        '#value' => $fid,
+      ),
+    ), // form
+    t('Are you sure you want to delete this job?'),
+    'file/' . rawurlencode($fid) . '/transcode',
+    t('This action cannot be undone.'),
+    t('Delete'), t('Cancel')
+  );
+}
+
+/**
+ * Submit handler, perform job deletion.
+ *
+ * @see _mediamosa_ck_transcode_job_delete
+ */
+function _mediamosa_ck_transcode_job_delete_submit($form, &$form_state) {
+
+  // Get ids.
+  $owner_id = $form_state['values']['owner_id'];
+  $job_id = $form_state['values']['job_id'];
+  $media_id = $form_state['values']['media_id'];
+
+  $success = MediaMosaCkConnectorTranscodeWrapper::delete_job($job_id, $owner_id);
+
+  // Set message and return.
+  drupal_set_message($success ? t('Job deleted.') : t('Failed to delete job.'));
+  drupal_goto('file/' . rawurlencode($media_id) . '/transcode');
+}
+
+/**
+ * Confirm deletion of mediafile.
+ */
+function _mediamosa_ck_transcode_mediafile_delete($form, &$form_state, $owner_id, $mediafile_id, $media_id) {
+  // Extra check against direct call by URL.
+  if (!user_access(MEDIAMOSA_CK_PERMISSION_DELETE_MEDIAMOSA_MEDIAFILES)) {
+    drupal_access_denied();
+    return;
+  }
+
+  return confirm_form(
+    array(
+      'owner_id' => array(
+        '#type' => 'hidden',
+        '#value' => $owner_id,
+      ),
+      'mediafile_id' => array(
+        '#type' => 'hidden',
+        '#value' => $mediafile_id,
+      ),
+      'media_id' => array(
+        '#type' => 'hidden',
+        '#value' => $media_id,
+      ),
+    ), // form
+    t('Are you sure you want to delete this mediafile?'),
+    'file/' . rawurlencode($media_id) . '/transcode',
+    t('This action cannot be undone.'),
+    t('Delete'), t('Cancel')
+  );
+}
+
+/**
+ * Submit handler, perform mediafile deletion.
+ *
+ * @see _mediamosa_ck_transcode_mediafile_delete
+ */
+function _mediamosa_ck_transcode_mediafile_delete_submit($form, &$form_state) {
+
+  // Get ids.
+  $owner_id = $form_state['values']['owner_id'];
+  $mediafile_id = $form_state['values']['mediafile_id'];
+  $media_id = $form_state['values']['media_id'];
+
+  $success = MediaMosaCkConnectorTranscodeWrapper::delete_mediafile($mediafile_id, $owner_id);
+
+  // Set message and return.
+  drupal_set_message($success ? t('Mediafile deleted.') : t('Failed to delete mediafile.'));
+  drupal_goto('file/' . rawurlencode($media_id) . '/transcode');
+}
+
+/**
+ * Schedule analyse of a mediafile.
+ *
+ * @param $owner_id
+ * @param $mediafile_id
+ * @param $media_id
+ *
+ */
+function _mediamosa_ck_transcode_mediafile_analyse($owner_id, $mediafile_id, $media_id) {
+  // Extra check against direct call by URL.
+  if (!user_access(MEDIAMOSA_CK_PERMISSION_ANALYSE_MEDIAMOSA_MEDIAFILES)) {
+    drupal_access_denied();
+    return;
+  }
+
+  // REST uri.
+  $uri = strtr('mediafile/@mediafile_id/analyse', array('@mediafile_id' => $mediafile_id));
+
+  $success = FALSE;
+  $result = mediamosa_ck::request_post_fatal($uri, array('user_id' => $owner_id));
+
+  if ($result->code == 200) {
+    $success = TRUE;
+  }
+
+  // Set message and return.
+  drupal_set_message($success ? t('Analyse started.') : t('Failed to start analyse.'));
+  drupal_goto('file/' . rawurlencode($media_id) . '/transcode');
+}
+
+/**
+ * Returns HTML failed jobs status. Error description displayed as a tooltip.
+ *
+ * @param $job
+ *   Job array for failed job with at least two elements 'error_description' and
+ *  'status'.
+ *
+ */
+function theme_mediamosa_ck_transcode_failed_job_status($job) {
+
+  return strtr('@status <span title="@error_description">[+]</div>',
+    array(
+      '@status' => check_plain($job['status']),
+      '@error_description' => check_plain($job['error_description']),
+    )
+  );
+}

@@ -1,0 +1,38 @@
+name = MediaMosa Construction Kit
+description = The MediaMosa Construction Kit enables you to build frontend Drupal websites using the MediaMosa backend application.
+distribution_name = "MediaMosa Construction Kit default setup"
+version = 2.0
+core = 7.x
+dependencies[] = block
+dependencies[] = color
+dependencies[] = comment
+dependencies[] = contextual
+dependencies[] = help
+dependencies[] = image
+dependencies[] = list
+dependencies[] = menu
+dependencies[] = number
+dependencies[] = options
+dependencies[] = path
+dependencies[] = taxonomy
+dependencies[] = dblog
+dependencies[] = search
+dependencies[] = toolbar
+dependencies[] = field_ui
+dependencies[] = file
+dependencies[] = rdf
+
+dependencies[] = field_group
+dependencies[] = wysiwyg
+
+dependencies[] = media
+dependencies[] = mediamosa_sdk
+dependencies[] = mediamosa_connector
+dependencies[] = mediamosa_ck
+dependencies[] = media_mediamosa
+dependencies[] = mediamosa_ck_stats
+dependencies[] = mediamosa_ck_still
+dependencies[] = mediamosa_ck_access
+dependencies[] = mediamosa_ck_transcode
+
+files[] = mediamosa_ck_profile.profile
