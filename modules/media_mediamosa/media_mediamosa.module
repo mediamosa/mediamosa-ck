@@ -1,0 +1,628 @@
+<?php
+// $Id$
+
+/**
+ * MediaMosa is Open Source Software to build a Full Featured, Webservice
+ * Oriented Media Management and Distribution platform (http://mediamosa.org)
+ *
+ * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl) and Kennisnet
+ * (http://www.kennisnet.nl)
+ *
+ * MediaMosa is based on the open source Drupal platform and
+ * was originally developed by Madcap BV (http://www.madcap.nl)
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, you can find it at:
+ * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+ */
+
+/**
+ * @file
+ * All hooks are in this file.
+ *
+ * @todo: share the mediamosa_settings::LIMIT_MAX_IDS_ONLY between server and client
+ */
+
+define('FIELD_PREFIX', 'field_mm_meta_');
+define('FIELD_PREFIX_LENGTH', 14);
+
+// Keep those value in consistency with mediamosa_settings::LIMIT_MAX*
+define('LIMIT_MAX', 200);
+define('LIMIT_MAX_IDS_ONLY', 5000);
+
+// Need these.
+
+// Include the media_mediamosa.inc.
+assert(module_load_include('inc', 'media_mediamosa') !== FALSE);
+
+// Include the media_mediamosa.formatters.inc.
+assert(module_load_include('inc', 'media_mediamosa', 'media_mediamosa.formatters') !== FALSE);
+
+// Include the media_mediamosa.styles.inc.
+assert(module_load_include('inc', 'media_mediamosa', 'media_mediamosa.styles') !== FALSE);
+
+// Include the media_mediamosa.metadata.inc.
+assert(module_load_include('inc', 'media_mediamosa', 'media_mediamosa.metadata') !== FALSE);
+
+/**
+ * Implements hook_menu().
+ */
+function media_mediamosa_menu() {
+  $items = array();
+
+  $items['media_mediamosa/mediafile/uploaded/%/%'] = array(
+    'title' => 'Called after upload to MediaMosa.',
+    'type' => MENU_CALLBACK,
+    'page callback' => '_media_mediamosa_uploaded_file',
+    'page arguments' => array(3, 4),
+    'access arguments' => array(MEDIAMOSA_CK_PERMISSION_ADD_MEDIA),
+    'file' => 'media_mediamosa.admin.inc',
+  );
+
+  return $items;
+}
+
+function media_mediamosa_theme() {
+  return array(
+    'media_mediamosa_link' => array(
+      'variables' => array(
+        'asset_id' => NULL,
+      ),
+    ),
+    'media_mediamosa_preview_style' => array(
+      'variables' => array('style_name' => NULL),
+      'file' => 'media_mediamosa.theme.inc',
+    ),
+  );
+}
+
+/**
+ * Implements hook_stream_wrappers().
+ */
+function media_mediamosa_stream_wrappers() {
+  return array(
+    'mediamosa' => array(
+      'name' => t('MediaMosa videos'),
+      'class' => 'MediaMosaStreamWrapper',
+      'description' => t('Media provided by MediaMosa.'),
+      'type' => STREAM_WRAPPERS_READ_VISIBLE,
+    ),
+/*    'mediamosa-thumb' => array(
+      'name' => t('MediaMosa videos'),
+      'class' => 'MediaMosaThumbWrapper',
+      'description' => t('Media thumbnail provided by MediaMosa.'),
+      'type' => STREAM_WRAPPERS_READ_VISIBLE,
+    ),*/
+  );
+}
+
+/**
+ * Implements hook_ctools_plugin_api().
+ */
+function media_mediamosa_ctools_plugin_api($owner, $api) {
+  static $api_versions = array(
+    'file_entity' => array(
+      'file_default_displays' => 1,
+    ),
+  );
+  if (isset($api_versions[$owner][$api])) {
+    return array('version' => $api_versions[$owner][$api]);
+  }
+}
+
+/**
+ *  Implements hook_media_parse().
+ *
+ *  Convert any incoming MediaMosa URL to schema version.
+ *
+ *  mediamosa://asset/asset_id/mediafile_id/filename
+ *    pattern;
+ *  @^mediamosa://asset/([a-zA-Z0-9]+)/([a-zA-Z0-9]+)/([^/]+)$@i
+ *
+ *  @todo: might no longer be a hook with the final media version.
+ */
+function media_mediamosa_media_parse($url, $options = array()) {
+
+  $parse_url = MediaMosaStreamWrapper::mediamosa_parse_url($url);
+  if (!empty($parse_url)) {
+    return file_stream_wrapper_uri_normalize($url);
+  }
+}
+
+/**
+ * Implements hook_media_browser_plugin_info().
+ */
+function media_mediamosa_media_browser_plugin_info() {
+  $plugins = array();
+  $plugins['media_mediamosa'] = array(
+    'title' => t('MediaMosa Upload'),
+    'handler' => array(
+      'path' => drupal_get_path('module', 'media_mediamosa'),
+      'file' => 'MediamosaMediaBrowserUpload.class.inc',
+      'class' => 'MediamosaMediaBrowserUpload',
+    ),
+    'access callback' => '_media_mediamosa_access',
+  );
+  return $plugins;
+}
+
+/**
+ * Access callback for the media_mediamosa media browser plugin.
+ */
+function _media_mediamosa_access() {
+  return user_access('administer media') || user_access('add media from remote sources');
+}
+
+/**
+ * Implements hook_rdf_mapping().
+ *
+ * @return
+ *   An array with mappings.
+ */
+function media_mediamosa_rdf_mapping() {
+  $mapping_data = array(
+    array(
+      'type' => 'media',
+      'bundle' => RDF_DEFAULT_BUNDLE,
+      'mapping' => array(
+        'rdftype' => array('dc:Item'),
+        // The Fields definition will be added here in a loop.
+      ),
+    )
+  );
+
+  // Get MediaMosa metadata definitions.
+  $fields = _media_mediamosa_metadata_get_default();
+
+  foreach ($fields as $item) {
+    $mapping_data[0]['mapping'][$item['field_name']] =
+      array('predicates' => array('dc:'. $item['rdf']));
+  }
+
+  return $mapping_data;
+}
+
+/**
+ * Implement hook_file_delete().
+ *
+ * @param $file
+ *   A file object.
+ */
+function media_mediamosa_file_delete($file) {
+  $params = MediaMosaStreamWrapper::mediamosa_parse_url($file->uri);
+  $asset_id = $params['asset_id'];
+
+  try {
+    $asset = MediaMosaConnectorMediaWrapper::get_asset($asset_id, array('show_stills' => FALSE));
+    $user_id = (string) $asset->items->item->owner_id;
+    MediaMosaConnectorMediaWrapper::delete_asset($asset_id, $user_id);
+  }
+  catch (Exception $e) {
+    // Ignore, at this point we expect that the asset is either gone already
+    // or connection was lost.
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter() for file/[fid].
+ *
+ * Main purpose is to make technical metadata readonly.
+ */
+function media_mediamosa_form_media_edit_alter(&$form, &$form_state, $form_id) {
+
+  // Some fields are read-only.
+  // Todo: I believe one day we can define special widget for this case.
+
+  // Get MediaMosa metadata definitions.
+  $fields = _media_mediamosa_metadata_get_default();
+  $readonly_fields = array();
+
+  foreach ($fields as $item) {
+    if ($item['readonly']) {
+      $readonly_fields[] = $item['field_name'];
+    }
+  }
+
+  foreach ($form as $key => &$item) {
+    if (in_array($key, $readonly_fields)) {
+      $lang = $item['#language'];
+      $item[$lang][0]['value']['#value'] = $item[$lang][0]['value']['#default_value'];
+      $item[$lang][0]['value']['#disabled'] = TRUE;
+    }
+  }
+
+  // We have a few optional fields who expect datetime info only. Setting checker for those here.
+  $form['#validate'][] = '_media_mediamosa_validate_datetime';
+
+  // Also we need to validate language metadata, if present.
+  $form['#validate'][] = '_media_mediamosa_validate_language';
+
+  // On 'save' we have to store our metadata.
+  $form['actions']['submit']['#submit'][] = 'media_mediamosa_media_edit_submit';
+}
+
+/**
+ * Check and validate a datestamp string for metadata,
+ *   returns FALSE or valid string to use.
+ *
+ * @param string $str
+ */
+function _media_mediamosa_validate_datetime(&$form, &$form_state) {
+
+  // Array with fields, which needs DATETIME validation.
+  $datetime_names = array(FIELD_PREFIX . 'date' => TRUE, FIELD_PREFIX . 'created' => TRUE, FIELD_PREFIX . 'issued' => TRUE);
+
+  foreach ($datetime_names as $field_name => $field_label) {
+    $lang = $form[$field_name]['#language'];
+    $value = $form[$field_name][$lang][0]['value']['#value'];
+
+    if (isset($value)) {
+      if (!MediaMediaMosa::check_datestamp($value)) {
+        form_set_error(
+          $field_name,
+          t(
+            "Invalid date time value for optional '%name', must be in format of 'YYYY-MM-DD HH-MM-SS' or 'YYYY-MM-DD'.",
+            array('%name' => $form[$field_name][$lang][0]['value']['#title'])
+          )
+        );
+      }
+    }
+  }
+}
+
+/**
+ * Check and validate a datestamp string for metadata,
+ *   returns FALSE or valid string to use.
+ */
+function _media_mediamosa_validate_language(&$form, &$form_state) {
+  $field_name = FIELD_PREFIX . 'language';
+  $lang = $form[$field_name]['#language'];
+  $value = $form[$field_name][$lang][0]['value']['#value'];
+
+  if (!empty($value)) {
+    if (!mediamosa_sdk::checkLanguage($value)) {
+      form_set_error($field_name, t("Invalid language code."));
+    }
+  }
+}
+
+/**
+ * Implements hook_mediamosa_ck_configuration_collect().
+ *
+ * @return
+ *   An array with settings form.
+ */
+function media_mediamosa_mediamosa_ck_configuration_collect() {
+  $items = drupal_map_assoc(array(100, 200, 500, 1000, 2000, 5000, 10000));
+
+  // Indexing throttle:
+  $form['media_mediamosa_sync'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Synchronizing data with Mediamosa'),
+    '#description' => t('If for example other applications, websites connect to your MediaMosa connection, update or change Media (assets) in MediaMosa, then your website will not be in sync with MediaMosa. Deleted assets in MediaMosa would still show up on your website. Metadata in MediaMosa might be changed and your website would still show out-of-sync metadata. This can be solved by either starting a syncronizing process or use the cron to automate the syncronization.'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+
+  if (!MediaMosaConnectorMediaWrapper::check_connection()) {
+    $form['media_mediamosa_sync']['media_mediamosa_cron_not_configured'] = array(
+      '#type' => 'item',
+      '#title' => t(''),
+      '#markup' => t('Some parameters cannot be configured while you not specified your <a href="@link">connection to Mediamosa</a>.',
+         array('@link' => url('admin/config/media/mediamosa/connector'))),
+    );
+  }
+  else {
+    $time_last = variable_get('media_mediamosa_sync_time_' . MediaMosaCkConnectorWrapper::build_connection_id(), 0);
+
+    $form['media_mediamosa_sync']['media_mediamosa_cron_last_sync_time'] = array(
+      '#type' => 'item',
+      '#title' => t('Syncronization state'),
+      '#markup' => $time_last ? t('All MediaMosa assets with changed dates before @latest are synced with Drupal media.', array('@latest' => format_date($time_last))) : t('No data syncronized yet.'),
+    );
+
+    $form['media_mediamosa_sync']['cron_settings'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Cron settings'),
+      '#description' => t('You can automate synchronization between Drupal Media and MediaMosa. However, this is not needed when MediaMosa data is not changed by any other method that your website. The cron process is divided into chunks and can take a long time to complete the first time. Once it has completed, the process will be less cron time intensive.'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    );
+
+    $form['media_mediamosa_sync']['cron_settings']['media_mediamosa_cron_sync_drupal_to_mediamosa'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Cron; Remove abandoned or deleted Media'),
+      '#default_value' => MediaMediaMosaSync::do_cron_sync_drupal_to_mediamosa(),
+      '#description' => t('When assets are removed from MediaMosa outside the Drupal website, then Media on the Drupal website will still link to not existing assets in MediaMosa. By default, this is off. But when switching connections between MediaMosa installations or MediaMosa logins, then the Drupal Media will not match the MediaMosa assets. When enabled, Media in Drupal that has no matching asset in MediaMosa will be removed.'),
+    );
+
+    $form['media_mediamosa_sync']['cron_settings']['media_mediamosa_cron_sync_mediamosa_to_drupal'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Cron; Synchronize with MediaMosa'),
+      '#default_value' => MediaMediaMosaSync::do_cron_sync_mediamosa_to_drupal(),
+      '#description' => t('Enable synchronization with MediaMosa to make sure all assets and its data are the same as stored on the Drupal website database. It will create Media that exists in MediaMosa and is missing on the Drupal website database. Also will copy changed metadata to Drupal Media.'),
+    );
+
+    $form['media_mediamosa_sync']['synchronize'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Start synchronize process'),
+      '#description' => t("Use the options below to start syncronization with MediaMosa. A batch process will start and you'll need to complete the batch process to complete the syncronization."),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    );
+
+    $form['media_mediamosa_sync']['synchronize']['media_mediamosa_sync_drupal_to_mediamosa'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Remove abandoned or deleted Media'),
+      '#default_value' => MediaMediaMosaSync::do_sync_drupal_to_mediamosa(),
+      '#description' => t('When assets are removed from MediaMosa outside the Drupal website, then Media on the Drupal website will still link to not existing assets in MediaMosa. By default, this is off. But when switching connections between MediaMosa installations or MediaMosa logins, then the Drupal Media will not match the MediaMosa assets. When enabled, Media in Drupal that has no matching asset in MediaMosa will be removed.'),
+    );
+
+    $form['media_mediamosa_sync']['synchronize']['media_mediamosa_sync_mediamosa_to_drupal'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Synchronize with MediaMosa'),
+      '#default_value' => MediaMediaMosaSync::do_sync_mediamosa_to_drupal(),
+      '#description' => t('Enable synchronization with MediaMosa to make sure all assets and its data are the same as stored on the Drupal website database. It will create Media that exists in MediaMosa and is missing on the Drupal website database. Also will copy changed metadata to Drupal Media.'),
+    );
+
+    $form['media_mediamosa_sync']['synchronize']['info_run'] = array(
+      '#type' => 'item',
+      '#markup' => t('Press on the button below to start batch to syncronize with MediaMosa.'),
+    );
+
+    $form['media_mediamosa_sync']['synchronize']['do_batch_sync'] = array(
+      '#type' => 'submit',
+      '#value' => t('Syncronize'),
+      '#submit' => array('_media_mediamosa_sync_batch'),
+    );
+  }
+
+  return $form;
+}
+
+/**
+ * Submit handler for saving metadata.
+ */
+function media_mediamosa_media_edit_submit($form, &$form_state) {
+
+  global $user;
+  // Fix for missing media_load() function.
+  $multi_media = media_multi_load($form_state['values']['fid']);
+
+  foreach ($multi_media as $media) {
+    // Now we have Mediamosa URI in $media->uri .
+    $uri = MediaMosaStreamWrapper::mediamosa_parse_url($media->uri);
+
+    if (!$uri) {
+      watchdog('Mediamosa CK', 'Cannot parse Mediamosa URI: @uri. Saving metadata impossible.',
+        array('@uri' => $media->uri), WATCHDOG_WARNING);
+      return;
+    }
+
+    // Get names convertor.
+    $drupal_to_mediamosa = _media_mediamosa_metadata_get_default_mapped();
+
+    // Lets iterate through our metafields and create an array with only changed items.
+    $changed_metadata = array();
+    foreach ($form as $name => $item) {
+
+      if (strncmp($name, FIELD_PREFIX, FIELD_PREFIX_LENGTH)) {
+        // We're not interested in this value.
+        continue;
+      }
+
+      $lang = $item['#language'];
+
+      // Lookup for original and submitted data.
+      $old_data = $item[$lang][0]['value']['#default_value'];
+      $new_data = $item[$lang][0]['value']['#value'];
+
+      if (strcmp((string)$old_data, $new_data)) {
+        $mediamosa_property_name = $drupal_to_mediamosa[$name];
+        $changed_metadata[$mediamosa_property_name] = $new_data;
+      }
+    }
+
+    if (empty($changed_metadata)) {
+      // Metadata unchanged.
+      return;
+    }
+
+    // Use REST to store the metadata.
+    MediaMosaConnectorMediaWrapper::update_metadata($uri['asset_id'], $changed_metadata);
+  }
+}
+
+/**
+ * Implements hook_cron.
+ */
+function media_mediamosa_cron() {
+
+  try {
+    // When enabled, it will make sure Media does exists on the MediaMosa side
+    // else Media is removed from the website.
+    MediaMediaMosaSync::cron_sync_drupal_to_mediamosa();
+
+    // Now sync mediamosa with drupal.
+    MediaMediaMosaSync::cron_sync_mediamosa_to_drupal();
+  }
+  catch (Exception $e) {
+    // Make sure we don't kill the cron.
+    MediaMediaMosa::watchdog('Exception during cron: ' . $e->getMessage(), array(), WATCHDOG_EMERGENCY);
+  }
+}
+
+/**
+ * Execute batch for sync.
+ *
+ * @see media_mediamosa_cron
+ */
+function _media_mediamosa_sync_batch($form, &$form_state) {
+
+  // See if any of the options are set.
+  $values = $form_state['values'];
+
+  // Get the values.
+  $media_mediamosa_sync_drupal_to_mediamosa = $values['media_mediamosa_sync_drupal_to_mediamosa'];
+  $media_mediamosa_sync_mediamosa_to_drupal = $values['media_mediamosa_sync_mediamosa_to_drupal'];
+
+  // Check if one of options is on.
+  if (!$media_mediamosa_sync_drupal_to_mediamosa && !$media_mediamosa_sync_mediamosa_to_drupal) {
+    drupal_set_message(t('Select one of the options for the batch. None where selected.'), 'error');
+    return;
+  }
+
+  $batch = array(
+    'operations' => array(
+    ),
+    'finished' => '_media_mediamosa_sync_batch_finished',
+    'title' => t('Syncronizing...'),
+    'init_message' => t('The syncronize batch is starting.'),
+    'progress_message' => t('Processed @current out of @total.'),
+    'error_message' => t('The Batch has encountered an error.'),
+  );
+
+  if ($media_mediamosa_sync_drupal_to_mediamosa) {
+    $batch['operations'][] = array('_batch_process_drupal_to_mediamosa', array(10));
+  }
+
+  if ($media_mediamosa_sync_mediamosa_to_drupal) {
+    $batch['operations'][] = array('_batch_process_mediamosa_to_drupal', array(10));
+  }
+
+  batch_set($batch);
+}
+
+/**
+ * Called when batch was finished.
+ */
+function _media_mediamosa_sync_batch_finished($success, $results, $operations) {
+  if ($success) {
+    // Here we do something meaningful with the results.
+    $message[] = t('Syncronizing completed.');
+
+    $items = array();
+
+    if (isset($results['deleted'])) {
+      $items[] = t('Removed @count abandoned media of the @scanned media found in website.', array('@count' => $results['deleted'], '@scanned' => $results['processed_total']));
+    }
+
+    if (isset($results['synced'])) {
+      $items[] = t('Syncronized @count media with MediaMosa, created @count_created new Media and updated @count_updated Media.', array('@count' => $results['synced'], '@count_created' => $results['synced_created'], '@count_updated' => $results['synced_updated']));
+
+      // We are synced, set cron to last modified date (if any).
+      $videotimestampmodified = MediaMosaConnectorMediaWrapper::get_highest_videotimestamp_modified();
+      if (!empty($videotimestampmodified)) {
+        $time_last = mediamosa_ck::date2unix($videotimestampmodified) + 1;
+        variable_set('media_mediamosa_sync_time_' . MediaMosaConnectorMediaWrapper::build_connection_id(), $time_last);
+        variable_set('media_mediamosa_sync_offset_' . MediaMosaConnectorMediaWrapper::build_connection_id(), 0);
+      }
+    }
+
+    if (!empty($items)) {
+      $message[] = theme('item_list', array('items' => $items));
+    }
+  }
+  else {
+    // An error occurred.
+    // $operations contains the operations that remained unprocessed.
+    $error_operation = reset($operations);
+    $message[] = t('An error occurred while processing %error_operation with arguments: @arguments', array('%error_operation' => $error_operation[0], '@arguments' => print_r($error_operation[1], TRUE)));
+  }
+
+  drupal_set_message(implode('', $message));
+}
+
+/**
+ * Run one instance of the drupal to mediamosa sync.
+ */
+function _batch_process_drupal_to_mediamosa($limit, &$context) {
+  // Set up sand box.
+  if (!isset($context['results']['deleted'])) {
+    $context['sandbox']['progress'] = 0;
+    $context['sandbox']['max'] = MediaMediaMosa::assets_in_drupal();
+
+    $context['sandbox']['offset'] = 0;
+    $context['results']['deleted'] = 0;
+    $context['results']['processed_total'] = 0;
+  }
+
+  // Next offset.
+  $offset = $context['sandbox']['offset'];
+
+  // Do one instance.
+  $result = MediaMediaMosaSync::sync_drupal_to_mediamosa_by_range($offset, $limit);
+
+  // Save the next offset.
+  $context['sandbox']['offset'] = $result['offset'];
+
+  // Know how many deleted.
+  $context['results']['deleted'] += $result['deleted'];
+  $context['results']['processed_total'] += $result['processed_total'];
+
+  $context['sandbox']['progress'] += $limit;
+  if ($context['sandbox']['progress'] > $context['sandbox']['max']) {
+    $context['sandbox']['progress'] = $context['sandbox']['max'];
+  }
+
+  // Update our progress information.
+  $context['message'] = t('Syncronizing: Looking for abandoned media, at @progress of @max.', array('@progress' => $context['sandbox']['progress'], '@max' => $context['sandbox']['max']));
+
+  // Inform the batch engine that we are (not) finished,
+  // and provide an estimation of the completion level we reached.
+  if ($context['sandbox']['progress'] != $context['sandbox']['max']) {
+    $context['finished'] = floor($context['sandbox']['progress'] / $context['sandbox']['max']);
+  }
+}
+
+/**
+ * Run one instance of the drupal to mediamosa sync.
+ */
+function _batch_process_mediamosa_to_drupal($limit, &$context) {
+  // Set up sand box.
+  if (!isset($context['results']['synced'])) {
+    $context['sandbox']['progress'] = 0;
+    $context['sandbox']['max'] = MediaMediaMosa::assets_in_mediamosa();
+
+    $context['sandbox']['offset'] = 0;
+    $context['results']['synced'] = 0;
+    $context['results']['synced_created'] = 0;
+    $context['results']['synced_updated'] = 0;
+  }
+
+  // Next offset.
+  $offset = $context['sandbox']['offset'];
+
+  // Do one instance.
+  $result = MediaMediaMosaSync::sync_mediamosa_to_drupal_by_range($offset, $limit);
+
+  // Save the next offset.
+  $context['sandbox']['offset'] = $result['offset'];
+
+  // Know how many deleted.
+  $context['results']['synced'] += $result['processed_total'];
+  $context['results']['synced_created'] += $result['assets_created'];
+  $context['results']['synced_updated'] += $result['assets_updated'];
+
+  $context['sandbox']['progress'] += $limit;
+  if ($context['sandbox']['progress'] > $context['sandbox']['max']) {
+    $context['sandbox']['progress'] = $context['sandbox']['max'];
+  }
+
+  // Update our progress information.
+  $context['message'] = t('Syncronizing: MediaMosa asset syncronizing to Drupal media, at @progress of @max.', array('@progress' => $context['sandbox']['progress'], '@max' => $context['sandbox']['max']));
+
+  // Inform the batch engine that we are (not) finished,
+  // and provide an estimation of the completion level we reached.
+  if ($context['sandbox']['progress'] != $context['sandbox']['max']) {
+    $context['finished'] = floor($context['sandbox']['progress'] / $context['sandbox']['max']);
+  }
+}
