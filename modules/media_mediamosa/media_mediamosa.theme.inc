@@ -1,11 +1,9 @@
 <?php
-// $Id$
-
 /**
- * MediaMosa is a Full Featured, Webservice Oriented Media Management and
- * Distribution platform (http://www.vpcore.nl)
+ * MediaMosa is Open Source Software to build a Full Featured, Webservice
+ * Oriented Media Management and Distribution platform (http://mediamosa.org)
  *
- * Copyright (C) 2011 SURFnet BV (http://www.surfnet.nl) and Kennisnet
+ * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl) and Kennisnet
  * (http://www.kennisnet.nl)
  *
  * MediaMosa is based on the open source Drupal platform and
@@ -49,7 +47,7 @@ function theme_media_mediamosa_link($variables) {
   $parts = MediaMosaStreamWrapper::mediamosa_parse_url($file_managed['uri']);
 
   // Return link to media.
-  return l(check_plain($parts['filename']), 'media/' . $file_managed['fid']);
+  return l(check_plain($parts['filename']), 'file/' . $file_managed['fid']);
 }
 
 /**
@@ -61,6 +59,5 @@ function theme_media_mediamosa_preview_style($variables) {
   $variables['uri'] = 'FIXME: Theme';
   $variables['field_type'] = 'file';
   $variables['object'] = file_uri_to_object($variables['uri']);
-
   return theme('styles', $variables);
 }

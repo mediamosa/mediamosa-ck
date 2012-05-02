@@ -1,11 +1,9 @@
 <?php
-// $Id$
-
 /**
- * MediaMosa is a Full Featured, Webservice Oriented Media Management and
- * Distribution platform (http://www.vpcore.nl)
+ * MediaMosa is Open Source Software to build a Full Featured, Webservice
+ * Oriented Media Management and Distribution platform (http://mediamosa.org)
  *
- * Copyright (C) 2011 SURFnet BV (http://www.surfnet.nl) and Kennisnet
+ * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl) and Kennisnet
  * (http://www.kennisnet.nl)
  *
  * MediaMosa is based on the open source Drupal platform and
@@ -29,32 +27,6 @@
  * Extends base class with supplying Media needs.
  */
 class MediaMosaConnectorMediaWrapper extends MediaMosaCkConnectorWrapper {
-
-  /**
-   * Update the metadata for given asset ID.
-   *
-   * @param string $asset_id
-   * @param array $changed_metadata
-   */
-  static public function request_post_metadata($asset_id, $changed_metadata) {
-
-    // Add action.
-    $changed_metadata['action'] = 'update';
-
-    $options = array(
-      'user_id' => mediamosa_ck::setting_user_id(),
-      'data' => $changed_metadata,
-    );
-
-    try {
-      // Do request.
-      mediamosa_ck::request_post_fatal('asset/'. $asset_id .'/metadata', $options);
-    }
-    catch (Exception $e) {
-      drupal_set_message('Unable to update metadata; ' . $e->getMessage(), 'error');
-      return FALSE;
-    }
-  }
 
   /**
    * Check for assets existence.
@@ -87,7 +59,8 @@ class MediaMosaConnectorMediaWrapper extends MediaMosaCkConnectorWrapper {
   /**
    * Parse to store in resulting array only 'asset_id'.
    *
-   * @param simpleXml sml_response.
+   * @param xml_response
+   *   The simplexmlelement object holding the result of the response.
    *
    * @return array with asset IDs.
    */
@@ -104,13 +77,18 @@ class MediaMosaConnectorMediaWrapper extends MediaMosaCkConnectorWrapper {
   /**
    * Get the recently changed/added assets.
    *
+   * @deprecated
+   *   Uses deprecated function mediamosa_connector::response2array, will
+   *   be removed some. Will return simplexmlelement in future instead of
+   *   array.
+   *
    * @param $time_last
    *  Timestamp of the last time we asked for assets.
    * @param $limit
    *
    * @return $assets
    */
-  static public function request_current_assets_get($time_last = 0, $offset = 0, $limit = 100) {
+  static public function get_current_assets($time_last = 0, $offset = 0, $limit = 100) {
     // We used 'changed' parameter here before, but at the moment
     // 'videotimestampmodified' is much better option. Despite of its name, it
     // reflects also cases when we change only metadata.
@@ -138,16 +116,17 @@ class MediaMosaConnectorMediaWrapper extends MediaMosaCkConnectorWrapper {
     }
     catch (Exception $e) {
       drupal_set_message(t('Error getting assets, @error.', array('@error' => $e->getMessage())), 'error');
-      mediamosa_ck::watchdog('Error getting assets (time_last = @time_last). Message: @error.', array('@time_last' => format_date($time_last), '@error' => $e->getMessage()), WATCHDOG_ERROR);
+      MediaMediaMosa::watchdog('Error getting assets (time_last = @time_last). Message: @error.', array('@time_last' => format_date($time_last), '@error' => $e->getMessage()), WATCHDOG_ERROR);
       return FALSE;
     }
 
     // Get the XML and convert it into an array.
+    // @deprecated.
     $xml = mediamosa_connector::response2array($response);
 
     // Get the assets.
     return !empty($xml['items']['item']) ? $xml['items']['item'] : array();
-}
+  }
 
   /**
    * Get mediafiles of asset.
@@ -156,7 +135,7 @@ class MediaMosaConnectorMediaWrapper extends MediaMosaCkConnectorWrapper {
    *
    * @return array $mediafiles
    */
-  static public function request_get_asset_mediafiles($asset_id, $options = array()) {
+  static public function get_asset_mediafiles($asset_id, $options = array()) {
 
     $request = strtr('asset/@asset_id/mediafile', array('@asset_id' => $asset_id));
 
@@ -164,7 +143,7 @@ class MediaMosaConnectorMediaWrapper extends MediaMosaCkConnectorWrapper {
       $response = mediamosa_ck::request_get_fatal($request);
     }
     catch (Exception $e) {
-      mediamosa_ck::watchdog('Error getting mediafiles for asset @asset_id.', array('@asset_id' => $asset_id), WATCHDOG_ERROR);
+      MediaMediaMosa::watchdog('Error getting mediafiles for asset @asset_id.', array('@asset_id' => $asset_id), WATCHDOG_ERROR);
 
       // When set to fatal, rethrow.
       if ($options['fatal']) {
@@ -184,14 +163,14 @@ class MediaMosaConnectorMediaWrapper extends MediaMosaCkConnectorWrapper {
   /**
    * Return the number of assets in MediaMosa.
    */
-  static public function request_get_number_of_assets() {
+  static public function get_number_of_assets() {
     $request = 'asset';
 
     try {
       $response = mediamosa_ck::request_get_fatal('asset', array('limit' => 1));
     }
     catch (Exception $e) {
-      mediamosa_ck::watchdog('Error getting assets.', array(), WATCHDOG_ERROR);
+      MediaMediaMosa::watchdog('Error getting assets.', array(), WATCHDOG_ERROR);
       return FALSE;
     }
 
@@ -202,7 +181,7 @@ class MediaMosaConnectorMediaWrapper extends MediaMosaCkConnectorWrapper {
   /**
    * Return the highest videotimestampmodified.
    */
-  static public function request_get_highest_videotimestamp_modified() {
+  static public function get_highest_videotimestamp_modified() {
     $request = 'asset';
     $cql = 'sortby videotimestampmodified/descending';
 
@@ -210,7 +189,7 @@ class MediaMosaConnectorMediaWrapper extends MediaMosaCkConnectorWrapper {
       $response = mediamosa_ck::request_get_fatal('asset', array('limit' => 1, 'cql' => $cql));
     }
     catch (Exception $e) {
-      mediamosa_ck::watchdog('Error getting assets.', array(), WATCHDOG_ERROR);
+      MediaMediaMosa::watchdog('Error getting assets.', array(), WATCHDOG_ERROR);
       return FALSE;
     }
 

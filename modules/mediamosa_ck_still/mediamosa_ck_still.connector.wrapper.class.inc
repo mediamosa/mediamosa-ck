@@ -1,6 +1,4 @@
 <?php
-// $Id$
-
 /**
  * MediaMosa is Open Source Software to build a Full Featured, Webservice Oriented Media Management and
  * Distribution platform (http://mediamosa.org)
@@ -30,33 +28,23 @@
  */
 
 class MediaMosaCkConnectorStillWrapper extends MediaMosaCkConnectorWrapper {
+
   /**
-   * Still create.
+   * Create a still for specific mediafile. Code moved to
+   * MediaMosaCkConnectorWrapper.
    *
    * @param $mediafile_id
+   *   The mediafile ID.
    * @param $user_id
+   *   The owner of the mediafile.
    * @param $data
-   *   An array with all the still parameters.
+   *   Array with all the still parameters.
+   *
+   * @return mediamosa_connector_response
+   *   Returns FALSE when failure or mediamosa_connector_response.
    */
-  static public function still_create($mediafile_id, $user_id, $data = array()) {
-    // Check the parameters.
-    if (empty($mediafile_id) || empty($user_id)) {
-      return FALSE;
-    }
-
-    $data += array(
-      'user_id' => $user_id,
-    );
-
-    try {
-      // Do request.
-      return mediamosa_ck::request_post_fatal('mediafile/' . rawurlencode($mediafile_id) . '/still/create', array('data' => $data));
-    }
-    catch (Exception $e) {
-      drupal_set_message('Unable to start a still process, reason; ' . $e->getMessage(), 'error');
-    }
-
-    return FALSE;
+  static public function still_create($mediafile_id, $user_id, array $data = array()) {
+    return parent::create_mediafile_still($mediafile_id, $user_id, $data);
   }
 
   /**
@@ -68,7 +56,7 @@ class MediaMosaCkConnectorStillWrapper extends MediaMosaCkConnectorWrapper {
    * @param string $user_id
    * @param array $data
    */
-  static public function still_default($asset_id, $mediafile_id, $still_id, $user_id, $data = array()) {
+  static public function still_default($asset_id, $mediafile_id, $still_id, $user_id, array $data = array()) {
     // Check the parameters.
     if (empty($asset_id) || empty($mediafile_id) || empty($still_id) || empty($user_id)) {
       return FALSE;
@@ -85,7 +73,7 @@ class MediaMosaCkConnectorStillWrapper extends MediaMosaCkConnectorWrapper {
       return mediamosa_ck::request_post_fatal('asset/' . rawurlencode($asset_id) . '/still/default', array('data' => $data));
     }
     catch (Exception $e) {
-      drupal_set_message('Unable to start a still process, reason; ' . $e->getMessage(), 'error');
+      mediamosa_ck::watchdog_error('Unable to start a still process, reason; @message.', array('@message' => $e->getMessage()));
     }
 
     return FALSE;
@@ -117,7 +105,7 @@ class MediaMosaCkConnectorStillWrapper extends MediaMosaCkConnectorWrapper {
       return mediamosa_ck::request_post_fatal('asset/' . rawurlencode($asset_id) . '/still/delete', array('data' => $data));
     }
     catch (Exception $e) {
-      drupal_set_message('Unable to start a still process, reason; ' . $e->getMessage(), 'error');
+      mediamosa_ck::watchdog_error('Unable to start a still process, reason; @message.', array('@message' => $e->getMessage()));
     }
 
     return FALSE;

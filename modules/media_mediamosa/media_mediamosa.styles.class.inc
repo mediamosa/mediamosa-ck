@@ -1,11 +1,9 @@
 <?php
-// $Id$
-
 /**
  * MediaMosa is Open Source Software to build a Full Featured, Webservice
  * Oriented Media Management and Distribution platform (http://mediamosa.org)
  *
- * Copyright (C) 2011 SURFnet BV (http://www.surfnet.nl) and Kennisnet
+ * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl) and Kennisnet
  * (http://www.kennisnet.nl)
  *
  * MediaMosa is based on the open source Drupal platform and
@@ -30,9 +28,6 @@
  */
 
 class MediaMediaMosaFileStyles extends FileStyles {
-  // 300 = 5x60 = 5 min
-  const FILE_EXPIRE_TIME = 300;
-
   public $autoplay;
   public $fullscreen;
 
@@ -52,16 +47,16 @@ class MediaMediaMosaFileStyles extends FileStyles {
     return $this->set('fullscreen', $value);
   }
 
-  function get_image_uri() {
+  function getImageUri() {
     $image_uri = $this->get('image_uri');
     if ($image_uri) {
       return $image_uri;
     }
-    $object = $this->get_object();
-
+    $object = $this->getObject();
     if ($object->uri) {
       // Get the asset_id and the local path, where the still image may exists.
       $params = MediaMosaStreamWrapper::mediamosa_parse_url($object->uri);
+
       if (!$params) {
         return FALSE;
       }
@@ -70,13 +65,13 @@ class MediaMediaMosaFileStyles extends FileStyles {
       $local_path = 'public://media-mediamosa/' . $asset_id . '.jpg';
 
       // Copy the still url, if it necessary.
-      if (!file_exists($local_path) || time() - filectime($local_path) > self::FILE_EXPIRE_TIME) {
+      if (!file_exists($local_path) || time() - filectime($local_path) > MediaMediaMosa::THUMBNAIL_EXPIRE_TIME) {
 
         // Unlink first.
         @unlink($local_path);
         try {
           // Get the still url.
-          $asset = MediaMosaCkConnectorWrapper::request_get_asset($asset_id);
+          $asset = MediaMosaCkConnectorWrapper::get_asset($asset_id);
           $still_url = (string) $asset->items->item->vpx_still_url;
 
           // Test before usage.
@@ -99,12 +94,12 @@ class MediaMediaMosaFileStyles extends FileStyles {
   }
 
   function video($effect) {
-    $params = MediaMosaStreamWrapper::mediamosa_parse_url($this->get_uri());
+    $params = MediaMosaStreamWrapper::mediamosa_parse_url($this->getUri());
     $asset_id = $params['asset_id'];
     $mediafile_id = $params['mediafile_id'];
     $mediafile_id_transcoded = $mediafile_id;
 
-    $asset = MediaMosaCkConnectorWrapper::request_get_asset($asset_id);
+    $asset = MediaMosaCkConnectorWrapper::get_asset($asset_id);
     $user_id = (string) $asset->items->item->owner_id;
     if (isset($asset->items->item->mediafiles->mediafile)) {
       foreach ($asset->items->item->mediafiles->mediafile as $mediafile) {
@@ -117,13 +112,13 @@ class MediaMediaMosaFileStyles extends FileStyles {
 
     $options = array(
       'autostart' => $this->get_autoplay(),
-      'height' => $this->get_height(),
-      'width' => $this->get_width(),
+      'height' => $this->getHeight(),
+      'width' => $this->getWidth(),
       //'fullscreen' => $this->get_fullscreen(),
       'response' => 'object',
     );
-    $output = MediaMosaCkConnectorWrapper::request_get_play_link($asset_id, $mediafile_id_transcoded, $user_id, $options);
+    $output = MediaMosaCkConnectorWrapper::get_play_link($asset_id, $mediafile_id_transcoded, $user_id, $options);
 
-    $this->set_output($output);
+    $this->setOutput($output);
   }
 }

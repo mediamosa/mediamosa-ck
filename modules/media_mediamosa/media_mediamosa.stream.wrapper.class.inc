@@ -1,11 +1,9 @@
 <?php
-// $Id$
-
 /**
- * MediaMosa is a Full Featured, Webservice Oriented Media Management and
- * Distribution platform (http://www.vpcore.nl)
+ * MediaMosa is Open Source Software to build a Full Featured, Webservice
+ * Oriented Media Management and Distribution platform (http://mediamosa.org)
  *
- * Copyright (C) 2011 SURFnet BV (http://www.surfnet.nl) and Kennisnet
+ * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl) and Kennisnet
  * (http://www.kennisnet.nl)
  *
  * MediaMosa is based on the open source Drupal platform and
@@ -37,10 +35,6 @@
  * Formats;
  * mediamosa://asset/[asset_id]/[mediafile_id]/[filename]
  *
- *
- *
- * @see class MediaFlickrStreamWrapper and MediaYouTubeStreamWrapper for
- *      (bad) examples.
  */
 class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
 
@@ -54,7 +48,7 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
       return FALSE;
     }
 
-    return MediaMosaCkConnectorWrapper::request_get_play_link($parameters['asset_id'], $parameters['mediafile_id']);
+    return MediaMosaCkConnectorWrapper::get_play_link($parameters['asset_id'], $parameters['mediafile_id']);
   }
 
   /**
@@ -84,7 +78,7 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
    *  Either array filled or FALSE.
    */
   static public function mediamosa_parse_url($url) {
-        // Parse the url.
+    // Parse the url.
     if (!preg_match('@^mediamosa://asset/([a-zA-Z0-9]+)/([a-zA-Z0-9]+)/([^/]+)$@i', $url, $matches)) {
       return FALSE;
     }
@@ -100,13 +94,14 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
   /**
    * Get and split up the URL into its parts.
    *
-   * @param ind $fid
+   * @param $fid
+   *   The Drupal file ID.
    *
    * @return array
-   *  Either array filled or FALSE.
+   *   Either array filled or FALSE.
    */
   static public function mediamosa_parse_url_from_fid($fid) {
-    $media = media_load($fid);
+    $media = reset(media_multi_load($fid));
     if (!$media || !isset($media->uri)) {
       return FALSE;
     }
@@ -115,13 +110,29 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
   }
 
   /**
+   * Some mimetypes are valid, but might not match some of the Media definition
+   * of mimetypes. So are some mimetypes not seen as video types, because they
+   * don't start with 'video/'.
+   *
+   * @param $mimetype
+   *   Get the mimetype.
+   */
+  static public function translateMimeType($mimetype) {
+    static $translate = array(
+      'application/ogg' => 'video/ogg',
+    );
+
+    // Translate.
+    return (isset($translate[$mimetype]) ? $translate[$mimetype] : $mimetype);
+  }
+
+  /**
    * The mimetype returned is based on the URI and content we return.
    *
-   * @param string $uri
-   * @param string $mapping
+   * @param $url
+   * @param $mapping
    */
   static public function getMimeType($url, $mapping = NULL) {
-
     $mimetypes = &drupal_static(__CLASS__ . '::' . __FUNCTION__);
 
     // If it fails, then its not mediamosa.
@@ -135,8 +146,8 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
           return $mimetypes[$params['mediafile_id']];
         }
 
-        $mediafile_xml = MediaMosaCkConnectorWrapper::request_get_mediafile($params['mediafile_id']);
-        $mimetypes[$params['mediafile_id']] = empty($mediafile_xml->items->item->metadata->mime_type) ? 'application/octet-stream' : (string) $mediafile_xml->items->item->metadata->mime_type;
+        $mediafile_xml = MediaMosaCkConnectorWrapper::get_mediafile($params['mediafile_id']);
+        $mimetypes[$params['mediafile_id']] = self::translateMimeType(empty($mediafile_xml->items->item->metadata->mime_type) ? 'application/octet-stream' : (string) $mediafile_xml->items->item->metadata->mime_type);
 
         // return the mime-type, if any.
         return $mimetypes[$params['mediafile_id']];
@@ -148,5 +159,80 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
     }
 
     return 'application/octet-stream';
+  }
+
+  /**
+   * Returns the still url of the asset. Made static for external access.
+   *
+   * @param $asset_id
+   *   The asset_id for the still.
+   *
+   * @return
+   *   The url to the still.
+   *
+   * @see getOriginalThumbnailPath()
+   */
+  static public function mediamosa_getOriginalThumbnailPath($asset_id) {
+    try {
+      // Get the still url.
+      $asset = MediaMosaCkConnectorWrapper::get_asset($asset_id);
+      $thumb = (string) $asset->items->item->vpx_still_url;
+    }
+    catch (Exception $e) {
+    }
+
+    return empty($thumb) ? FALSE : $thumb; // Return FALSE when no still.
+  }
+
+  /**
+   * Returns the still url of the asset.
+   *
+   * @return
+   *   The url to the still.
+   *
+   * @see mediamosa_getOriginalThumbnailPath()
+   */
+  public function getOriginalThumbnailPath() {
+    $parts = $this->get_parameters();
+    return self::mediamosa_getOriginalThumbnailPath($parts['asset_id']);
+  }
+
+  /**
+   * Returns the local version path of the still.
+   *
+   * @param $asset_id
+   *   The asset_id for the still.
+   *
+   * @return
+   *   The local path of the still.
+   *
+   * @see getLocalThumbnailPath()
+   */
+  static public function mediamosa_getLocalThumbnailPath($asset_id) {
+    $local_path = 'public://media-mediamosa/' . $asset_id . '.jpg';
+    if (!file_exists($local_path) || time() - filectime($local_path) > MediaMediaMosa::THUMBNAIL_EXPIRE_TIME) {
+      $original_thumb = self::mediamosa_getOriginalThumbnailPath($asset_id);
+      if (empty($original_thumb)) {
+        return NULL;
+      }
+
+      $dirname = drupal_dirname($local_path);
+      file_prepare_directory($dirname, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+      @copy($original_thumb, $local_path);
+    }
+    return $local_path;
+  }
+
+  /**
+   * Returns the local version path of the still.
+   *
+   * @return
+   *   The local path of the still.
+   *
+   * @see mediamosa_getLocalThumbnailPath()
+   */
+  public function getLocalThumbnailPath() {
+    $parts = $this->get_parameters();
+    return self::mediamosa_getLocalThumbnailPath($parts['asset_id']);
   }
 }

@@ -1,11 +1,9 @@
 <?php
-// $Id$
-
 /**
- * MediaMosa is a Full Featured, Webservice Oriented Media Management and
- * Distribution platform (http://www.vpcore.nl)
+ * MediaMosa is Open Source Software to build a Full Featured, Webservice
+ * Oriented Media Management and Distribution platform (http://mediamosa.org)
  *
- * Copyright (C) 2011 SURFnet BV (http://www.surfnet.nl) and Kennisnet
+ * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl) and Kennisnet
  * (http://www.kennisnet.nl)
  *
  * MediaMosa is based on the open source Drupal platform and
@@ -24,7 +22,6 @@
  * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  */
 
-
 /**
  * @file
  * This module enables access control for frontend applications.
@@ -39,7 +36,7 @@ define('MEDIAMOSA_CK_ACCESS_PERMISSION_GENERATION', 'mediamosa_ck_access_permiss
 function mediamosa_ck_access_menu() {
   $items = array();
 
-  $items['media/%/access'] = array(
+  $items['file/%/access'] = array(
     'title' => 'Access rules',
     'type' => MENU_LOCAL_TASK,
     'page callback' => 'drupal_get_form',
@@ -83,15 +80,20 @@ function _mediamosa_ck_access_generate_form() {
       $mediafile_id = $media_data['mediafile_id'];
 
       if ($mediafile_id) {
-        $mediafile = MediaMosaCkConnectorWrapper::request_get_mediafile($mediafile_id);
+        $mediafile = MediaMosaCkConnectorWrapper::get_mediafile($mediafile_id);
         $user_id = (string) $mediafile->items->item->owner_id;
-        $rules_encoded = MediaMosaCkConnectorAccessWrapper::get_access_control($mediafile_id, $user_id);
+        $access = MediaMosaCkConnectorAccessWrapper::get_access_control($mediafile_id, $user_id);
       }
-
-      if ($rules_encoded) {
-        // Did we get something? Lets apply it!
-        foreach ($rules_encoded->items->item as $item) {
-          if (isset($item->aut_realm)) {
+      if ($access) {
+        // Go through our access.
+        foreach ($access->items->item as $item) {
+          if (isset($item->acl_realm)) {
+            $rules[] = $item->acl_realm;
+          }
+          elseif (isset($item->acl_domain)) {
+            $rules[] = $item->acl_domain;
+          }
+          elseif (isset($item->aut_realm)) {
             $rules[] = $item->aut_realm;
           }
           elseif (isset($item->aut_domain)) {
@@ -102,8 +104,19 @@ function _mediamosa_ck_access_generate_form() {
 
       sort($rules);
 
-      $collapsed = FALSE;
-      $form = mediamosa_ck_access_media_mediamosa_upload_collect_(FALSE, $rules);
+      $form['mediamosa_file']['access'] = array(
+        '#type' => 'fieldset',
+        '#title' => 'Access',
+        '#collapsible' => TRUE,
+        '#collapsed' => FALSE,
+      );
+
+      $form['mediamosa_file']['access']['domain_realm'] = array(
+        '#type' => 'textarea',
+        '#title' => t('Authorized domains and realms'),
+        '#description' => t('To restrict access please enter allowed domains and realms. Each line contrains realm or domain.<br />Examples: foo.com, @bar.com'),
+        '#default_value' => implode("\n", $rules),
+      );
 
       $form['mediamosa_file']['access']['access_for_old_mediafile'] = array(
         '#type' => 'submit',
@@ -121,36 +134,6 @@ function _mediamosa_ck_access_generate_form() {
   return $form;
 }
 
-/**
- * Implements hook_media_mediamosa_upload_collect().
- * Disabled: The users can't make ACL rules, when they upload a file.
- * Reason: The submit is redirected to MediaMosa, and there isn't REST parameter for it.
- * If you want to enable again, please change the call in _mediamosa_ck_access_generate_form()
- * function too.
- *
- * @param boolean $collapsed
- *   The form is collapsed or not.
- */
-function mediamosa_ck_access_media_mediamosa_upload_collect_($collapsed = TRUE, $rules = array()) {
-  $form = array();
-
-  $form['mediamosa_file']['access'] = array(
-    '#type' => 'fieldset',
-    '#title' => 'Access',
-    '#collapsible' => TRUE,
-    '#collapsed' => $collapsed,
-  );
-
-  $form['mediamosa_file']['access']['domain_realm'] = array(
-    '#type' => 'textarea',
-    '#title' => t('Authorized domains and realms'),
-    '#description' => t('To restrict access please enter allowed domains and realms. Each line contrains realm or domain.<br />Examples: foo.com, @bar.com'),
-    '#default_value' => implode("\n", $rules),
-  );
-
-  return $form;
-}
-
 function _mediamosa_ck_access_generate_form_submit($form, &$form_state) {
   $fid = arg(1);
 
@@ -161,11 +144,11 @@ function _mediamosa_ck_access_generate_form_submit($form, &$form_state) {
 
   if ($media_data) {
     // Get the asset with all the mediafiles.
-    $asset_get = MediaMosaCkConnectorWrapper::request_get_asset($media_data['asset_id']);
+    $asset_get = MediaMosaCkConnectorWrapper::get_asset($media_data['asset_id']);
     // Set the access rules to all the mediafiles.
     if (!empty($asset_get->items->item->mediafiles->mediafile) && $asset_get->items->item->mediafiles->mediafile) {
       foreach ($asset_get->items->item->mediafiles->mediafile as $mediafile_get) {
-        MediaMosaCkConnectorAccessWrapper::set_access_control($mediafile_get->mediafile_id, mediamosa_ck::setting_user_id(), $values['domain_realm']);
+        MediaMosaCkConnectorAccessWrapper::set_access_control($mediafile_get->mediafile_id, mediamosa_ck::session_user_id(), $values['domain_realm']);
       }
     }
   }

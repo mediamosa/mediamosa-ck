@@ -1,11 +1,9 @@
 <?php
-// $Id$
-
 /**
  * MediaMosa is Open Source Software to build a Full Featured, Webservice
  * Oriented Media Management and Distribution platform (http://mediamosa.org)
  *
- * Copyright (C) 2011 SURFnet BV (http://www.surfnet.nl) and Kennisnet
+ * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl) and Kennisnet
  * (http://www.kennisnet.nl)
  *
  * MediaMosa is based on the open source Drupal platform and
@@ -32,8 +30,10 @@
 /**
  * Is called by redirect when upload was done by MediaMosa.
  *
- * @param string $asset_id
- * @param string $mediafile_id
+ * @param $asset_id
+ *   The ID of the asset.
+ * @param $mediafile_id
+ *   The ID of the mediafile.
  */
 function _media_mediamosa_uploaded_file($asset_id, $mediafile_id) {
 
@@ -41,7 +41,7 @@ function _media_mediamosa_uploaded_file($asset_id, $mediafile_id) {
 
   try {
     // Need to get info of mediafile/asset.
-    $mediafile_xml = MediaMosaCkConnectorWrapper::request_get_mediafile($mediafile_id);
+    $mediafile_xml = MediaMosaCkConnectorWrapper::get_mediafile($mediafile_id);
 
     // Get filename.
     $filename = (string) $mediafile_xml->items->item->filename;

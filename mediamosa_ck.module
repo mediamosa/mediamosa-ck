@@ -1,11 +1,9 @@
 <?php
-// $Id$
-
 /**
- * MediaMosa is a Full Featured, Webservice Oriented Media Management and
- * Distribution platform (http://www.vpcore.nl)
+ * MediaMosa is Open Source Software to build a Full Featured, Webservice
+ * Oriented Media Management and Distribution platform (http://mediamosa.org)
  *
- * Copyright (C) 2011 SURFnet BV (http://www.surfnet.nl) and Kennisnet
+ * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl) and Kennisnet
  * (http://www.kennisnet.nl)
  *
  * MediaMosa is based on the open source Drupal platform and
@@ -61,4 +59,42 @@ function mediamosa_ck_menu() {
   );
 
   return $items;
+}
+
+/**
+ * Implements hook_date_formats().
+ */
+function mediamosa_ck_date_format_types() {
+  // Define the MediaMosa CK date format types.
+  return array(
+    'mediamosa_ck_normal' => t('MediaMosa Site Builder - Normal'),
+    'mediamosa_ck_mf_duration' => t('MediaMosa Site Builder - Mediafile duration'),
+  );
+}
+
+/**
+ * Implements hook_date_formats().
+ */
+function mediamosa_ck_date_formats() {
+  return array(
+    array(
+      'type' => 'mediamosa_ck_normal',
+      'format' => 'd-m-Y',
+    ),
+    array(
+      'type' => 'mediamosa_ck_normal',
+      'format' => 'm-d-Y',
+      'locales' => array('en', 'en-us'),
+    ),
+    array(
+      'type' => 'mediamosa_ck_mf_duration',
+      'format' => 'i:s',
+      'locales' => array('en', 'en-us'),
+    ),
+    array(
+      'type' => 'mediamosa_ck_mf_duration',
+      'format' => 'H:i:s',
+      'locales' => array('en', 'en-us'),
+    ),
+  );
 }

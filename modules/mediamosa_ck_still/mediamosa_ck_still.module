@@ -1,11 +1,9 @@
 <?php
-// $Id$
-
 /**
- * MediaMosa is a Full Featured, Webservice Oriented Media Management and
- * Distribution platform (http://www.vpcore.nl)
+ * MediaMosa is Open Source Software to build a Full Featured, Webservice
+ * Oriented Media Management and Distribution platform (http://mediamosa.org)
  *
- * Copyright (C) 2011 SURFnet BV (http://www.surfnet.nl) and Kennisnet
+ * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl) and Kennisnet
  * (http://www.kennisnet.nl)
  *
  * MediaMosa is based on the open source Drupal platform and
@@ -62,7 +60,7 @@ define('MEDIA_MEDIAMOSA_STILL_V_PADDING', 0);
 function mediamosa_ck_still_menu() {
   $items = array();
 
-  $items['media/%/stills'] = array(
+  $items['file/%/stills'] = array(
     'title' => 'Stills',
     'type' => MENU_LOCAL_TASK,
     'page callback' => 'drupal_get_form',
@@ -125,8 +123,8 @@ function mediamosa_ck_still_mediamosa_ck_configuration_collect() {
   );
 
   $form['still']['media_mediamosa_still_size'] = array(
-    '#title' => t('Size of still'),
-    '#description' => t('The size of the still in pixels; WidthxHeight. For example; 352x288.'),
+    '#title' => t('Dimension of still image'),
+    '#description' => t('Dimension of the still in pixels (width x height)'),
     '#type' => 'textfield',
     '#size' => 15,
     '#default_value' => variable_get('media_mediamosa_still_size', MEDIA_MEDIAMOSA_STILL_SIZE),
@@ -134,58 +132,59 @@ function mediamosa_ck_still_mediamosa_ck_configuration_collect() {
 
   $form['still']['media_mediamosa_still_h_padding'] = array(
     '#title' => t('Horizontal padding'),
+    '#description' => t('Add horizontal padding (pixels) to your still images. These will create black borders to the left and right of the image. Enter 0 for off.'),
     '#type' => 'textfield',
     '#size' => 4,
     '#default_value' => variable_get('media_mediamosa_still_h_padding', MEDIA_MEDIAMOSA_STILL_H_PADDING),
-    '#description' => t('Horizontal padding allows you to create extra space to the left and right of your still image. The value is in pixels.'),
   );
 
   $form['still']['media_mediamosa_still_v_padding'] = array(
+    '#title' => t('Vertical padding'),
+    '#description' => t('Add vertical padding (pixels) to your still images. These will create black borders to the top and bottom of the image. Enter 0 for off.'),
     '#title' => t('Vertical padding (in pixels)'),
     '#type' => 'textfield',
     '#size' => 4,
     '#default_value' => variable_get('media_mediamosa_still_v_padding', MEDIA_MEDIAMOSA_STILL_V_PADDING),
-    '#description' => t('Vertical padding allows you to create extra space to the top and bottom of your still image. The value is in pixels.'),
   );
 
   $form['still']['media_mediamosa_still_time_code'] = array(
     '#title' => t('Still time code'),
+    '#description' => t('Enter the position in seconds where in the media file the still should be taken.'),
     '#type' => 'textfield',
     '#size' => 3,
     '#default_value' => variable_get('media_mediamosa_still_time_code', MEDIA_MEDIAMOSA_STILL_TIME_CODE),
-    '#description' => t('You can define from which second the still come from'),
   );
 
   $form['still']['media_mediamosa_still_per_mediafile'] = array(
-    '#title' => t('# of stills per mediafile'),
+    '#title' => t('# of stills per media file'),
+    '#description' => t('Enter the number of still images that will be created from the media file.'),
     '#type' => 'textfield',
     '#size' => 3,
     '#default_value' => variable_get('media_mediamosa_still_per_mediafile', MEDIA_MEDIAMOSA_STILL_PER_MEDIAFILE),
-    '#description' => t('Enter how many still images you would like to create from the video file'),
   );
 
   $form['still']['media_mediamosa_still_every_second'] = array(
-    '#title' => t('One still every # of seconds'),
+    '#title' => t('Take still every # of seconds'),
+    '#description' => t('Enter the number of seconds between every step of stills.'),
     '#type' => 'textfield',
     '#size' => 6,
     '#default_value' => variable_get('media_mediamosa_still_every_second', MEDIA_MEDIAMOSA_STILL_EVERY_SECOND),
-    '#description' => t('Enter how many seconds should be between two created images according your video duration'),
   );
 
   $form['still']['media_mediamosa_still_start_time'] = array(
     '#title' => t('Start time in seconds'),
+    '#description' => t('Enter the starting position in seconds where the first still will be taken.'),
     '#type' => 'textfield',
     '#size' => 7,
     '#default_value' => variable_get('media_mediamosa_still_start_time', MEDIA_MEDIAMOSA_STILL_START_TIME),
-    '#description' => t('Enter a starting point to your still generation according to your video duration'),
   );
 
   $form['still']['media_mediamosa_still_end_time'] = array(
     '#title' => t('End time in seconds'),
+    '#description' => t('Enter the end position in seconds where the last still will be taken. Enter @end_time as value to match the end of the duration of your media file.', array('@end_time' => MEDIA_MEDIAMOSA_STILL_END_TIME)),
     '#type' => 'textfield',
     '#size' => 7,
     '#default_value' => variable_get('media_mediamosa_still_end_time', MEDIA_MEDIAMOSA_STILL_END_TIME),
-    '#description' => t('Enter the ending point to your still generation according to your video duration'),
   );
 
   return $form;
@@ -223,7 +222,7 @@ function _mediamosa_ck_stills_form() {
       _media_mediamosa_get_running_jobs($form, $media_data['mediafile_id'], MEDIA_MEDIAMOSA_JOB_TYPE_STILL);
 
       // Add generate form.
-      $form = array_merge($form, mediamosa_ck_still_media_mediamosa_upload_collect($collapsed));
+      drupal_alter('media_mediamosa_upload_form', $form);
 
       // Add Show stills form.
       $form = array_merge($form, _mediamosa_ck_still_show_stills_form($media_data));
@@ -260,7 +259,7 @@ function _mediamosa_ck_still_show_stills_form($media_data) {
   try {
     $asset_id = $media_data['asset_id'];
     $mediafile_id = $media_data['mediafile_id'];
-    $mediafile = MediaMosaCkConnectorWrapper::request_get_mediafile($mediafile_id);
+    $mediafile = MediaMosaCkConnectorWrapper::get_mediafile($mediafile_id);
 
     $form['show_stills'] = array(
       '#type' => 'fieldset',
@@ -374,7 +373,7 @@ function _mediamosa_ck_still_show_stills_form_submit($form, &$form_state) {
   if ($media_data) {
     $asset_id = $media_data['asset_id'];
     $mediafile_id = $media_data['mediafile_id'];
-    $mediafile = MediaMosaCkConnectorWrapper::request_get_mediafile($mediafile_id);
+    $mediafile = MediaMosaCkConnectorWrapper::get_mediafile($mediafile_id);
     $user_id = (string) $mediafile->items->item->owner_id;
 
     // Set default still.
@@ -395,35 +394,32 @@ function _mediamosa_ck_still_show_stills_form_submit($form, &$form_state) {
 }
 
 /**
- * Implements hook_media_mediamosa_upload_collect().
- *
- * @param boolean $collapsed
- *   The form is collapsed or not.
- *
- * @return $form
+ * Implements hook_media_mediamosa_upload_form_alter().
  */
-function mediamosa_ck_still_media_mediamosa_upload_collect($collapsed = TRUE) {
-  $form = array();
+function mediamosa_ck_still_media_mediamosa_upload_form_alter(&$form, $settings) {
+
+  // Its an drupal_alter(), $settings = array() in func. declare does not work.
+  if (empty($settings)) {
+    $settings = array();
+  }
+
+  // Set default.
+  $settings += array(
+    'collapsed' => TRUE,
+    'hidden' => array('create_still' => 'true'),
+  );
 
   // JS.
   drupal_add_js(drupal_get_path('module', 'mediamosa_ck_still') . '/js/still.js');
 
-  $options = array(
-    'hidden' => array(),
-  );
-
+  // Get default.
   $still_type = variable_get('media_mediamosa_still_type', MEDIA_MEDIAMOSA_STILL_TYPE_NONE);
-
-  $form['create_still'] = array(
-    '#type' => 'hidden',
-    '#value' => 'true',
-  );
 
   $form['mediamosa_file']['still'] = array(
     '#type' => 'fieldset',
     '#title' => t('Generate stills'),
     '#collapsible' => TRUE,
-    '#collapsed' => $collapsed,
+    '#collapsed' => $settings['collapsed'],
   );
 
   $form['mediamosa_file']['still']['still_type'] = array(
@@ -443,7 +439,7 @@ function mediamosa_ck_still_media_mediamosa_upload_collect($collapsed = TRUE) {
 
   // All
   $form['mediamosa_file']['still']['size'] = array(
-    '#title' => t('Size of still (in pixels, WidthxHeight)'),
+    '#title' => t('Dimension of the still in pixels (width x height)'),
     '#type' => 'textfield',
     '#size' => 15,
     '#default_value' => variable_get('media_mediamosa_still_size', MEDIA_MEDIAMOSA_STILL_SIZE),
@@ -452,22 +448,22 @@ function mediamosa_ck_still_media_mediamosa_upload_collect($collapsed = TRUE) {
 
   // All
   $form['mediamosa_file']['still']['h_padding'] = array(
-    '#title' => t('Horizontal padding (in pixels)'),
+    '#title' => t('Horizontal padding'),
+    '#description' => t('Add horizontal padding (pixels) to your still images. These will create black borders to the left and right of the image. Enter 0 for off.'),
     '#type' => 'textfield',
     '#size' => 4,
     '#default_value' => variable_get('media_mediamosa_still_h_padding', MEDIA_MEDIAMOSA_STILL_H_PADDING),
     '#required' => TRUE,
-    '#description' => t('You can use it, if you want add horizontal padding (black strips) to your still images'),
   );
 
   // All
   $form['mediamosa_file']['still']['v_padding'] = array(
-    '#title' => t('Vertical padding (in pixels)'),
+    '#title' => t('Vertical padding'),
+    '#description' => t('Add vertical padding (pixels) to your still images. These will create black borders to the top and bottom of the image. Enter 0 for off.'),
     '#type' => 'textfield',
     '#size' => 4,
     '#default_value' => variable_get('media_mediamosa_still_v_padding', MEDIA_MEDIAMOSA_STILL_V_PADDING),
     '#required' => TRUE,
-    '#description' => t('You can use it, if you want add vertical padding (black strips) to your still images'),
   );
 
   // NONE.
@@ -475,32 +471,32 @@ function mediamosa_ck_still_media_mediamosa_upload_collect($collapsed = TRUE) {
     '#prefix' => '<div id="show-media_mediamosa-frametime" style="display:' . (!$still_type || $still_type == MEDIA_MEDIAMOSA_STILL_TYPE_NONE ? 'block' : 'none') . ';">',
     '#suffix' => '</div>',
     '#title' => t('Still time code'),
+    '#description' => t('Enter the position in seconds where in the media file the still should be taken.'),
     '#type' => 'textfield',
     '#size' => 3,
     '#default_value' => variable_get('media_mediamosa_still_time_code', MEDIA_MEDIAMOSA_STILL_TIME_CODE),
-    '#description' => t('You can define from which second the still come from'),
   );
 
   // NORMAL.
   $form['mediamosa_file']['still']['still_per_mediafile'] = array(
     '#prefix' => '<div id="show-media_mediamosa-still-per-mediafile" style="display:' . ($still_type == MEDIA_MEDIAMOSA_STILL_TYPE_NORMAL ? 'block' : 'none') . ';">',
     '#suffix' => '</div>',
-    '#title' => t('# of stills per mediafile'),
+    '#title' => t('# of stills per media file'),
+    '#description' => t('Enter the number of still images that will be created from the media file.'),
     '#type' => 'textfield',
     '#size' => 3,
     '#default_value' => variable_get('media_mediamosa_still_per_mediafile', MEDIA_MEDIAMOSA_STILL_PER_MEDIAFILE),
-    '#description' => t('You can define here how many still images you would like to create from the video file'),
   );
 
   // SECOND.
   $form['mediamosa_file']['still']['still_every_second'] = array(
     '#prefix' => '<div id="show-media_mediamosa-still-every-second" style="display:' . ($still_type == MEDIA_MEDIAMOSA_STILL_TYPE_SECOND ? 'block' : 'none') . ';">',
     '#suffix' => '</div>',
-    '#title' => t('One still every # of seconds'),
+    '#title' => t('Take still every # of seconds'),
+    '#description' => t('Enter the number of seconds between every step of stills.'),
     '#type' => 'textfield',
     '#size' => 6,
     '#default_value' => variable_get('media_mediamosa_still_every_second', MEDIA_MEDIAMOSA_STILL_EVERY_SECOND),
-    '#description' => t('You can define here how many seconds should be between two created images according your video duration'),
   );
 
   // NORMAL / SECOND.
@@ -508,10 +504,10 @@ function mediamosa_ck_still_media_mediamosa_upload_collect($collapsed = TRUE) {
     '#prefix' => '<div id="show-media_mediamosa-start-time" style="display:' . ($still_type == MEDIA_MEDIAMOSA_STILL_TYPE_NORMAL || $still_type == MEDIA_MEDIAMOSA_STILL_TYPE_SECOND ? 'block' : 'none') . ';">',
     '#suffix' => '</div>',
     '#title' => t('Start time in seconds'),
+    '#description' => t('Enter the starting position in seconds where the first still will be taken.'),
     '#type' => 'textfield',
     '#size' => 7,
     '#default_value' => variable_get('media_mediamosa_still_start_time', MEDIA_MEDIAMOSA_STILL_START_TIME),
-    '#description' => t('You may define a starting point to your still generation according to your video duration'),
   );
 
   // NORMAL / SECOND.
@@ -519,21 +515,19 @@ function mediamosa_ck_still_media_mediamosa_upload_collect($collapsed = TRUE) {
     '#prefix' => '<div id="show-media_mediamosa-end-time" style="display:' . ($still_type == MEDIA_MEDIAMOSA_STILL_TYPE_NORMAL || $still_type == MEDIA_MEDIAMOSA_STILL_TYPE_SECOND ? 'block' : 'none') . ';">',
     '#suffix' => '</div>',
     '#title' => t('End time in seconds'),
+    '#description' => t('Enter the end position in seconds where the last still will be taken. Enter @end_time as value to match the end of the duration of your media file.', array('@end_time' => MEDIA_MEDIAMOSA_STILL_END_TIME)),
     '#type' => 'textfield',
     '#size' => 7,
     '#default_value' => variable_get('media_mediamosa_still_end_time', MEDIA_MEDIAMOSA_STILL_END_TIME),
-    '#description' => t('You may define an ending point to your still generation according to your video duration'),
   );
 
-  // Save the contents of options.
-  foreach ($options['hidden'] as $name => $value) {
+  // Process hidden.
+  foreach ($settings['hidden'] as $name => $value) {
     $form['hidden'][$name] = array(
       '#type' => 'hidden',
       '#value' => $value,
     );
   }
-
-  return $form;
 }
 
 function _mediamosa_ck_stills_form_submit($form, &$form_state) {
@@ -546,7 +540,7 @@ function _mediamosa_ck_stills_form_submit($form, &$form_state) {
 
   if ($media_data) {
     $mediafile_id = $media_data['mediafile_id'];
-    $mediafile = MediaMosaCkConnectorWrapper::request_get_mediafile($mediafile_id);
+    $mediafile = MediaMosaCkConnectorWrapper::get_mediafile($mediafile_id);
     $user_id = (string) $mediafile->items->item->owner_id;
     $data = array(
       'still_type' => $values['still_type'],
@@ -563,8 +557,8 @@ function _mediamosa_ck_stills_form_submit($form, &$form_state) {
   }
 
   // Notify the user about the new job.
-  drupal_set_message(t('The still job was started. Please, wait.'));
+  drupal_set_message(t('Job was started, the still will be available shortly.'));
 
   // Go to the view page.
-  drupal_goto('media/' . $fid . '/stills');
+  drupal_goto('file/' . $fid . '/stills');
 }

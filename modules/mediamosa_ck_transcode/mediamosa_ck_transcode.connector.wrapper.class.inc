@@ -1,6 +1,4 @@
 <?php
-// $Id$
-
 /**
  * MediaMosa is Open Source Software to build a Full Featured, Webservice Oriented Media Management and
  * Distribution platform (http://mediamosa.org)
@@ -31,65 +29,20 @@
 
 class MediaMosaCkConnectorTranscodeWrapper extends MediaMosaCkConnectorWrapper {
   /**
-   * Get transcode profiles.
-   *
-   * @return $profiles
-   */
-  static public function transcode_profiles_get() {
-    $data = array();
-
-    try {
-      // Do request.
-      return mediamosa_ck::request_get_fatal('transcode/profile', array('data' => $data));
-    }
-    catch (Exception $e) {
-      drupal_set_message('Unable to retrieve the transcode profiles, reason; ' . $e->getMessage(), 'error');
-    }
-
-    return FALSE;
-  }
-
-  /**
-   * Create transcoded mediafile.
-   *
-   * @param string $mediafile_id
-   * @param string $user_id
-   * @param array $data
-   */
-  static public function transcode_create($mediafile_id, $user_id, $data = array()) {
-    // Check the parameters.
-    if (empty($mediafile_id) || empty($user_id)) {
-      return FALSE;
-    }
-
-    $data += array(
-      'user_id' => $user_id,
-    );
-
-    try {
-      // Do request.
-      return mediamosa_ck::request_post_fatal('mediafile/' . rawurlencode($mediafile_id) . '/transcode', array('data' => $data));
-    }
-    catch (Exception $e) {
-      drupal_set_message('Unable to start a transcode, reason; ' . $e->getMessage(), 'error');
-    }
-
-    return FALSE;
-  }
-
-  /**
    * Retrieving profile names.
+   *
+   * @deprecated: uses deprecated function response2array().
    *
    * @return profile names
    */
-  static public function request_get_profile_names() {
+  static public function get_profile_names() {
 
     try {
       // Do request.
       $response = mediamosa_ck::request_get_fatal('transcode/profile');
     }
     catch (Exception $e) {
-      drupal_set_message('Unable to update metadata; ' . $e->getMessage(), 'error');
+      mediamosa_ck::watchdog_error('Unable to update metadata; @message.', array('@message' => $e->getMessage()));
       return FALSE;
     }
 
@@ -103,17 +56,21 @@ class MediaMosaCkConnectorTranscodeWrapper extends MediaMosaCkConnectorWrapper {
   /**
    * Retrieving all non-finished jobs.
    *
-   * @param string $asset_id ID of asset.
-   * @param string $owner_id if you already know an owner please supply; this will save from extra request.
+   * @param $asset_id
+   *   ID of asset.
+   * @param $owner_id
+   *   If you already know an owner please supply; this will save from extra
+   *   request.
    *
-   * @return array with jobs.
+   * @return
+   *   Array with jobs.
    */
-  static public function request_get_asset_actual_jobs($asset_id, $owner_id = FALSE) {
+  static public function get_asset_actual_jobs($asset_id, $owner_id = FALSE) {
 
     $uri = strtr('asset/@asset_id/joblist', array('@asset_id' => $asset_id));
 
     if (!$owner_id) {
-      $owner_id = self::request_get_asset_owner($asset_id);
+      $owner_id = self::get_asset_owner($asset_id);
     }
 
     $data = array(
@@ -126,7 +83,7 @@ class MediaMosaCkConnectorTranscodeWrapper extends MediaMosaCkConnectorWrapper {
       $response = mediamosa_ck::request_get_fatal($uri, array('data' => $data));
     }
     catch (Exception $e) {
-      drupal_set_message('Unable to get job list; ' . $e->getMessage(), 'error');
+      mediamosa_ck::watchdog_error('Unable to get job list; @message.', array('@message' => $e->getMessage()));
       return FALSE;
     }
 
@@ -135,7 +92,6 @@ class MediaMosaCkConnectorTranscodeWrapper extends MediaMosaCkConnectorWrapper {
     $jobs = !empty($xml['items']['item']) ? $xml['items']['item'] : array();
 
     return $jobs;
-
   }
 
   /**
@@ -146,7 +102,7 @@ class MediaMosaCkConnectorTranscodeWrapper extends MediaMosaCkConnectorWrapper {
    *
    * @return bool.
    */
-  static public function request_post_job_delete($job_id, $owner_id) {
+  static public function delete_job($job_id, $owner_id) {
 
     // REST uri.
     $uri = strtr('job/@job_id/delete', array('@job_id' => $job_id));
@@ -155,35 +111,11 @@ class MediaMosaCkConnectorTranscodeWrapper extends MediaMosaCkConnectorWrapper {
       $result = mediamosa_ck::request_post_fatal($uri, array('user_id' => $owner_id));
     }
     catch (Exception $e) {
-      drupal_set_message('Unable to delete job; ' . $e->getMessage(), 'error');
+      mediamosa_ck::watchdog_error('Unable to delete job; @message.', array('@message' => $e->getMessage()));
       return FALSE;
     }
 
     return $result->code == 200;
 
-  }
-
-  /**
-   * Delete mediafile.
-   *
-   * @param string $job_id
-   * @param string $owner_id
-   *
-   * @return bool.
-   */
-  static public function request_post_mediafile_delete($mediafile_id, $owner_id) {
-
-    // REST uri.
-    $uri = strtr('mediafile/@mediafile_id/delete', array('@mediafile_id' => $mediafile_id));
-
-    try {
-      $result = mediamosa_ck::request_post_fatal($uri, array('user_id' => $owner_id));
-    }
-    catch (Exception $e) {
-      drupal_set_message('Unable to delete mediafile; ' . $e->getMessage(), 'error');
-      return FALSE;
-    }
-
-    return $result->code == 200;
   }
 }

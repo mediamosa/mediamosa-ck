@@ -1,6 +1,55 @@
 
-Changelog MediaMosa Construction Set
-------------------------------------
+Mediamosa CK, 7.x-2.x-dev
+-------------------------
+- Added hook_mediamosa_asset_view_object_alter, for altering asset objects after
+  they where processed.
+- Added hook_mediamosa_collection_view_object_alter, for altering asset objects
+  after they where processed.
+- Added access_edit and access_delete on the asset and collection object. Better
+  to use these instead of the is_owner flag.
+- Renamed mediamosa_ck::get_metadata_title() to
+  mediamosa_ck::get_metadata_name_title(). Also see
+  mediamosa_ck::get_asset_title() for retrieving the title.
+- Renamed mediamosa_ck::get_metadata_description() to
+  mediamosa_ck::get_metadata_name_description(). Also see
+  mediamosa_ck::get_asset_description() for retrieving the description.
+- New, Popular and featured now correctly show only videos that can be shown on
+  public list (Assets that are marked is_public).
+- Added query option to asset_search view for 'is_public', to include only
+  public media.
+- Added query option to asset_search view for 'hide_empty_assets', to exclude
+  empty assets from the view results.
+- Renamed MediaMosaCkConnectorWrapper::get_job() to
+  MediaMosaCkConnectorWrapper::get_mediafile_jobs().
+- Moved mediamosa_ck_transcode::get_default_transcode_profile() to the
+  MediaMosaCkConnectorWrapper class.
+- Moved mediamosa_ck_transcode::get_allowed_transcode_profiles() to the
+  MediaMosaCkConnectorWrapper class.
+- Moved mediamosa_ck_transcode::create_transcode() to the
+  MediaMosaCkConnectorWrapper class.
+- Switched from storing the Drupal user ID as owner to Drupal email address as
+  owner of the Mediafiles and other MediaMosa objects.
+- Update info to reflect dependencies.
+- Moved functions to mediamosa_ck.connector class.
+- Updated function names to reflect their purposes.
+- Added collection views.
+- Added player view handler.
+- Change metadata post to make action optional instead of fixed.
+- Extend asset get view.
+- Added view for asset get.
+- Fixed stream class for displaying stills.
+- Extended the views REST calls for dates, stills.
+- Added basis mediamosa_ck_views
+- Re-done .info dependencies.
+- Removed dsm() function.
+- Added comment on deprecated usage of response2array.
+- Updated all version dependencies on Media 2.0, File entity 2.0.
+- Updated modules to work with Media 2.0 and File Entity 2.0.
+- Added custom request function that is used with custom restview module.
+- Added new sync class for sync related functions.
+
+Mediamosa CK, 7.x-1.x-dev
+-------------------------
 - Added code to return play link.
 - Fixed upload to MediaMosa.
 - Ticket 488, 490, 491, 494: ACL, still and transcode forms and REST calls.

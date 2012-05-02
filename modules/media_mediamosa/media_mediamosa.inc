@@ -1,11 +1,9 @@
 <?php
-// $Id$
-
 /**
  * MediaMosa is Open Source Software to build a Full Featured, Webservice
  * Oriented Media Management and Distribution platform (http://mediamosa.org)
  *
- * Copyright (C) 2011 SURFnet BV (http://www.surfnet.nl) and Kennisnet
+ * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl) and Kennisnet
  * (http://www.kennisnet.nl)
  *
  * MediaMosa is based on the open source Drupal platform and
@@ -47,7 +45,7 @@ define('MEDIA_MEDIAMOSA_JOB_STATUS_WAITING', 'WAITING');
 function _media_mediamosa_upload_form($form, &$form_state, $types = NULL) {
 
   // Try to create upload ticket.
-  $result = MediaMosaCkConnectorWrapper::request_create_upload_ticket();
+  $result = MediaMosaCkConnectorWrapper::create_upload_ticket();
   if (!$result) {
     $form['upload'] = array(
       '#markup' => t('Unable to upload to MediaMosa; @reason', array('@reason' => mediamosa_ck::get_connector_last_error_text())),
@@ -84,15 +82,24 @@ function _media_mediamosa_upload_form($form, &$form_state, $types = NULL) {
     '#value' => url('media_mediamosa/mediafile/uploaded/' . rawurlencode($result['asset_id']) . '/' . rawurlencode($result['mediafile_id']), array('absolute' => TRUE)),
   );
 
-  $form['submit'] = array(
+  $form['actions'] = array('#type' => 'actions');
+  $form['actions']['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Submit'),
   );
 
+  $form['actions']['cancel'] = array(
+    '#type' => 'link',
+    '#title' => t('Cancel'),
+    '#href' => '',
+    '#attributes' => array('class' => array('button', 'fake-cancel')),
+    '#weight' => 100,
+  );
+
   $form['#action'] = $upload_url;
 
-  // Merge with other options in for upload (turned off for now).
-  $form = array_merge(module_invoke_all('media_mediamosa_upload_collect'), $form);
+  // Let others alter the form.
+  drupal_alter('media_mediamosa_upload_form', $form);
 
   return $form;
 }
@@ -110,52 +117,6 @@ function _media_mediamosa_media_permission($fid, $permission) {
 }
 
 /**
- * Provide asset ID to media ID mapping.
- * Media ID is the same as file ID in the file_managed table.
- *
- * @return array with asset_id as key and media_id as value, both are strings.
- * @see _media_mediamosa_get_media_id().
- */
-function _media_mediamosa_asset_to_media_mapping() {
-
-  // Setup static.
-  $assetids_to_fids = &drupal_static(__FUNCTION__, array());
-
-  if (!isset($assetids_to_fids)) {
-    // Do a query.
-    $query = db_select('file_managed', 'fm');
-    $query->fields('fm', array('fid', 'uri'));
-    $query->condition('uri', 'mediamosa://%', 'LIKE');
-    $query->orderBy('fid', 'ASC');
-    $result = $query->execute()->fetchAll();
-
-    $assetids_to_fids = array();
-    foreach ($result as $media) {
-      $uri_parts = MediaMosaStreamWrapper::mediamosa_parse_url($media->uri);
-      $assetids_to_fids[$uri_parts['asset_id']] = $media->fid;
-    }
-  }
-
-  return $assetids_to_fids;
-}
-
-/**
- * Figure out how many assets are in file_managed.
- */
-function _media_mediamosa_assets_in_file_managed() {
-  $query = db_select('file_managed', 'fm');
-  $query->condition('uri', 'mediamosa://%', 'LIKE');
-  return $query->countQuery()->execute()->fetchField();
-}
-
-/**
- * Figure out how many assets are in MediaMosa.
- */
-function _media_mediamosa_assets_in_mediamosa() {
-  return MediaMosaConnectorMediaWrapper::request_get_number_of_assets();
-}
-
-/**
  * File type check.
  *
  * @param int $fid
@@ -166,11 +127,20 @@ function _media_mediamosa_file_type_check($fid) {
     return FALSE;
   }
 
-  $media = media_load($fid);
-  if (!$media || !isset($media->uri)) {
+  // Again, we don't have media_load function, so we have to use
+  // media_multi_load() and then reset array.
+  $multi_media = media_multi_load($fid);
+
+  if ($multi_media) {
+    foreach($multi_media as $media) {
+      if (!isset($media->uri)) {
+        return FALSE;
+      }
+    }
+  }
+  else {
     return FALSE;
   }
-
 
   $uri = explode('://', $media->uri);
 
@@ -181,7 +151,6 @@ function _media_mediamosa_file_type_check($fid) {
  * Return media ID for a given asset ID.
  *
  * @return media ID AKA managed file ID, or FALSE if not found.
- * @see _media_mediamosa_asset_to_media_mapping().
  */
 function _media_mediamosa_get_media_id($asset_id) {
 
@@ -216,7 +185,7 @@ function _media_mediamosa_get_media_id($asset_id) {
  * @param $job_type
  */
 function _media_mediamosa_get_running_jobs(&$form, $mediafile_id, $job_type) {
-  $jobs = MediaMosaCkConnectorWrapper::request_job_get($mediafile_id, mediamosa_ck::setting_user_id());
+  $jobs = MediaMosaCkConnectorWrapper::get_jobs($mediafile_id, mediamosa_ck::session_user_id());
   $jobs_count = 0;
   if ($jobs->items->item) {
     foreach ($jobs->items->item as $job) {
@@ -251,31 +220,23 @@ function _media_mediamosa_time_to_rfc_3339($time = NULL) {
 /**
  * Delete the transcoded mediafile of an asset.
  *
- * @param string $asset_id.
+ * @param $asset_id.
  *
- * @return array $mediafile_ids
+ * @return array
+ *   Returns an array with the mediafile IDs that where deleted.
  */
 function _media_mediamosa_delete_mediafile_transcoded($asset_id) {
   $mediafile_ids = array();
 
-  $asset = MediaMosaCkConnectorWrapper::request_get_asset($asset_id);
+  $asset = MediaMosaCkConnectorWrapper::get_asset($asset_id);
 
   if (isset($asset->items->item->mediafiles->mediafile) && $asset->items->item->mediafiles->mediafile) {
     foreach ($asset->items->item->mediafiles->mediafile as $mediafile) {
       if ((string) $mediafile->is_original_file != 'TRUE') {
-        MediaMosaCkConnectorWrapper::mediafile_delete((string) $mediafile->mediafile_id, (string) $mediafile->owner_id);
+        MediaMosaCkConnectorWrapper::delete_mediafile((string) $mediafile->mediafile_id, (string) $mediafile->owner_id);
       }
     }
   }
 
   return $mediafile_ids;
-}
-
-// Convert any date into unix timestamp.
-function _media_mediamosa_date2unix($any_date) {
-  // Parse the date, date_parse is new in 5.2.
-  $date_parsed = date_parse($any_date);
-
-  // Convert to integer
-  return gmmktime($date_parsed['hour'], $date_parsed['minute'], $date_parsed['second'], $date_parsed['month'], $date_parsed['day'], $date_parsed['year']);
 }

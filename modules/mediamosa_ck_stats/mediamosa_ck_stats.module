@@ -1,11 +1,9 @@
 <?php
-// $Id$
-
 /**
- * MediaMosa is a Full Featured, Webservice Oriented Media Management and
- * Distribution platform (http://www.vpcore.nl)
+ * MediaMosa is Open Source Software to build a Full Featured, Webservice
+ * Oriented Media Management and Distribution platform (http://mediamosa.org)
  *
- * Copyright (C) 2011 SURFnet BV (http://www.surfnet.nl) and Kennisnet
+ * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl) and Kennisnet
  * (http://www.kennisnet.nl)
  *
  * MediaMosa is based on the open source Drupal platform and
@@ -154,7 +152,7 @@ function _mediamosa_ck_stats_block_popular_videos() {
   assert(module_load_include('inc', 'media_mediamosa', 'media_mediamosa.theme') !== FALSE);
 
   // Get videos.
-  $populair_videos = MediaMosaCkConnectorStatsWrapper::request_stats_popular_mediafiles(array('limit' => MEDIAMOSA_CK_STATS_PER_PAGE_BLOCK_POPULAR_MEDIA));
+  $populair_videos = MediaMosaCkConnectorStatsWrapper::get_stats_popular_mediafiles(array('limit' => MEDIAMOSA_CK_STATS_PER_PAGE_BLOCK_POPULAR_MEDIA));
 
   if (!empty($populair_videos)) {
     foreach ($populair_videos['response']->xml->items->item as $item) {
@@ -455,9 +453,9 @@ function mediamosa_ck_stats_theme() {
 }
 
 /**
- * Our table wrapper.
+ * Our theme table wrapper.
  *
- * @param array $variables
+ * @param $variables
  */
 function theme_mediamosa_ck_stats_table($variables) {
   drupal_add_css(drupal_get_path('module', 'mediamosa_ck.stats') . '/mediamosa_ck.stats.css');

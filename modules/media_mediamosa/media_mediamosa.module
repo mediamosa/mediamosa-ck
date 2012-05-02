@@ -1,11 +1,9 @@
 <?php
-// $Id$
-
 /**
  * MediaMosa is Open Source Software to build a Full Featured, Webservice
  * Oriented Media Management and Distribution platform (http://mediamosa.org)
  *
- * Copyright (C) 2011 SURFnet BV (http://www.surfnet.nl) and Kennisnet
+ * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl) and Kennisnet
  * (http://www.kennisnet.nl)
  *
  * MediaMosa is based on the open source Drupal platform and
@@ -29,9 +27,6 @@
  * All hooks are in this file.
  *
  * @todo: share the mediamosa_settings::LIMIT_MAX_IDS_ONLY between server and client
- * @todo: the function _media_mediamosa_time_to_rfc_3339() is the clone of server-side mediamosa_datetime::time_to_rfc_3339() . Can we share?
- * @todo: the function _media_mediamosa_date2unix() is the clone of server-side mediamosa_datetime::date2unix() .
- *
  */
 
 define('FIELD_PREFIX', 'field_mm_meta_');
@@ -42,9 +37,18 @@ define('LIMIT_MAX', 200);
 define('LIMIT_MAX_IDS_ONLY', 5000);
 
 // Need these.
-require_once (dirname(__FILE__) . '/media_mediamosa.inc');
-require_once (dirname(__FILE__) . '/media_mediamosa.sync.inc');
-require_once (dirname(__FILE__) . '/media_mediamosa.metadata.inc');
+
+// Include the media_mediamosa.inc.
+assert(module_load_include('inc', 'media_mediamosa') !== FALSE);
+
+// Include the media_mediamosa.formatters.inc.
+assert(module_load_include('inc', 'media_mediamosa', 'media_mediamosa.formatters') !== FALSE);
+
+// Include the media_mediamosa.styles.inc.
+assert(module_load_include('inc', 'media_mediamosa', 'media_mediamosa.styles') !== FALSE);
+
+// Include the media_mediamosa.metadata.inc.
+assert(module_load_include('inc', 'media_mediamosa', 'media_mediamosa.metadata') !== FALSE);
 
 /**
  * Implements hook_menu().
@@ -86,48 +90,29 @@ function media_mediamosa_stream_wrappers() {
     'mediamosa' => array(
       'name' => t('MediaMosa videos'),
       'class' => 'MediaMosaStreamWrapper',
-      'description' => t('Videos provided by MediaMosa.'),
+      'description' => t('Media provided by MediaMosa.'),
       'type' => STREAM_WRAPPERS_READ_VISIBLE,
     ),
+/*    'mediamosa-thumb' => array(
+      'name' => t('MediaMosa videos'),
+      'class' => 'MediaMosaThumbWrapper',
+      'description' => t('Media thumbnail provided by MediaMosa.'),
+      'type' => STREAM_WRAPPERS_READ_VISIBLE,
+    ),*/
   );
 }
 
 /**
- * Implements hook_media_browser_plugin_info().
+ * Implements hook_ctools_plugin_api().
  */
-function media_mediamosa_media_browser_plugin_info() {
-  $plugins = array();
-
-  if (user_access('administer media') || user_access(MEDIAMOSA_CK_PERMISSION_ADD_MEDIA)) {
-    $plugins['media_mediamosa'] = array(
-      '#weight' => 10,
-    );
-  }
-
-  return $plugins;
-}
-
-/**
- * Implementation of Styles module hook_styles_register().
- */
-function media_mediamosa_styles_register() {
-  return array(
-    'MediaMediaMosaFileStyles' => array(
-      'field_types' => 'file',
-      'name' => t('MediaMediaMosa'),
-      'description' => t('Media MediaMosa styles.'),
-      'path' => drupal_get_path('module', 'media_mediamosa'),
-      'file' => 'media_mediamosa.styles.class.inc',
+function media_mediamosa_ctools_plugin_api($owner, $api) {
+  static $api_versions = array(
+    'file_entity' => array(
+      'file_default_displays' => 1,
     ),
   );
-}
-
-/**
- * Implementation of the File Styles module's hook_file_styles_filter().
- */
-function media_mediamosa_file_styles_filter($object) {
-  if ((file_uri_scheme($object->uri) == 'mediamosa')) {
-    return 'media_mediamosa';
+  if (isset($api_versions[$owner][$api])) {
+    return array('version' => $api_versions[$owner][$api]);
   }
 }
 
@@ -151,35 +136,34 @@ function media_mediamosa_media_parse($url, $options = array()) {
 }
 
 /**
- * Implements hook_media_browser_plugin_view().
+ * Implements hook_media_browser_plugin_info().
  */
-function media_mediamosa_media_browser_plugin_view($plugin_name, $params) {
+function media_mediamosa_media_browser_plugin_info() {
+  $plugins = array();
+  $plugins['media_mediamosa'] = array(
+    'title' => t('MediaMosa Upload'),
+    'handler' => array(
+      'path' => drupal_get_path('module', 'media_mediamosa'),
+      'file' => 'MediamosaMediaBrowserUpload.class.inc',
+      'class' => 'MediamosaMediaBrowserUpload',
+    ),
+    'access callback' => '_media_mediamosa_access',
+  );
+  return $plugins;
+}
 
-  // Load file.
-  module_load_include('inc', 'media_mediamosa');
-  $path = drupal_get_path('module', 'media');
-
-  $types = isset($params['types']) ? $params['types'] : array();
-  $multiselect = isset($params['multiselect']) ? $params['multiselect'] : FALSE;
-
-  $redirect = array('media/browser', array('query' => array('render' => 'media-popup')));
-  switch ($plugin_name) {
-    case 'media_mediamosa':
-      $from_web_form = drupal_get_form('_media_mediamosa_upload_form',  $types, $multiselect);
-      return array(
-        '#title' => t('MediaMosa Upload'),
-        'form' => array($from_web_form),
-      );
-      break;
-  }
-
-  return array();
+/**
+ * Access callback for the media_mediamosa media browser plugin.
+ */
+function _media_mediamosa_access() {
+  return user_access('administer media') || user_access('add media from remote sources');
 }
 
 /**
  * Implements hook_rdf_mapping().
  *
- * @return array with mappings.
+ * @return
+ *   An array with mappings.
  */
 function media_mediamosa_rdf_mapping() {
   $mapping_data = array(
@@ -215,9 +199,9 @@ function media_mediamosa_file_delete($file) {
   $asset_id = $params['asset_id'];
 
   try {
-    $asset = MediaMosaConnectorMediaWrapper::request_get_asset($asset_id, array('show_stills' => FALSE));
+    $asset = MediaMosaConnectorMediaWrapper::get_asset($asset_id, array('show_stills' => FALSE));
     $user_id = (string) $asset->items->item->owner_id;
-    MediaMosaConnectorMediaWrapper::asset_delete($asset_id, $user_id);
+    MediaMosaConnectorMediaWrapper::delete_asset($asset_id, $user_id);
   }
   catch (Exception $e) {
     // Ignore, at this point we expect that the asset is either gone already
@@ -226,7 +210,7 @@ function media_mediamosa_file_delete($file) {
 }
 
 /**
- * Implements hook_form_FORM_ID_alter() for media/edit.
+ * Implements hook_form_FORM_ID_alter() for file/[fid].
  *
  * Main purpose is to make technical metadata readonly.
  */
@@ -295,8 +279,6 @@ function _media_mediamosa_validate_datetime(&$form, &$form_state) {
 /**
  * Check and validate a datestamp string for metadata,
  *   returns FALSE or valid string to use.
- *
- * @param string $str
  */
 function _media_mediamosa_validate_language(&$form, &$form_state) {
   $field_name = FIELD_PREFIX . 'language';
@@ -313,7 +295,8 @@ function _media_mediamosa_validate_language(&$form, &$form_state) {
 /**
  * Implements hook_mediamosa_ck_configuration_collect().
  *
- * @return array with settings form.
+ * @return
+ *   An array with settings form.
  */
 function media_mediamosa_mediamosa_ck_configuration_collect() {
   $items = drupal_map_assoc(array(100, 200, 500, 1000, 2000, 5000, 10000));
@@ -355,14 +338,14 @@ function media_mediamosa_mediamosa_ck_configuration_collect() {
     $form['media_mediamosa_sync']['cron_settings']['media_mediamosa_cron_sync_drupal_to_mediamosa'] = array(
       '#type' => 'checkbox',
       '#title' => t('Cron; Remove abandoned or deleted Media'),
-      '#default_value' => variable_get('media_mediamosa_cron_sync_drupal_to_mediamosa', 0),
+      '#default_value' => MediaMediaMosaSync::do_cron_sync_drupal_to_mediamosa(),
       '#description' => t('When assets are removed from MediaMosa outside the Drupal website, then Media on the Drupal website will still link to not existing assets in MediaMosa. By default, this is off. But when switching connections between MediaMosa installations or MediaMosa logins, then the Drupal Media will not match the MediaMosa assets. When enabled, Media in Drupal that has no matching asset in MediaMosa will be removed.'),
     );
 
     $form['media_mediamosa_sync']['cron_settings']['media_mediamosa_cron_sync_mediamosa_to_drupal'] = array(
       '#type' => 'checkbox',
       '#title' => t('Cron; Synchronize with MediaMosa'),
-      '#default_value' => variable_get('media_mediamosa_cron_sync_mediamosa_to_drupal', 1),
+      '#default_value' => MediaMediaMosaSync::do_cron_sync_mediamosa_to_drupal(),
       '#description' => t('Enable synchronization with MediaMosa to make sure all assets and its data are the same as stored on the Drupal website database. It will create Media that exists in MediaMosa and is missing on the Drupal website database. Also will copy changed metadata to Drupal Media.'),
     );
 
@@ -377,14 +360,14 @@ function media_mediamosa_mediamosa_ck_configuration_collect() {
     $form['media_mediamosa_sync']['synchronize']['media_mediamosa_sync_drupal_to_mediamosa'] = array(
       '#type' => 'checkbox',
       '#title' => t('Remove abandoned or deleted Media'),
-      '#default_value' => variable_get('media_mediamosa_sync_drupal_to_mediamosa', 0),
+      '#default_value' => MediaMediaMosaSync::do_sync_drupal_to_mediamosa(),
       '#description' => t('When assets are removed from MediaMosa outside the Drupal website, then Media on the Drupal website will still link to not existing assets in MediaMosa. By default, this is off. But when switching connections between MediaMosa installations or MediaMosa logins, then the Drupal Media will not match the MediaMosa assets. When enabled, Media in Drupal that has no matching asset in MediaMosa will be removed.'),
     );
 
     $form['media_mediamosa_sync']['synchronize']['media_mediamosa_sync_mediamosa_to_drupal'] = array(
       '#type' => 'checkbox',
       '#title' => t('Synchronize with MediaMosa'),
-      '#default_value' => variable_get('media_mediamosa_sync_mediamosa_to_drupal', 1),
+      '#default_value' => MediaMediaMosaSync::do_sync_mediamosa_to_drupal(),
       '#description' => t('Enable synchronization with MediaMosa to make sure all assets and its data are the same as stored on the Drupal website database. It will create Media that exists in MediaMosa and is missing on the Drupal website database. Also will copy changed metadata to Drupal Media.'),
     );
 
@@ -409,47 +392,51 @@ function media_mediamosa_mediamosa_ck_configuration_collect() {
 function media_mediamosa_media_edit_submit($form, &$form_state) {
 
   global $user;
+  // Fix for missing media_load() function.
+  $multi_media = media_multi_load($form_state['values']['fid']);
 
-  $media = media_load($form_state['values']['fid']);
-  // Now we have Mediamosa URI in $media->uri .
+  foreach ($multi_media as $media) {
+    // Now we have Mediamosa URI in $media->uri .
+    $uri = MediaMosaStreamWrapper::mediamosa_parse_url($media->uri);
 
-  $uri = MediaMosaStreamWrapper::mediamosa_parse_url($media->uri);
-  if (!$uri) {
-    watchdog('Mediamosa CK', 'Cannot parse Mediamosa URI: @uri. Saving metadata impossible.',
-      array('@uri' => $media->uri), WATCHDOG_WARNING);
-    return;
-  }
-
-  // Get names convertor.
-  $drupal_to_mediamosa = _media_mediamosa_metadata_get_default_mapped();
-
-  // Lets iterate through our metafields and create an array with only changed items.
-  $changed_metadata = array();
-  foreach ($form as $name => $item) {
-
-    if (strncmp($name, FIELD_PREFIX, FIELD_PREFIX_LENGTH)) {
-      // We're not interested in this value.
-      continue;
+    if (!$uri) {
+      watchdog('Mediamosa CK', 'Cannot parse Mediamosa URI: @uri. Saving metadata impossible.',
+        array('@uri' => $media->uri), WATCHDOG_WARNING);
+      return;
     }
 
-    $lang = $item['#language'];
+    // Get names convertor.
+    $drupal_to_mediamosa = _media_mediamosa_metadata_get_default_mapped();
 
-    // Lookup for original and submitted data.
-    $old_data = $item[$lang][0]['value']['#default_value'];
-    $new_data = $item[$lang][0]['value']['#value'];
+    // Lets iterate through our metafields and create an array with only changed items.
+    $changed_metadata = array();
+    foreach ($form as $name => $item) {
 
-    if (strcmp((string)$old_data, $new_data)) {
-      $mediamosa_property_name = $drupal_to_mediamosa[$name];
-      $changed_metadata[$mediamosa_property_name] = $new_data;
+      if (strncmp($name, FIELD_PREFIX, FIELD_PREFIX_LENGTH)) {
+        // We're not interested in this value.
+        continue;
+      }
+
+      $lang = $item['#language'];
+
+      // Lookup for original and submitted data.
+      $old_data = $item[$lang][0]['value']['#default_value'];
+      $new_data = $item[$lang][0]['value']['#value'];
+
+      if (strcmp((string)$old_data, $new_data)) {
+        $mediamosa_property_name = $drupal_to_mediamosa[$name];
+        $changed_metadata[$mediamosa_property_name] = $new_data;
+      }
     }
-  }
 
-  if (empty($changed_metadata)) {
-    // Metadata unchanged.
-    return;
-  }
+    if (empty($changed_metadata)) {
+      // Metadata unchanged.
+      return;
+    }
 
-  MediaMosaConnectorMediaWrapper::request_post_metadata($uri['asset_id'], $changed_metadata);
+    // Use REST to store the metadata.
+    MediaMosaConnectorMediaWrapper::update_metadata($uri['asset_id'], $changed_metadata);
+  }
 }
 
 /**
@@ -460,14 +447,14 @@ function media_mediamosa_cron() {
   try {
     // When enabled, it will make sure Media does exists on the MediaMosa side
     // else Media is removed from the website.
-    _media_mediamosa_cron_sync_drupal_to_mediamosa();
+    MediaMediaMosaSync::cron_sync_drupal_to_mediamosa();
 
     // Now sync mediamosa with drupal.
-    _media_mediamosa_cron_sync_mediamosa_to_drupal();
+    MediaMediaMosaSync::cron_sync_mediamosa_to_drupal();
   }
   catch (Exception $e) {
     // Make sure we don't kill the cron.
-    mediamosa_ck::watchdog('Exception during cron: ' . $e->getMessage(), array(), WATCHDOG_EMERGENCY);
+    MediaMediaMosa::watchdog('Exception during cron: ' . $e->getMessage(), array(), WATCHDOG_EMERGENCY);
   }
 }
 
@@ -530,9 +517,9 @@ function _media_mediamosa_sync_batch_finished($success, $results, $operations) {
       $items[] = t('Syncronized @count media with MediaMosa, created @count_created new Media and updated @count_updated Media.', array('@count' => $results['synced'], '@count_created' => $results['synced_created'], '@count_updated' => $results['synced_updated']));
 
       // We are synced, set cron to last modified date (if any).
-      $videotimestampmodified = MediaMosaConnectorMediaWrapper::request_get_highest_videotimestamp_modified();
+      $videotimestampmodified = MediaMosaConnectorMediaWrapper::get_highest_videotimestamp_modified();
       if (!empty($videotimestampmodified)) {
-        $time_last = _media_mediamosa_date2unix($videotimestampmodified) + 1;
+        $time_last = mediamosa_ck::date2unix($videotimestampmodified) + 1;
         variable_set('media_mediamosa_sync_time_' . MediaMosaConnectorMediaWrapper::build_connection_id(), $time_last);
         variable_set('media_mediamosa_sync_offset_' . MediaMosaConnectorMediaWrapper::build_connection_id(), 0);
       }
@@ -559,7 +546,7 @@ function _batch_process_drupal_to_mediamosa($limit, &$context) {
   // Set up sand box.
   if (!isset($context['results']['deleted'])) {
     $context['sandbox']['progress'] = 0;
-    $context['sandbox']['max'] = _media_mediamosa_assets_in_file_managed();
+    $context['sandbox']['max'] = MediaMediaMosa::assets_in_drupal();
 
     $context['sandbox']['offset'] = 0;
     $context['results']['deleted'] = 0;
@@ -570,7 +557,7 @@ function _batch_process_drupal_to_mediamosa($limit, &$context) {
   $offset = $context['sandbox']['offset'];
 
   // Do one instance.
-  $result = _media_mediamosa_sync_drupal_to_mediamosa_by_range($offset, $limit);
+  $result = MediaMediaMosaSync::sync_drupal_to_mediamosa_by_range($offset, $limit);
 
   // Save the next offset.
   $context['sandbox']['offset'] = $result['offset'];
@@ -601,7 +588,7 @@ function _batch_process_mediamosa_to_drupal($limit, &$context) {
   // Set up sand box.
   if (!isset($context['results']['synced'])) {
     $context['sandbox']['progress'] = 0;
-    $context['sandbox']['max'] = _media_mediamosa_assets_in_mediamosa();
+    $context['sandbox']['max'] = MediaMediaMosa::assets_in_mediamosa();
 
     $context['sandbox']['offset'] = 0;
     $context['results']['synced'] = 0;
@@ -613,7 +600,7 @@ function _batch_process_mediamosa_to_drupal($limit, &$context) {
   $offset = $context['sandbox']['offset'];
 
   // Do one instance.
-  $result = _media_mediamosa_sync_mediamosa_to_drupal_by_range($offset, $limit);
+  $result = MediaMediaMosaSync::sync_mediamosa_to_drupal_by_range($offset, $limit);
 
   // Save the next offset.
   $context['sandbox']['offset'] = $result['offset'];
@@ -636,125 +623,4 @@ function _batch_process_mediamosa_to_drupal($limit, &$context) {
   if ($context['sandbox']['progress'] != $context['sandbox']['max']) {
     $context['finished'] = floor($context['sandbox']['progress'] / $context['sandbox']['max']);
   }
-}
-
-
-/**
- * Implements hook_styles_default_containers().
- */
-function media_mediamosa_styles_default_containers() {
-  // We append MediaMosa to the file containers.
-  return array(
-    'file' => array(
-      'containers' => array(
-        'media_mediamosa' => array(
-          'class' => 'MediaMediaMosaFileStyles',
-          'name' => 'media_mediamosa',
-          'label' => t('MediaMosa'),
-          'preview' => 'media_mediamosa_preview_style',
-        ),
-      ),
-    ),
-  );
-}
-
-/**
- * Implements hook_styles_default_presets().
- */
-function media_mediamosa_styles_default_presets() {
-  return array(
-    'file' => array(
-      'containers' => array(
-        'media_mediamosa' => array(
-          'default preset' => 'linked_thumbnail',
-          'styles' => array(
-            'original' => array(
-              'default preset' => 'video',
-            ),
-            'thumbnail' => array(
-              'default preset' => 'linked_thumbnail',
-            ),
-            'square_thumbnail' => array(
-              'default preset' => 'linked_square_thumbnail',
-            ),
-            'medium' => array(
-              'default preset' => 'linked_medium',
-            ),
-            'large' => array(
-              'default preset' => 'large_video',
-            ),
-          ),
-          'presets' => array(
-            'unlinked_thumbnail' => array(
-              array(
-                'name' => 'thumbnail',
-                'settings' => array(),
-              ),
-            ),
-            'linked_thumbnail' => array(
-              array(
-                'name' => 'link_to_media',
-                'settings' => array(),
-              ),
-              array(
-                'name' => 'thumbnail',
-                'settings' => array(),
-              ),
-            ),
-            'linked_square_thumbnail' => array(
-              array(
-                'name' => 'link_to_media',
-                'settings' => array(),
-              ),
-              array(
-                'name' => 'image_style',
-                'settings' => array(
-                  'image_style' => 'square_thumbnail',
-                ),
-              ),
-              array(
-                'name' => 'thumbnail',
-                'settings' => array(),
-              ),
-            ),
-            'linked_medium' => array(
-              array(
-                'name' => 'link_to_media',
-                'settings' => array(),
-              ),
-              array(
-                'name' => 'image_style',
-                'settings' => array(
-                  'image_style' => 'medium',
-                ),
-              ),
-              array(
-                'name' => 'thumbnail',
-                'settings' => array(),
-              ),
-            ),
-            'video' => array(
-              array(
-                'name' => 'video',
-                'settings' => array(),
-              ),
-            ),
-            'large_video' => array(
-              array(
-                'name' => 'resize',
-                'settings' => array(
-                  'width' => 480,
-                  'height' => 360,
-                ),
-              ),
-              array(
-                'name' => 'video',
-                'settings' => array(),
-              ),
-            ),
-          ),
-        ),
-      ),
-    ),
-  );
 }

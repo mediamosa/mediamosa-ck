@@ -1,11 +1,9 @@
 <?php
-// $Id$
-
 /**
- * MediaMosa is a Full Featured, Webservice Oriented Media Management and
- * Distribution platform (http://www.vpcore.nl)
+ * MediaMosa is Open Source Software to build a Full Featured, Webservice
+ * Oriented Media Management and Distribution platform (http://mediamosa.org)
  *
- * Copyright (C) 2011 SURFnet BV (http://www.surfnet.nl) and Kennisnet
+ * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl) and Kennisnet
  * (http://www.kennisnet.nl)
  *
  * MediaMosa is based on the open source Drupal platform and
@@ -43,9 +41,7 @@
  */
 function mediamosa_ck_configuration_form() {
   // Build the settings form and enrich it with our settings collect hook.
-  $form = system_settings_form(module_invoke_all('mediamosa_ck_configuration_collect'));
-
-  return $form;
+  return system_settings_form(module_invoke_all('mediamosa_ck_configuration_collect'));
 }
 
 /**

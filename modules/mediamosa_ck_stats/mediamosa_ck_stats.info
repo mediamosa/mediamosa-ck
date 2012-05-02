@@ -1,8 +1,7 @@
-; $Id$
 name = "MediaMosa CK: Statistics"
 description = "This module allows the admin to view various MediaMosa statistics."
 package = "MediaMosa - Construction Kit"
-version = "7.x-0.1"
+version = "7.x-2.0"
 core = 7.x
 
 dependencies[] = mediamosa_sdk

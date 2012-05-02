@@ -1,6 +1,4 @@
 <?php
-// $Id$
-
 /**
  * MediaMosa is Open Source Software to build a Full Featured, Webservice Oriented Media Management and
  * Distribution platform (http://mediamosa.org)
@@ -36,7 +34,7 @@ class MediaMosaCkConnectorStatsWrapper extends MediaMosaCkConnectorWrapper {
    *
    * @param array $options
    */
-  static public function request_stats_popular_mediafiles($options) {
+  static public function get_stats_popular_mediafiles($options) {
 
     $options += array(
       'limit' => 50,
@@ -72,7 +70,7 @@ class MediaMosaCkConnectorStatsWrapper extends MediaMosaCkConnectorWrapper {
       $popular_mediafiles['response'] = mediamosa_ck::request_get_fatal('asset', array('data' => $data));
     }
     catch (Exception $e) {
-      drupal_set_message('Unable to retrieve the most popular mediafiles, reason; ' . $e->getMessage(), 'error');
+      mediamosa_ck::watchdog_error('Unable to retrieve the most popular mediafiles; @message.', array('@message' => $e->getMessage()));
       return FALSE;
     }
 
@@ -105,7 +103,7 @@ class MediaMosaCkConnectorStatsWrapper extends MediaMosaCkConnectorWrapper {
       return mediamosa_ck::request_get_fatal('asset', array('data' => $data));
     }
     catch (Exception $e) {
-      drupal_set_message('Unable to retrieve the latest mediafiles, reason; ' . $e->getMessage(), 'error');
+      mediamosa_ck::watchdog_error('Unable to retrieve the latest mediafiles; @message.', array('@message' => $e->getMessage()));
     }
 
     return FALSE;
@@ -139,7 +137,7 @@ class MediaMosaCkConnectorStatsWrapper extends MediaMosaCkConnectorWrapper {
       return mediamosa_ck::request_get_fatal('statistics/datausagevideo', array('data' => $data));
     }
     catch (Exception $e) {
-      drupal_set_message('Unable to retrieve the most datausage videos, reason; ' . $e->getMessage(), 'error');
+      mediamosa_ck::watchdog_error('Unable to retrieve the most datausage videos; @message.', array('@message' => $e->getMessage()));
     }
 
     return FALSE;
@@ -156,7 +154,7 @@ class MediaMosaCkConnectorStatsWrapper extends MediaMosaCkConnectorWrapper {
       return mediamosa_ck::request_get_fatal('statistics/newestmediafiles', array('data' => $data));
     }
     catch (Exception $e) {
-      drupal_set_message('Unable to retrieve the newest mediafiles, reason; ' . $e->getMessage(), 'error');
+      mediamosa_ck::watchdog_error('Unable to retrieve the newest mediafiles; @message.', array('@message' => $e->getMessage()));
     }
 
     return FALSE;

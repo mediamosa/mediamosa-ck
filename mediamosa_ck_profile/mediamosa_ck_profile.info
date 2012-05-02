@@ -1,4 +1,3 @@
-; $Id:$
 name = MediaMosa Construction Kit
 description = The MediaMosa Construction Kit enables you to build frontend Drupal websites using the MediaMosa backend application.
 distribution_name = "MediaMosa Construction Kit default setup"
@@ -23,7 +22,8 @@ dependencies[] = field_ui
 dependencies[] = file
 dependencies[] = rdf
 
-;dependencies[] = field_group
+dependencies[] = field_group
+dependencies[] = wysiwyg
 
 dependencies[] = media
 dependencies[] = mediamosa_sdk
@@ -34,7 +34,5 @@ dependencies[] = mediamosa_ck_stats
 dependencies[] = mediamosa_ck_still
 dependencies[] = mediamosa_ck_access
 dependencies[] = mediamosa_ck_transcode
-
-dependencies[] = wysiwyg
 
 files[] = mediamosa_ck_profile.profile

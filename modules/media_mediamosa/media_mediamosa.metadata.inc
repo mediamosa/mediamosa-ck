@@ -1,6 +1,4 @@
 <?php
-// $Id$
-
 /**
  * MediaMosa is Open Source Software to build a Full Featured, Webservice Oriented Media Management and
  * Distribution platform (http://mediamosa.org)
@@ -29,15 +27,15 @@
  *  Dublin Core & Qualified Dublin Core fields definition goes here.
  */
 
-module_load_include('inc', 'field', 'field.crud');
+assert(module_load_include('inc', 'field', 'field.crud') !== FALSE);
 
 /**
  * Definitions of Metadata fields of MediaMosa.
  *
  * @return array
- *  MediaMosa metafield name as a key.
+ *   MediaMosa metafield name as a key.
  *
- *  Each element is an array with the following fields:
+ * Each element is an array with the following fields:
  *   - 'label'
  *     Label used in Drupal interface.
  *   - 'read_only'
@@ -191,19 +189,19 @@ function _media_mediamosa_metadata_get_default() {
 
   // Set 'section' and 'readonly' to all DC.
   foreach ($fields_dc as $name => &$field_dc) {
-    $field_dc['section'] = 'dublincore';
+    $field_dc['section'] = 'dc';
     $field_dc['readonly'] = FALSE;
   }
 
   // Set 'section' and 'readonly' to all QDC.
   foreach ($fields_qdc as $name => &$field_qdc) {
-    $field_qdc['section'] = 'qualified_dublincore';
+    $field_qdc['section'] = 'qdc';
     $field_qdc['readonly'] = FALSE;
   }
 
   // Set 'section' and 'readonly' to all technical.
   foreach ($fields_tech as $name => &$field_tech) {
-    $field_tech['section'] = 'technical';
+    $field_tech['section'] = 'mft';
     $field_tech['readonly'] = TRUE;
     $field_tech['rdf'] = FALSE;
   }
@@ -270,8 +268,8 @@ function _media_mediamosa_metadata_link_fields() {
     }
 
     // Handy presets to use for 'default' array parameter.
-    $display_show = array( 'label' => 'above', 'type' => 'text_default', 'module' => 'text', 'weight' => $weight, );
-    $display_off = array( 'type' => 'hidden', );
+    $display_show = array( 'label' => 'above', 'type' => 'text_default', 'module' => 'text', 'weight' => $weight);
+    $display_off = array( 'type' => 'hidden');
 
     foreach ($media_types as $type_name => $media_type) {
       if (!$media_type->base) {
@@ -314,29 +312,27 @@ function _media_mediamosa_metadata_link_fields() {
     }
   }
 
-  // Seems that in Drupal 7 we have to create two different section instances for editing and displaying.
-  // So 'form' is a must, plus values for displaying. See 'default' array above. Keeping with consistency is recommended.
+  // Seems that in Drupal 7 we have to create two different section instances
+  // for editing and displaying. So 'form' is a must, plus values for
+  // displaying. See 'default' array above. Keeping with consistency is
+  // recommended.
   $section_modes = array('form', 'default', 'media_preview', 'media_original', 'media_large');
 
-  $format_settings_edit =
-    array(
-      'formatter' => 'closed',
-      'instance_settings' =>
-        array(
-          'classes' => '',
-          'required_fields' => 1,
-        ),
-    );
-  $format_settings_display =
-    array(
-      'formatter' => 'collapsed',
-      'instance_settings' =>
-        array(
-          'classes' => '',
-          'description' => '',
-        ),
-    );
+  $format_settings_edit = array(
+    'formatter' => 'closed',
+    'instance_settings' => array(
+      'classes' => '',
+      'required_fields' => 1,
+    ),
+  );
 
+  $format_settings_display = array(
+    'formatter' => 'collapsed',
+    'instance_settings' => array(
+      'classes' => '',
+      'description' => '',
+    ),
+  );
 
   $sections = _media_mediamosa_metadata_get_default_fieldsets();
 
@@ -348,14 +344,16 @@ function _media_mediamosa_metadata_link_fields() {
         $section_instance->mode = $mode;
         $section_instance->format_type = $section_instance->mode == 'form' ? 'tab' : 'fieldset';
         $section_instance->format_settings = $section_instance->mode == 'form' ? $format_settings_edit : $format_settings_display;
-        // add a suffix
-        $section_instance->group_name = drupal_substr( $section_instance->group_name, 0, 4 ) .'_'. $type_name .'_'. $mode;
+        // Create unique name.
+        $group_name = $section_instance->group_name;
+        $section_instance->identifier = $group_name . '|' . $type_name . '|' . $section_instance->entity_type . '|' . $mode;
+        $section_instance->group_name = $section_instance->identifier;
         if (field_group_exists($section_name, 'media', $type_name, 'default')) {
           watchdog('Mediamosa CK', 'No need to recreate fieldgroup for @fieldgroup, it already exists in bundle @bundle.',
             array('@fieldgroup' => $section_name, '@bundle' => $type_name), WATCHDOG_INFO);
           continue;
         }
-        field_group_save($section_instance);
+        field_group_group_save($section_instance);
       }
     }
   }
@@ -398,12 +396,11 @@ function _media_mediamosa_metadata_get_default_fieldsets() {
   $weight = -8;
 
   // Names and labels array.
-  $section_names =
-    array(
-      'dublincore' => 'Dublin Core Metadata',
-      'qualified_dublincore' => 'Qualified Dublin Core Metadata',
-      'technical' => 'Technical Metadata',
-    );
+  $section_names = array(
+    'dc' => 'Dublin Core Metadata',
+    'qdc' => 'Qualified Dublin Core Metadata',
+    'mft' => 'Mediafile Technical Metadata',
+  );
   foreach ($section_names as $section_name => $section_label) {
     $groups[$section_name] = $group_core;
     $groups[$section_name]['group_name'] = $section_name;
@@ -421,17 +418,15 @@ function _media_mediamosa_metadata_get_default_fieldsets() {
   return $groups;
 }
 
-
 /**
  * Removing metadata fields objects.
- *
  */
 function _media_mediamosa_metadata_unlink_fields() {
-  watchdog('Mediamosa CK', '_media_mediamosa_metadata_unlink_fields executed', array(), WATCHDOG_DEBUG);
+  mediamosa_ck::watchdog(__FUNCTION__  . ' executed', array(), WATCHDOG_DEBUG);
   $fields = _media_mediamosa_metadata_get_default();
   foreach ($fields as $item) {
     field_delete_field($item['field_name']);
   }
 
-  mediamosa_ck::watchdog('_media_mediamosa_metadata_unlink_fields done!', array(), WATCHDOG_DEBUG);
+  MediaMediaMosa::watchdog('_media_mediamosa_metadata_unlink_fields done!', array(), WATCHDOG_DEBUG);
 }
