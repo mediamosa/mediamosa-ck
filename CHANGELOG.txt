@@ -47,6 +47,7 @@ Mediamosa CK, 7.x-2.x-dev
 - Updated modules to work with Media 2.0 and File Entity 2.0.
 - Added custom request function that is used with custom restview module.
 - Added new sync class for sync related functions.
+- Fixed case sensitive problem with parameter, causing fatal error on MediaMosa.
 
 Mediamosa CK, 7.x-1.x-dev
 -------------------------

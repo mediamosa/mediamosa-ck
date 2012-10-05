@@ -406,7 +406,7 @@ function mediamosa_ck_still_media_mediamosa_upload_form_alter(&$form, $settings)
   // Set default.
   $settings += array(
     'collapsed' => TRUE,
-    'hidden' => array('create_still' => 'true'),
+    'hidden' => array('create_still' => 'TRUE'),
   );
 
   // JS.
