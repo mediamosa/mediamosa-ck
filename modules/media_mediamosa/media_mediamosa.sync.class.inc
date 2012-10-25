@@ -39,7 +39,7 @@ class MediaMediaMosaSync {
    * @return
    *   An array filled with data about the sync.
    */
-  static public function sync_mediamosa_to_drupal_by_range($offset, $limit) {
+  public static function sync_mediamosa_to_drupal_by_range($offset, $limit) {
     $assets_created = 0;
     $assets_updated = 0;
 
@@ -83,7 +83,7 @@ class MediaMediaMosaSync {
    * @return
    *   An array filled with data about the sync.
    */
-  static public function sync_drupal_to_mediamosa_by_range($offset, $limit) {
+  public static function sync_drupal_to_mediamosa_by_range($offset, $limit) {
 
     // Do a query.
     $query = db_select('file_managed', 'fm');
@@ -139,7 +139,7 @@ class MediaMediaMosaSync {
    * When asset has been deleted on the mediamosa side, we have to remove
    * corresponding Media entity.
    */
-  static public function cron_sync_drupal_to_mediamosa() {
+  public static function cron_sync_drupal_to_mediamosa() {
 
     // Dont set this to high, don't choke the cron.
     // Set the # of runs in this cron and per run # of media to check.
@@ -202,7 +202,7 @@ class MediaMediaMosaSync {
   /**
    * Do the syncronization MediaMosa -> Drupal.
    */
-  static public function cron_sync_mediamosa_to_drupal() {
+  public static function cron_sync_mediamosa_to_drupal() {
 
     // Is sync from MediaMosa to Drupal cron on?
     if (!self::do_sync_mediamosa_to_drupal()) {
@@ -324,7 +324,7 @@ class MediaMediaMosaSync {
    * @return
    *   TRUE or FALSE.
    */
-  static public function do_cron_sync_mediamosa_to_drupal() {
+  public static function do_cron_sync_mediamosa_to_drupal() {
     return variable_get('media_mediamosa_cron_sync_mediamosa_to_drupal', TRUE);
   }
 
@@ -334,7 +334,7 @@ class MediaMediaMosaSync {
    * @return
    *   TRUE or FALSE.
    */
-  static public function do_cron_sync_drupal_to_mediamosa() {
+  public static function do_cron_sync_drupal_to_mediamosa() {
     return variable_get('media_mediamosa_cron_sync_drupal_to_mediamosa', FALSE);
   }
 
@@ -344,7 +344,7 @@ class MediaMediaMosaSync {
    * @return
    *   TRUE or FALSE.
    */
-  static public function do_sync_drupal_to_mediamosa() {
+  public static function do_sync_drupal_to_mediamosa() {
     return variable_get('media_mediamosa_sync_drupal_to_mediamosa', FALSE);
   }
 
@@ -354,7 +354,7 @@ class MediaMediaMosaSync {
    * @return
    *   TRUE or FALSE.
    */
-  static public function do_sync_mediamosa_to_drupal() {
+  public static function do_sync_mediamosa_to_drupal() {
     return variable_get('media_mediamosa_sync_mediamosa_to_drupal', TRUE);
   }
 }

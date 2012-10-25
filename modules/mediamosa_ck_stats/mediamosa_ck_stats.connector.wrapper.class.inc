@@ -34,7 +34,7 @@ class MediaMosaCkConnectorStatsWrapper extends MediaMosaCkConnectorWrapper {
    *
    * @param array $options
    */
-  static public function get_stats_popular_mediafiles($options) {
+  public static function get_stats_popular_mediafiles($options) {
 
     $options += array(
       'limit' => 50,
@@ -82,7 +82,7 @@ class MediaMosaCkConnectorStatsWrapper extends MediaMosaCkConnectorWrapper {
    *
    * @param $options
    */
-  static public function request_stats_latest_mediafiles($options = array()) {
+  public static function request_stats_latest_mediafiles($options = array()) {
 
     // Set default.
     $options += array(
@@ -126,7 +126,7 @@ class MediaMosaCkConnectorStatsWrapper extends MediaMosaCkConnectorWrapper {
    *   - order_direction
    *     ASC or DESC
    */
-  static public function request_stats_datausage_video($type, $month, $year, $data = array()) {
+  public static function request_stats_datausage_video($type, $month, $year, $data = array()) {
     // Data.
     $data['type'] = $type;
     $data['month'] = $month;
@@ -148,7 +148,7 @@ class MediaMosaCkConnectorStatsWrapper extends MediaMosaCkConnectorWrapper {
    *
    * @return FALSE on failure, XML with data otherwise
    */
-  static public function request_stats_newest_mediafiles($data = array()) {
+  public static function request_stats_newest_mediafiles($data = array()) {
     try {
       // Do request.
       return mediamosa_ck::request_get_fatal('statistics/newestmediafiles', array('data' => $data));

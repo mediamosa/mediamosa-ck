@@ -35,7 +35,7 @@ class MediaMosaConnectorMediaWrapper extends MediaMosaCkConnectorWrapper {
    *
    * @return array with existing IDs, subset of input array.
    */
-  static public function request_check_assets_existense($asset_ids) {
+  public static function request_check_assets_existense($asset_ids) {
 
     $options = array(
       'return_asset_ids' => 'TRUE',
@@ -64,7 +64,7 @@ class MediaMosaConnectorMediaWrapper extends MediaMosaCkConnectorWrapper {
    *
    * @return array with asset IDs.
    */
-  static public function get_asset_ids_array($xml_response) {
+  public static function get_asset_ids_array($xml_response) {
     $items = array();
     if (isset($xml_response->items) && isset($xml_response->items->item)) {
       foreach ($xml_response->items->item as $obj_item) {
@@ -88,7 +88,7 @@ class MediaMosaConnectorMediaWrapper extends MediaMosaCkConnectorWrapper {
    *
    * @return $assets
    */
-  static public function get_current_assets($time_last = 0, $offset = 0, $limit = 100) {
+  public static function get_current_assets($time_last = 0, $offset = 0, $limit = 100) {
     // We used 'changed' parameter here before, but at the moment
     // 'videotimestampmodified' is much better option. Despite of its name, it
     // reflects also cases when we change only metadata.
@@ -135,7 +135,7 @@ class MediaMosaConnectorMediaWrapper extends MediaMosaCkConnectorWrapper {
    *
    * @return array $mediafiles
    */
-  static public function get_asset_mediafiles($asset_id, $options = array()) {
+  public static function get_asset_mediafiles($asset_id, $options = array()) {
 
     $request = strtr('asset/@asset_id/mediafile', array('@asset_id' => $asset_id));
 
@@ -163,9 +163,7 @@ class MediaMosaConnectorMediaWrapper extends MediaMosaCkConnectorWrapper {
   /**
    * Return the number of assets in MediaMosa.
    */
-  static public function get_number_of_assets() {
-    $request = 'asset';
-
+  public static function get_number_of_assets() {
     try {
       $response = mediamosa_ck::request_get_fatal('asset', array('limit' => 1));
     }
@@ -181,8 +179,7 @@ class MediaMosaConnectorMediaWrapper extends MediaMosaCkConnectorWrapper {
   /**
    * Return the highest videotimestampmodified.
    */
-  static public function get_highest_videotimestamp_modified() {
-    $request = 'asset';
+  public static function get_highest_videotimestamp_modified() {
     $cql = 'sortby videotimestampmodified/descending';
 
     try {

@@ -18,3 +18,4 @@ files[] = media_mediamosa.stream.wrapper.class.inc
 files[] = media_mediamosa.styles.class.inc
 files[] = media_mediamosa.sync.class.inc
 files[] = media_mediamosa.thumb.wrapper.class.inc
+files[] = media_mediamosa_views_plugin_style_media_browser.inc

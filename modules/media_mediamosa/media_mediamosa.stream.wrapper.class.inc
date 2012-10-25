@@ -1,28 +1,5 @@
 <?php
 /**
- * MediaMosa is Open Source Software to build a Full Featured, Webservice
- * Oriented Media Management and Distribution platform (http://mediamosa.org)
- *
- * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl) and Kennisnet
- * (http://www.kennisnet.nl)
- *
- * MediaMosa is based on the open source Drupal platform and
- * was originally developed by Madcap BV (http://www.madcap.nl)
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, you can find it at:
- * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
- */
-
-/**
  * @file
  * Class stream wrapper for MediaMosa.
  */
@@ -54,7 +31,8 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
   /**
    *  Returns an array of any parameters stored in the URL's path.
    *  @param $url
-   *    The URL to parse, such as mediamosa://asset/[asset_id]/[mediafile_id]/file_name
+   *    The URL to parse, such as
+   *    mediamosa://asset/[asset_id]/[mediafile_id]/file_name.
    *  @return
    *    An associative array of all the parameters in the path,
    *    or FALSE if the $url is ill-formed.
@@ -72,21 +50,24 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
    * Split up the URL into its parts.
    *
    * @param string $url
-   *  The url to parse
+   *   The url to parse
    *
    * @return array
-   *  Either array filled or FALSE.
+   *   Either array filled or FALSE.
    */
-  static public function mediamosa_parse_url($url) {
+  public static function mediamosa_parse_url($url) {
     // Parse the url.
+    $matches = array();
     if (!preg_match('@^mediamosa://asset/([a-zA-Z0-9]+)/([a-zA-Z0-9]+)/([^/]+)$@i', $url, $matches)) {
       return FALSE;
     }
 
     // Get the values.
-    $params['asset_id'] = $matches[1];
-    $params['mediafile_id'] = $matches[2];
-    $params['filename'] = $matches[3];
+    $params = array(
+      'asset_id' => $matches[1],
+      'mediafile_id' => $matches[2],
+      'filename' => $matches[3],
+    );
 
     return $params;
   }
@@ -100,7 +81,7 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
    * @return array
    *   Either array filled or FALSE.
    */
-  static public function mediamosa_parse_url_from_fid($fid) {
+  public static function mediamosa_parse_url_from_fid($fid) {
     $media = reset(media_multi_load($fid));
     if (!$media || !isset($media->uri)) {
       return FALSE;
@@ -117,7 +98,7 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
    * @param $mimetype
    *   Get the mimetype.
    */
-  static public function translateMimeType($mimetype) {
+  public static function translateMimeType($mimetype) {
     static $translate = array(
       'application/ogg' => 'video/ogg',
     );
@@ -132,7 +113,7 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
    * @param $url
    * @param $mapping
    */
-  static public function getMimeType($url, $mapping = NULL) {
+  public static function getMimeType($url, $mapping = NULL) {
     $mimetypes = &drupal_static(__CLASS__ . '::' . __FUNCTION__);
 
     // If it fails, then its not mediamosa.
@@ -149,7 +130,7 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
         $mediafile_xml = MediaMosaCkConnectorWrapper::get_mediafile($params['mediafile_id']);
         $mimetypes[$params['mediafile_id']] = self::translateMimeType(empty($mediafile_xml->items->item->metadata->mime_type) ? 'application/octet-stream' : (string) $mediafile_xml->items->item->metadata->mime_type);
 
-        // return the mime-type, if any.
+        // Return the mime-type, if any.
         return $mimetypes[$params['mediafile_id']];
       }
       catch (Exception $e) {
@@ -172,7 +153,7 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
    *
    * @see getOriginalThumbnailPath()
    */
-  static public function mediamosa_getOriginalThumbnailPath($asset_id) {
+  public static function mediamosa_getOriginalThumbnailPath($asset_id) {
     try {
       // Get the still url.
       $asset = MediaMosaCkConnectorWrapper::get_asset($asset_id);
@@ -181,7 +162,8 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
     catch (Exception $e) {
     }
 
-    return empty($thumb) ? FALSE : $thumb; // Return FALSE when no still.
+    // Return FALSE when no still.
+    return empty($thumb) ? FALSE : $thumb;
   }
 
   /**
@@ -208,7 +190,7 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
    *
    * @see getLocalThumbnailPath()
    */
-  static public function mediamosa_getLocalThumbnailPath($asset_id) {
+  public static function mediamosa_getLocalThumbnailPath($asset_id) {
     $local_path = 'public://media-mediamosa/' . $asset_id . '.jpg';
     if (!file_exists($local_path) || time() - filectime($local_path) > MediaMediaMosa::THUMBNAIL_EXPIRE_TIME) {
       $original_thumb = self::mediamosa_getOriginalThumbnailPath($asset_id);

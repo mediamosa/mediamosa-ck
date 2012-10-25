@@ -1,0 +1,206 @@
+<?php
+
+/**
+ * @file
+ * This module enables taxonomy for frontend applications.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function mediamosa_ck_taxonomy_menu() {
+  $items['mediamosa_ck_taxonomy/taxonomy/autocomplete'] = array(
+    'title' => 'Autocomplete taxonomy for mediamosa media browser filter',
+    'page callback' => 'mediamosa_ck_taxonomy_tags_autocomplete',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_mediamosa_ck_configuration_collect().
+ *
+ * @return array
+ *   The settings form.
+ */
+function mediamosa_ck_taxonomy_mediamosa_ck_configuration_collect() {
+
+  $form['taxonomy'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Taxonomy settings',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+
+  // Get all the vocabularies.
+  $options = array('' => t('None'));
+  $vocs = taxonomy_get_vocabularies();
+  foreach ($vocs as $key => $voc) {
+    $options[$voc->vid] = $voc->name;
+  }
+
+  if (!empty($options)) {
+    $form['taxonomy']['mediamosa_ck_taxonomy_vocabulary_ids'] = array(
+      '#title' => t('Select the vocabulary you want to use for MediaMosa files.'),
+      '#description' => t('After selecting a vocabulary, you are able to add terms to MediaMosa files from the selected vocabulary.'),
+      '#type' => 'select',
+      '#options' => $options,
+      '#multiple' => TRUE,
+      '#default_value' => mediamosa_ck_taxonomy_get_vocs(),
+    );
+  }
+  else {
+    $form['taxonomy']['mediamosa_ck_taxonomy_vocabulary_ids'] = array(
+      '#type' => 'markup',
+      '#markup' => t('No vocabularies found. Make sure you have a vocabulary before you can use taxonomy for MediaMosa files.'),
+    );
+  }
+  return $form;
+}
+
+/**
+ * Implements hook_mediamosa_ck_configuration_collect_submit().
+ *
+ * @param array $form Description of the form
+ * @param array $form_state Description of the form state
+ */
+function mediamosa_ck_taxonomy_mediamosa_ck_configuration_collect_submit($form, &$form_state) {
+  $values = $form_state['values'];
+  mediamosa_ck_taxonomy_set_vocs($values['mediamosa_ck_taxonomy_vocabulary_ids']);
+}
+
+
+/**
+ * Page callback: Outputs JSON for taxonomy autocomplete suggestions.
+ *
+ * @return string
+ *   The suggested tags in JSON.
+ */
+function mediamosa_ck_taxonomy_tags_autocomplete($tags_typed = '') {
+  // If the request has a '/' in the search text, then the menu system will have
+  // split it into multiple arguments, recover the intended $tags_typed.
+  $args = func_get_args();
+  $tags_typed = implode('/', $args);
+
+  // The user enters a comma-separated list of tags. We only autocomplete the last tag.
+  $tags_typed = drupal_explode_tags($tags_typed);
+  $tag_last = drupal_strtolower(array_pop($tags_typed));
+
+  $matches = array();
+  if ($tag_last != '') {
+
+    // Get the vids
+    $vids = mediamosa_ck_taxonomy_get_vocs();
+
+    $query = db_select('taxonomy_term_data', 't');
+    $query->addTag('translatable');
+    $query->addTag('term_access');
+
+    // Do not select already entered terms.
+    if (!empty($tags_typed)) {
+      $query->condition('t.name', $tags_typed, 'NOT IN');
+    }
+    // Select rows that match by term name.
+    $tags_return = $query
+      ->fields('t', array('tid', 'name'))
+      ->condition('t.vid', $vids)
+      ->condition('t.name', '%' . db_like($tag_last) . '%', 'LIKE')
+      ->range(0, 10)
+      ->execute()
+      ->fetchAllKeyed();
+
+    $prefix = count($tags_typed) ? drupal_implode_tags($tags_typed) . ', ' : '';
+
+    $term_matches = array();
+    foreach ($tags_return as $tid => $name) {
+      $n = $name;
+      // Term names containing commas or quotes must be wrapped in quotes.
+      if (strpos($name, ',') !== FALSE || strpos($name, '"') !== FALSE) {
+        $n = '"' . str_replace('"', '""', $name) . '"';
+      }
+      $term_matches[$prefix . $n] = check_plain($name);
+    }
+  }
+
+  drupal_json_output($term_matches);
+}
+
+/** Mediamosa callbacks * */
+
+/**
+ * Get the taxonomy vocalbularies use by Mediamosa.
+ *
+ * @return array
+ *   All vocabulary ids used by Mediamosa.
+ */
+function mediamosa_ck_taxonomy_get_vocs() {
+  return variable_get('mediamosa_ck_taxonomy_vocabulary_ids', array());
+}
+
+/**
+ * Set the taxonomy vocalbularies use by Mediamosa.
+ */
+function mediamosa_ck_taxonomy_set_vocs($vocs) {
+  variable_set('mediamosa_ck_taxonomy_vocabulary_id', $vocs);
+}
+
+/**
+ * Save taxonomy terms from the asset.
+ *
+ * @param string $asset_id
+ *   The id of the asset to save.
+ * @param array $terms
+ *   All term ids of the asset.
+ *
+ * @return boolean
+ *   Return TRUE if succesful.
+ */
+function mediamosa_ck_taxonomy_save_terms($asset_id, $terms = array()) {
+  if (!empty($asset_id)) {
+    $options['tag'] = mediamosa_ck_taxonomy_terms_to_string($terms);
+    return MediaMosaCkConnectorWrapper::update_metadata($asset_id, $options);
+  }
+}
+
+/**
+ * Add new taxonomy terms from the asset.
+ *
+ * @param string $asset_id
+ *   The id of the asset to add.
+ * @param array $terms
+ *   All term ids of the asset.
+ *
+ * @return boolean
+ *   Return TRUE if succesful.
+ */
+function mediamosa_ck_taxonomy_add_terms($asset_id, $terms = array()) {
+  if (!empty($asset_id)) {
+    $options['tag'] = mediamosa_ck_taxonomy_terms_to_string($terms);
+    $options['action'] = 'append';
+    return MediaMosaCkConnectorWrapper::update_metadata($asset_id, $options);
+  }
+}
+
+/**
+ * Convert term ids to strings to save in Mediamosa.
+ *
+ * @param array $terms
+ *   All term ids.
+ *
+ * @return string
+ */
+function mediamosa_ck_taxonomy_terms_to_string($terms) {
+  foreach ($terms as &$term) {
+    $parents = taxonomy_get_parents_all($term);
+    $list_terms = array();
+    if(!empty($parents)) {
+      foreach ($parents as $parent_term) {
+        $list_terms[] = $parent_term->name;
+      }
+      // Convert tag and vocabulary.
+      $term = mediamosa_sdk::metadata_encode_tag($parents[0]->vocabulary_machine_name, $list_terms);
+    }
+  }
+  return $terms;
+}

@@ -38,7 +38,7 @@ class MediaMediaMosa {
   /**
    * Wrapper for quicker logging.
    */
-  static public function watchdog($message, array $variables = array(), $severity = WATCHDOG_NOTICE, $link = NULL, $type = '') {
+  public static function watchdog($message, array $variables = array(), $severity = WATCHDOG_NOTICE, $link = NULL, $type = '') {
     $type = 'Media MediaMosa' . (empty($type) ? '' : ' - ' . $type);
     watchdog(substr($type, 0, 64), $message, $variables, $severity, $link);
   }
@@ -50,7 +50,7 @@ class MediaMediaMosa {
    * @param string $str
    * @return string or FALSE
    */
-  static public function check_datestamp($str_date) {
+  public static function check_datestamp($str_date) {
 
     $str_date = trim($str_date);
     if ($str_date == '') {
@@ -84,7 +84,7 @@ class MediaMediaMosa {
    * @param array
     *  Return
    */
-  static public function create_media($asset) {
+  public static function create_media($asset) {
     try {
       $mediafiles = MediaMosaConnectorMediaWrapper::get_asset_mediafiles($asset['asset_id']);
 
@@ -123,7 +123,7 @@ class MediaMediaMosa {
    * @param array() $asset
    * @param int $media_id
    */
-  static public function update_media($asset, $media_id) {
+  public static function update_media($asset, $media_id) {
 
     // Processing the Dublin core metadata fields.
     $metadata = array_merge($asset['dublin_core'], $asset['qualified_dublin_core']);
@@ -245,7 +245,7 @@ class MediaMediaMosa {
    * @return
    *   The number of assets in MediaMosa.
    */
-  static public function assets_in_mediamosa() {
+  public static function assets_in_mediamosa() {
     return MediaMosaConnectorMediaWrapper::get_number_of_assets();
   }
 
@@ -255,9 +255,25 @@ class MediaMediaMosa {
    * @return
    *   The number of assets in Drupal.
    */
-  static public function assets_in_drupal() {
+  public static function assets_in_drupal() {
     $query = db_select('file_managed', 'fm');
     $query->condition('uri', 'mediamosa://%', 'LIKE');
     return $query->countQuery()->execute()->fetchField();
+  }
+
+  /**
+   * Figure out the fid from an asset.
+   *
+   * @param string $asset_id The id of the asset
+   * @return
+   *   The fid in Drupal.
+   */
+  static public function get_fid_from_asset($asset_id) {
+    // TODO. add media id?
+    $query = db_select('file_managed', 'fm');
+    $query->addField('fm', 'fid');
+    $query->condition('fm.uri', 'mediamosa://asset/' . $asset_id . '%', 'LIKE');
+    $query->orderBy('fid');
+    return $query->execute()->fetchField();
   }
 }

@@ -194,10 +194,10 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
    * @param $data
    *   The data array to add metadata definitions to.
    */
-  static public function get_views_data_metadata(&$data) {
+  public static function get_views_data_metadata(&$data) {
     // Add metadata.
     foreach (mediamosa_ck::get_metadata_fields() as $set => $metadata) {
-      // Add the whole set as an block.
+      // Add the whole set as a block.
       $data[$set] = array(
         'title' => t($metadata['title']),
         'help' => t('Metadata block for set @set_label.', array('@set_label' => $metadata['title'])),
@@ -210,7 +210,7 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
         // 3 types; date, text and integer.
         switch ($type) {
           case 'DATETIME':
-            $data[$set . '_' . $name] = array(
+            $data[$set . '.' . $name] = array(
               'title' => t($set . '.' . $name),
               'help' => t('Metadata date field in @set_label.', array('@set_label' => $metadata['title'])),
               'field' => array(
@@ -225,11 +225,11 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
 
           case 'CHAR':
           default:
-            $data[$set . '_' . $name] = array(
+            $data[$set . '.' . $name] = array(
               'title' => t($set . '.' . $name),
               'help' => t('Metadata field in @set_label.', array('@set_label' => $metadata['title'])),
               'field' => array(
-                'handler' => 'mediamosa_ck_views_field_text',
+                'handler' => 'mediamosa_ck_views_field_text_metadata',
                 'click sortable' => TRUE,
               ),
               'filter' => array(
@@ -239,18 +239,16 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
                 'handler' => 'mediamosa_ck_views_sort',
               ),
             );
+            break;
 
           case 'INT':
-            $data[$set . '_' . $name] = array(
+            $data[$set . '.' . $name] = array(
               'title' => t($set . '.' . $name),
               'help' => t('Metadata field in @set_label.', array('@set_label' => $metadata['title'])),
               'field' => array(
                 'handler' => 'mediamosa_ck_views_field_text',
                 'click sortable' => TRUE,
               ),
-//              'filter' => array(
-//                'handler' => 'mediamosa_ck_views_filter_text',
-//              ),
               'sort' => array(
                 'handler' => 'mediamosa_ck_views_sort',
               ),
@@ -266,7 +264,7 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
    *
    * For now this only works on data that is in the root of the output.
    */
-  static public function get_fields($data) {
+  public static function get_fields($data) {
     $fields = array();
 
     foreach ($data as $field_name => $field) {
@@ -284,7 +282,7 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
   /**
    * Add fields for owner and group.
    */
-  static public function get_views_data_owner_stuff(&$data) {
+  public static function get_views_data_owner_stuff(&$data) {
     $data += array(
       'owner_id' => array(
         'title' => t('Owner'),
@@ -334,7 +332,7 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
     );
   }
 
-  static public function get_views_data_collection_common(&$data) {
+  public static function get_views_data_collection_common(&$data) {
     $data += array(
       // Fields.
       'coll_id' => array(
@@ -473,7 +471,7 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
    * @param $data
    *   The data array to add asset definitions to.
    */
-  static public function get_views_data_asset_common(&$data) {
+  public static function get_views_data_asset_common(&$data) {
     $data += array(
       // Fields.
       'asset_id' => array(
@@ -555,6 +553,15 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
         ),
       ),
 
+      'fid' => array(
+        'title' => t('File id'),
+        'help' => t('The file id of the asset.'),
+        'field' => array(
+          'handler' => 'mediamosa_ck_views_field_text',
+          'click sortable' => FALSE,
+        ),
+      ),
+
       'description' => array(
         'title' => t('Description'),
         'help' => t('The description of the asset. Is for display purpose only.'),
@@ -599,7 +606,7 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
    * @param $data
    *   The data array to add asset definitions to.
    */
-  static public function get_views_data_asset_specific(&$data) {
+  public static function get_views_data_asset_specific(&$data) {
     $data += array(
     );
   }
@@ -607,7 +614,7 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
   /**
    * Simple conversion from xmlobject to array.
    */
-  static public function xmlobject2array($simplexmlelement) {
+  public static function xmlobject2array($simplexmlelement) {
     $array = json_decode(json_encode($simplexmlelement), TRUE);
     self::_xmlobject2array_helper($array);
     return $array;
@@ -616,7 +623,7 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
   /**
    * Fixes empty array's.
    */
-  static private function _xmlobject2array_helper(&$array) {
+  private static function _xmlobject2array_helper(&$array) {
     foreach ($array as $key => &$child_array) {
       if (is_array($child_array)) {
         if (empty($child_array)) {

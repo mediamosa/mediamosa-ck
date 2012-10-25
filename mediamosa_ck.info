@@ -6,7 +6,7 @@ core = 7.x
 
 ; Dependencies (module names)
 dependencies[] = mediamosa_sdk (>=3.0)
-dependencies[] = mediamosa_connector (>=3.0)
+dependencies[] = mediamosa_connector (>=3.1)
 
 files[] = mediamosa_ck.class.inc
 files[] = mediamosa_ck.connector.wrapper.class.inc

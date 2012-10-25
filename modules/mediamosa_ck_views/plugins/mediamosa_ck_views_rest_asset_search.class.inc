@@ -99,6 +99,7 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest {
     foreach($response->xml->xpath('items/item') as $item) {
       $object = new stdClass();
       $object->asset_id = (string) $item->asset_id;
+      $object->fid = MediaMediaMosa::get_fid_from_asset($item->asset_id);
       $object->granted = MediaMosaCkConnectorWrapper::string2bool($item->granted) ? 'TRUE' : 'FALSE';
       $object->is_owner = mediamosa_ck::session_user_id() == $item->owner_id;
 
@@ -257,7 +258,7 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest {
    *
    * @return
    */
-  static public function get_views_data($title, $class) {
+  public static function get_views_data($title, $class) {
     $data = array(
       'table' => array(
         'group' => t('MediaMosa'),
@@ -275,6 +276,22 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest {
         'help' => t('Unique Identifier of each asset.'),
         'filter' => array(
           'handler' => 'mediamosa_ck_views_filter_text',
+        ),
+      ),
+        
+      'metadata' => array(
+        'title' => t('Search metadata'),
+        'help' => t('Search the assets with a pre configured metadata'),
+        'filter' => array(
+          'handler' => 'mediamosa_ck_views_filter_metadata',
+        ),
+      ),
+
+      'metadata_selector' => array(
+        'title' => t('Search metadata with selector'),
+        'help' => t('Search the assets with metadata and a metadata selector'),
+        'filter' => array(
+          'handler' => 'mediamosa_ck_views_filter_metadataSelector',
         ),
       ),
 

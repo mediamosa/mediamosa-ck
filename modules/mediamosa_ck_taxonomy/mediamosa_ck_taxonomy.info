@@ -1,0 +1,10 @@
+name = "MediaMosa CK: Taxonomy"
+description = "This module enables taxonomy for MediaMosa frontend applications."
+package = "MediaMosa - Construction Kit"
+version = 7.x-2.0
+core = 7.x
+
+dependencies[] = mediamosa_sdk
+
+; Handlers
+files[] = handlers/mediamosa_ck_taxonomy_filter_taxonomy.class.inc

@@ -37,7 +37,7 @@ class mediamosa_ck extends mediamosa_sdk {
    * @return MediaMosaCkConnectorWrapper
    *   Returns the connector object.
    */
-  static public function get_connector($reset_session = FALSE) {
+  public static function get_connector($reset_session = FALSE) {
     $mediamosa_connector = &drupal_static(__CLASS__ . '::' . __FUNCTION__, FALSE);
 
     // Create when not found.
@@ -59,7 +59,7 @@ class mediamosa_ck extends mediamosa_sdk {
    * options for the admin in which we log the error, but will not bore the user
    * with the error.
    */
-  static public function watchdog_error($message, array $variables = array()) {
+  public static function watchdog_error($message, array $variables = array()) {
     // Log it first.
     self::watchdog($message, $variables, WATCHDOG_ERROR);
 
@@ -70,7 +70,7 @@ class mediamosa_ck extends mediamosa_sdk {
   /**
    * Wrapper for quicker logging.
    */
-  static public function watchdog($message, array $variables = array(), $severity = WATCHDOG_NOTICE, $link = NULL, $type = 'MediaMosa CK') {
+  public static function watchdog($message, array $variables = array(), $severity = WATCHDOG_NOTICE, $link = NULL, $type = 'MediaMosa CK') {
     $type = empty($type) ? 'MediaMosa CK' : 'MediaMosa CK - ' . $type;
     watchdog(substr($type, 0, 64), $message, $variables, $severity, $link);
   }
@@ -78,7 +78,7 @@ class mediamosa_ck extends mediamosa_sdk {
   /**
    * Wrapper for quick debug messages.
    */
-  static public function debug($file, $line, $message, array $variables = array(), $severity = WATCHDOG_DEBUG, $link = NULL, $type = 'MediaMosa CK - Debug') {
+  public static function debug($file, $line, $message, array $variables = array(), $severity = WATCHDOG_DEBUG, $link = NULL, $type = 'MediaMosa CK - Debug') {
     $variables = array('@file' => $file, '@line' => $line, '@message' => t($message, $variables));
     $message = '@message (In file @file on line @line).';
     drupal_set_message(t($message, $variables));
@@ -88,7 +88,7 @@ class mediamosa_ck extends mediamosa_sdk {
   /**
    * Return the last error of the connector.
    */
-  static public function get_connector_last_error() {
+  public static function get_connector_last_error() {
     $mediamosa_connector = self::get_connector();
 
     return $mediamosa_connector->get_last_error();
@@ -97,7 +97,7 @@ class mediamosa_ck extends mediamosa_sdk {
   /**
    * Return the last error of the connector.
    */
-  static public function get_connector_last_error_text() {
+  public static function get_connector_last_error_text() {
     $mediamosa_connector = self::get_connector();
 
     return $mediamosa_connector->get_last_error_text();
@@ -107,7 +107,7 @@ class mediamosa_ck extends mediamosa_sdk {
    * Get the current session user ID to use for ownership or calls where
    * user_id is required.
    */
-  static public function session_user_id() {
+  public static function session_user_id() {
     global $user;
 
     // We use mail address as owner.
@@ -119,7 +119,7 @@ class mediamosa_ck extends mediamosa_sdk {
    * call output based on the (asset/mediafile) ID and its options used for the
    * REST call.
    */
-  static public function build_static_id($rest_options) {
+  public static function build_static_id($rest_options) {
     // Should make it unique enough.
     return sha1(print_r($rest_options, TRUE));
   }
@@ -140,7 +140,7 @@ class mediamosa_ck extends mediamosa_sdk {
    *
    * @return string
    */
-  static public function request($uri, array $options = array(), $check = FALSE, $cached = FALSE, $reset = FALSE) {
+  public static function request($uri, array $options = array(), $check = FALSE, $cached = FALSE, $reset = FALSE) {
     // Get the connection class object.
     $mediamosa_connector = self::get_connector();
 
@@ -205,7 +205,7 @@ class mediamosa_ck extends mediamosa_sdk {
    * @return
    *   The response object.
    */
-  static public function request_get($uri, array $options = array(), $check = FALSE, $cached = FALSE, $reset = FALSE) {
+  public static function request_get($uri, array $options = array(), $check = FALSE, $cached = FALSE, $reset = FALSE) {
     $options['method'] = 'GET';
     return self::request($uri, $options, $check, $cached, $reset);
   }
@@ -225,7 +225,7 @@ class mediamosa_ck extends mediamosa_sdk {
    * @return
    *   The response object.
    */
-  static public function request_get_cached($uri, array $options = array(), $check = FALSE, $reset = FALSE) {
+  public static function request_get_cached($uri, array $options = array(), $check = FALSE, $reset = FALSE) {
     return self::request_get($uri, $options, $check, TRUE, $reset);
   }
 
@@ -246,7 +246,7 @@ class mediamosa_ck extends mediamosa_sdk {
    * @return
    *   The response object.
    */
-  static public function request_get_fatal($uri, array $options = array(), $check = FALSE, $cached = FALSE, $reset = FALSE) {
+  public static function request_get_fatal($uri, array $options = array(), $check = FALSE, $cached = FALSE, $reset = FALSE) {
     $options['method'] = 'GET';
     $options['fatal'] = TRUE;
     return self::request($uri, $options, $check, $cached, $reset);
@@ -267,7 +267,7 @@ class mediamosa_ck extends mediamosa_sdk {
    * @return
    *   The response object.
    */
-  static public function request_get_fatal_cached($uri, array $options = array(), $check = FALSE, $reset = FALSE) {
+  public static function request_get_fatal_cached($uri, array $options = array(), $check = FALSE, $reset = FALSE) {
     return self::request_get_fatal($uri, $options, $check, TRUE, $reset);
   }
 
@@ -284,7 +284,7 @@ class mediamosa_ck extends mediamosa_sdk {
    * @return
    *   The response object.
    */
-  static public function request_post($uri, array $options = array(), $check = FALSE) {
+  public static function request_post($uri, array $options = array(), $check = FALSE) {
     $options['method'] = 'POST';
     return self::request($uri, $options, $check);
   }
@@ -302,7 +302,7 @@ class mediamosa_ck extends mediamosa_sdk {
    * @return
    *   The response object.
    */
-  static public function request_post_fatal($uri, array $options = array(), $check = FALSE) {
+  public static function request_post_fatal($uri, array $options = array(), $check = FALSE) {
     $options['method'] = 'POST';
     $options['fatal'] = TRUE;
     return self::request($uri, $options, $check);
@@ -311,21 +311,21 @@ class mediamosa_ck extends mediamosa_sdk {
   /**
    * Return the setting for mediafile downloadable.
    */
-  static public function setting_mediafile_downloadable() {
+  public static function setting_mediafile_downloadable() {
     return variable_get('mediamosa_ck_mediafile_downloadable', TRUE);
   }
 
   /**
    * Return the setting for mediafile creation of still after upload.
    */
-  static public function setting_mediafile_upload_create_still() {
+  public static function setting_mediafile_upload_create_still() {
     return variable_get('mediamosa_ck_mediafile_upload_create_still', TRUE);
   }
 
   /**
    * Return the setting for mediafile tag on original.
    */
-  static public function setting_mediafile_tag() {
+  public static function setting_mediafile_tag() {
     return variable_get('mediamosa_ck_mediafile_tag', '');
   }
 
@@ -336,7 +336,7 @@ class mediamosa_ck extends mediamosa_sdk {
    * @param $return_parts
    *  Return the array with host and uri.
    */
-  static public function build_url($urls, $return_parts = FALSE) {
+  public static function build_url($urls, $return_parts = FALSE) {
 
     $result = array(
       'host' => array($urls['scheme'] . '://'),
@@ -393,7 +393,7 @@ class mediamosa_ck extends mediamosa_sdk {
    *
    * @param array $query
    */
-  static public function http_build_query($query) {
+  public static function http_build_query($query) {
     return strtr(http_build_query($query, '', '&'), array('%5B' => '[', '%5D' => ']', '%5b' => '[', '%5d' => ']'));
   }
 
@@ -402,7 +402,7 @@ class mediamosa_ck extends mediamosa_sdk {
    *
    * @param $query_str
    */
-  static public function parse_query($query_str) {
+  public static function parse_query($query_str) {
     // Split the url.
     $query = array();
 
@@ -436,7 +436,7 @@ class mediamosa_ck extends mediamosa_sdk {
    * @return
    *   The number of seconds since 1970 (UTC/GMT).
    */
-  static public function date2unix($any_date) {
+  public static function date2unix($any_date) {
     // Parse the date, date_parse is new in 5.2.
     $date_parsed = date_parse($any_date);
 
@@ -453,7 +453,7 @@ class mediamosa_ck extends mediamosa_sdk {
    * @return
    *   The number of seconds since 1970 (UTC/GMT).
    */
-  static public function duration2unix($mediafile_duration) {
+  public static function duration2unix($mediafile_duration) {
     // Split into pieces.
 
     if (preg_match('/(?P<hours>\d+):(?P<minutes>\d+):(?P<seconds>\d+).(?P<milliseconds>\d+)/', $mediafile_duration, $matches)) {
@@ -473,7 +473,7 @@ class mediamosa_ck extends mediamosa_sdk {
    * find out or query MediaMosa what metadata is allowed. MediaMosa does not
    * yet have a REST call that will return the metadata fields in MediaMosa.
    */
-  static public function get_metadata_fields() {
+  public static function get_metadata_fields() {
     // The properties to create.
     static $properties = array(
       'dc' => array(
@@ -515,6 +515,13 @@ class mediamosa_ck extends mediamosa_sdk {
           'isreferencedby' => 'CHAR',
         ),
       ),
+      'asset' => array(
+        'title' => 'Asset',
+        'xpath' => 'asset',
+        'fields' => array(
+          'tag' => 'CHAR',
+        ),
+      ),
     );
 
     return $properties;
@@ -526,7 +533,7 @@ class mediamosa_ck extends mediamosa_sdk {
    *
    * @see get_asset_title()
    */
-  static public function get_metadata_name_title() {
+  public static function get_metadata_name_title() {
     return 'dc.title';
   }
 
@@ -536,14 +543,14 @@ class mediamosa_ck extends mediamosa_sdk {
    *
    * @see get_asset_description()
    */
-  static public function get_metadata_name_description() {
+  public static function get_metadata_name_description() {
     return 'dc.description';
   }
 
   /**
    * Return the fields that are used for searching.
    */
-  static public function get_metadata_search_fields() {
+  public static function get_metadata_search_fields() {
     return array('dc.title', 'dc.description');
   }
 
@@ -561,7 +568,7 @@ class mediamosa_ck extends mediamosa_sdk {
    * @see get_metadata_name_title()
    * @see get_metadata_name_description()
    */
-  static public function get_asset_title($asset, $default = '') {
+  public static function get_asset_title($asset, $default = '') {
     return trim(self::get_asset_value($asset, self::get_metadata_name_title(), $default));
   }
 
@@ -579,7 +586,7 @@ class mediamosa_ck extends mediamosa_sdk {
    * @see get_metadata_name_title()
    * @see get_metadata_name_description()
    */
-  static public function get_asset_description($asset, $default = '') {
+  public static function get_asset_description($asset, $default = '') {
     return self::get_asset_value($asset, self::get_metadata_name_description(), $default);
   }
 
@@ -599,7 +606,7 @@ class mediamosa_ck extends mediamosa_sdk {
    *
    * @see get_metadata_name_title()
    */
-  static public function get_asset_value($asset, $field, $default = '') {
+  public static function get_asset_value($asset, $field, $default = '') {
     // Inside XML result?
     if (isset($asset->items)) {
       return self::get_asset_value($asset->items->item, $field, $default);
@@ -646,7 +653,7 @@ class mediamosa_ck extends mediamosa_sdk {
    * @return
    *   The user array.
    */
-  static public function lookup_user_with_name($name) {
+  public static function lookup_user_with_name($name) {
     // Precache.
     self::precache_users_with_names(array($name));
 
@@ -666,7 +673,7 @@ class mediamosa_ck extends mediamosa_sdk {
    * @param $names
    *   The names of the Drupal users to precache.
    */
-  static public function precache_users_with_names(array $names) {
+  public static function precache_users_with_names(array $names) {
     // Store static. Storing it twice does not cost lost more memory, as the
     // users are objects, and these are referenced.
     $users_names = &drupal_static('mediamosa_ck_cache_drupal_users_names', array());
@@ -703,7 +710,7 @@ class mediamosa_ck extends mediamosa_sdk {
    * @return
    *   The user array.
    */
-  static public function lookup_user_with_mail($mail) {
+  public static function lookup_user_with_mail($mail) {
     // Precache.
     self::precache_users_with_mails(array($mail));
 
@@ -723,7 +730,7 @@ class mediamosa_ck extends mediamosa_sdk {
    * @param $mails
    *   The mail address of the Drupal users to precache.
    */
-  static public function precache_users_with_mails(array $mails) {
+  public static function precache_users_with_mails(array $mails) {
     // Store static. Storing it twice does not cost lost more memory, as the
     // users are objects, and these are referenced.
     $users_names = &drupal_static('mediamosa_ck_cache_drupal_users_names', array());

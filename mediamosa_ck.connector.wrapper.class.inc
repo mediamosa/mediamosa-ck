@@ -36,7 +36,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
   /**
    * Check the connector settings.
    */
-  static public function check_connection() {
+  public static function check_connection() {
     try {
       $result = mediamosa_ck::request_get_fatal('version');
     }
@@ -50,7 +50,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
   /**
    * Build the connection ID using the connector.
    */
-  static public function build_connection_id() {
+  public static function build_connection_id() {
     $connector = mediamosa_ck::get_connector();
 
     return $connector->get_connection_id();
@@ -65,7 +65,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @param array $params
    *  The params to convert.
    */
-  static public function bool2string(array $in, array $params = array()) {
+  public static function bool2string(array $in, array $params = array()) {
     foreach ($params as $param) {
       assert(isset($in[$param]));
       if ($in[$param] === 'TRUE' || $in[$param] === 'FALSE') {
@@ -87,14 +87,14 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @return
    *   The boolean value.
    */
-  static public function string2bool($str) {
+  public static function string2bool($str) {
     return (drupal_strtoupper($str) === 'TRUE' ? TRUE : FALSE);
   }
 
   /**
    * Create a upload ticket and return the upload POST URL.
    */
-  static public function create_upload_ticket(array $options = array()) {
+  public static function create_upload_ticket(array $options = array()) {
 
     $options += array(
       'transcode_inherits_acl' => TRUE,
@@ -182,7 +182,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @return
    *   An array with domains and realms. Function is responsible to determine correct type for each element.
    */
-  static public function get_access_control($mediafile_id, $user_id) {
+  public static function get_access_control($mediafile_id, $user_id) {
     // Check the parameters.
     if (empty($mediafile_id) || empty($user_id)) {
       return FALSE;
@@ -206,14 +206,14 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
   /**
    * Check if input is realm.
    */
-  static public function is_realm($acl_domain_realm) {
+  public static function is_realm($acl_domain_realm) {
     return ((strpos($acl_domain_realm, '@') === FALSE) ? FALSE : TRUE);
   }
 
   /**
    * Check if input is domain.
    */
-  static public function is_domain($acl_domain_realm) {
+  public static function is_domain($acl_domain_realm) {
     // If its a realm, its not a domain and visa versa.
     return !self::is_realm($acl_domain_realm) && !empty($acl_domain_realm);
   }
@@ -232,7 +232,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    *   A string with users. This can be anything as MediaMosa does not care
    *   about the content of a user_id.
    */
-  static public function set_access_control($mediafile_id, $user_id, $acl_domain_realm, $acl_user_id = '') {
+  public static function set_access_control($mediafile_id, $user_id, $acl_domain_realm, $acl_user_id = '') {
     // Check the parameters.
     if (empty($mediafile_id) || empty($user_id)) {
       return FALSE;
@@ -311,7 +311,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @return SimpleXMLElement
    *   The XML response object.
    */
-  static public function get_mediafile($mediafile_id, array $options = array(), $cached = TRUE, $reset = FALSE) {
+  public static function get_mediafile($mediafile_id, array $options = array(), $cached = TRUE, $reset = FALSE) {
 
     // Set the default options for the REST call.
     $options += array(
@@ -343,7 +343,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @return SimpleXMLElement
    *   The XML response object.
    */
-  static public function get_asset($asset_id, array $options = array(), $cached = TRUE, $reset = FALSE) {
+  public static function get_asset($asset_id, array $options = array(), $cached = TRUE, $reset = FALSE) {
     // The options for the REST call.
     $options += array(
       'show_stills' => TRUE,
@@ -395,7 +395,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @return
    *   Array with info about the current used transcode profiles.
    */
-  static public function get_asset_current_used_transcode_profiles($asset_id, array $options = array()) {
+  public static function get_asset_current_used_transcode_profiles($asset_id, array $options = array()) {
     // Data.
     $current_used_transcode_profiles = array();
 
@@ -452,7 +452,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @return
    *   Array with IDs of mediafiles.
    */
-  static public function get_asset_mediafile_ids($asset_id, array $options = array()) {
+  public static function get_asset_mediafile_ids($asset_id, array $options = array()) {
     // Options for the REST call.
     $options += array(
       'get_original_only' => FALSE,
@@ -493,7 +493,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @return
    *   Mediafile_id.
    */
-  static public function get_asset_mediafile_id_first_original($asset_id, array $options = array()) {
+  public static function get_asset_mediafile_id_first_original($asset_id, array $options = array()) {
     // Options for the REST call.
     $options['get_original_only'] = TRUE;
     $mfs = self::get_asset_mediafile_ids($asset_id, $options);
@@ -511,7 +511,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @return
    *   Array with IDs of mediafiles.
    */
-  static public function get_asset_mediafile_ids_original($asset_id, array $options = array()) {
+  public static function get_asset_mediafile_ids_original($asset_id, array $options = array()) {
     // Options for the REST call.
     $options['get_original_only'] = TRUE;
 
@@ -534,7 +534,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @return SimpleXMLElement
    *   The result XML.
    */
-  static public function get_collection($coll_id, array $options = array(), $cached = TRUE, $reset = FALSE) {
+  public static function get_collection($coll_id, array $options = array(), $cached = TRUE, $reset = FALSE) {
 
     $options += array(
       'hide_empty_assets' => TRUE,
@@ -559,7 +559,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @todo:
    *   Limit is 200.
    */
-  static public function get_collections_for_options($options = array()) {
+  public static function get_collections_for_options($options = array()) {
     $options += array(
       'offset' => 0,
       'limit' => 200, // Get max allowed per rest call.
@@ -585,7 +585,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @param array $options
    *  Reserved.
    */
-  static public function get_asset_owner($asset_id, array $options = array()) {
+  public static function get_asset_owner($asset_id, array $options = array()) {
     $xml = self::get_asset($asset_id);
     return empty($xml->items->item->owner_id) ? '' : (string) $xml->items->item->owner_id;
   }
@@ -606,7 +606,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    *     plain, object, metafile, still, download.
    *
    */
-  static public function get_play_link($asset_id, $mediafile_id = '', $user_id = '', array $options = array()) {
+  public static function get_play_link($asset_id, $mediafile_id = '', $user_id = '', array $options = array()) {
 
     $play_links = &drupal_static(__CLASS__ . '::' . __FUNCTION__, array());
 
@@ -681,7 +681,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    *
    * @return $jobs
    */
-  static public function get_asset_jobs($asset_id, $user_id = FALSE) {
+  public static function get_asset_jobs($asset_id, $user_id = FALSE) {
     if (!$user_id) {
       $user_id = mediamosa_ck::session_user_id();
     }
@@ -703,7 +703,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    *
    * @return $jobs
    */
-  static public function get_mediafile_jobs($mediafile_id, $user_id = FALSE) {
+  public static function get_mediafile_jobs($mediafile_id, $user_id = FALSE) {
     if (!$user_id) {
       $mediafile = MediaMosaCkConnectorWrapper::get_mediafile($mediafile_id);
       $user_id = (string) $mediafile->items->item->owner_id;
@@ -722,7 +722,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @return SimpleXMLElement
    *   The XML response object.
    */
-  static public function get_transcode_profiles() {
+  public static function get_transcode_profiles() {
     // Return the transcode profiles.
     $transcode_profiles = &drupal_static(__FUNCTION__);
     if (!isset($transcode_profiles)) {
@@ -748,7 +748,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @return
    *   The transcode profile ID.
    */
-  static public function get_default_transcode_profile() {
+  public static function get_default_transcode_profile() {
 
     $transcode_profile_default = mediamosa_connector::variable_get('media_mediamosa_transcode_profile_default');
     if (!$transcode_profile_default) {
@@ -790,7 +790,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @return
    *   The transcode profile ID.
    */
-  static public function get_allowed_transcode_profiles(array $options = array()) {
+  public static function get_allowed_transcode_profiles(array $options = array()) {
     // Default options.
     $options += array(
       'refresh_title' => TRUE,
@@ -846,7 +846,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @return
    *   Returns FALSE for failure.
    */
-  static public function create_transcode($mediafile_id, $options = array()) {
+  public static function create_transcode($mediafile_id, $options = array()) {
     // Check the parameters.
     if (empty($mediafile_id)) {
       return FALSE;
@@ -875,7 +875,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @param $options
    *   The options for the REST call.
    */
-  static public function update_metadata($asset_id, array $options = array()) {
+  public static function update_metadata($asset_id, array $options = array()) {
 
     // Add action.
     $options += array(
@@ -903,7 +903,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    *
    * @return type
    */
-  static public function update_asset($asset_id, array $options = array()) {
+  public static function update_asset($asset_id, array $options = array()) {
     try {
       $options += array(
         'user_id' => mediamosa_ck::session_user_id(),
@@ -930,7 +930,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    *
    * @return type
    */
-  static public function update_mediafile($mediafile_id, array $options = array()) {
+  public static function update_mediafile($mediafile_id, array $options = array()) {
     try {
       $options += array(
         'user_id' => mediamosa_ck::session_user_id(),
@@ -955,7 +955,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @param $asset_id
    * @param $user_id
    */
-  static public function delete_asset($asset_id, $user_id) {
+  public static function delete_asset($asset_id, $user_id) {
     // Check the parameters.
     if (empty($asset_id) || empty($user_id)) {
       return FALSE;
@@ -988,7 +988,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @return
    *   Returns TRUE when delete was successful.
    */
-  static public function delete_mediafile($mediafile_id, $user_id) {
+  public static function delete_mediafile($mediafile_id, $user_id) {
     // Check the parameters.
     if (empty($mediafile_id) || empty($user_id)) {
       return FALSE;
@@ -1020,7 +1020,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @return
    *   The assets contained in a mediamosa_connector_response object.
    */
-  static public function search_asset(array $options = array()) {
+  public static function search_asset(array $options = array()) {
     // Setup default values.
     $options += array(
       // Position in result set.
@@ -1107,7 +1107,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @return SimpleXMLElement
    *   XML result
    */
-  static public function search_collection(array $options = array()) {
+  public static function search_collection(array $options = array()) {
 
     // Setup default values.
     $options += array(
@@ -1183,7 +1183,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    *
    * @return type
    */
-  static public function create_collection($options = array()) {
+  public static function create_collection($options = array()) {
     try {
       $options += array(
         'user_id' => mediamosa_ck::session_user_id(),
@@ -1213,7 +1213,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    *
    * @return type
    */
-  static public function update_collection($coll_id, array $options = array()) {
+  public static function update_collection($coll_id, array $options = array()) {
     try {
       $options += array(
         'user_id' => mediamosa_ck::session_user_id(),
@@ -1239,7 +1239,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @param $options
    *   The options.
    */
-  static public function get_collection_asset_ids($coll_id, $options = array()) {
+  public static function get_collection_asset_ids($coll_id, $options = array()) {
     // Setup default values.
     $options += array(
       // Search for this collection.
@@ -1289,7 +1289,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @param $asset_ids
    *   Array with asset_ids to remove from collection.
    */
-  static public function delete_collection_asset_relations($coll_id, $user_id, array $asset_ids, array $options = array()) {
+  public static function delete_collection_asset_relations($coll_id, $user_id, array $asset_ids, array $options = array()) {
     // Options.
     $options = array(
       'user_id' => $user_id,
@@ -1318,7 +1318,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @param $asset_ids
    *   Array of asset_ids to put into collection.
    */
-  static public function create_collection_asset_relations($coll_id, $user_id, array $asset_ids, array $options = array()) {
+  public static function create_collection_asset_relations($coll_id, $user_id, array $asset_ids, array $options = array()) {
     // Options.
     $options = array(
       'user_id' => $user_id,
@@ -1350,7 +1350,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @return
    *   Returns TRUE when delete was successful.
    */
-  static public function delete_collection($coll_id, $user_id, $options = array()) {
+  public static function delete_collection($coll_id, $user_id, $options = array()) {
     // Check the parameters.
     if (empty($coll_id) || empty($user_id)) {
       return FALSE;
@@ -1385,7 +1385,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @return mediamosa_connector_response
    *   Returns FALSE when failure or mediamosa_connector_response.
    */
-  static public function create_mediafile_still($mediafile_id, $user_id, $data = array()) {
+  public static function create_mediafile_still($mediafile_id, $user_id, $data = array()) {
     // Check the parameters.
     if (empty($mediafile_id) || empty($user_id)) {
       return FALSE;
@@ -1416,7 +1416,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @param $options
    *   The REST call options.
    */
-  static public function delete_asset_still($asset_id, $user_id, array $options = array()) {
+  public static function delete_asset_still($asset_id, $user_id, array $options = array()) {
     // Check the parameters.
     if (empty($asset_id)) {
       return FALSE;
@@ -1452,7 +1452,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @return SimpleXMLElement
    *   The XML response object.
    */
-  static public function get_user($user_id, array $options = array(), $cached = TRUE, $reset = FALSE) {
+  public static function get_user($user_id, array $options = array(), $cached = TRUE, $reset = FALSE) {
 
     // Do the REST call.
     return mediamosa_ck::request_get_fatal('user/' . rawurlencode($user_id), array(), FALSE, $cached, $reset)->xml;

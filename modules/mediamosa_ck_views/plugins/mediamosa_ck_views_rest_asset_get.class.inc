@@ -151,7 +151,7 @@ class mediamosa_ck_views_rest_asset_get extends mediamosa_ck_views_rest {
    *
    * @return
    */
-  static public function get_views_data($title, $class) {
+  public static function get_views_data($title, $class) {
     $data = array(
       'table' => array(
         'group' => t('MediaMosa'),

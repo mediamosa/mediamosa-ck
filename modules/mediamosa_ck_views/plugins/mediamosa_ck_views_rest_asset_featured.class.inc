@@ -35,7 +35,7 @@ class mediamosa_ck_views_rest_asset_featured extends mediamosa_ck_views_rest_ass
    * @return
    *   Returns an array with current selected featured asset ids.
    */
-  static public function get_featured_ids() {
+  public static function get_featured_ids() {
     return variable_get('mediamosa_ck_featured_asset_ids', array());
   }
 
@@ -45,7 +45,7 @@ class mediamosa_ck_views_rest_asset_featured extends mediamosa_ck_views_rest_ass
    * @param $asset_id
    *   The ID of the asset to set as featured.
    */
-  static public function set_featured_id($asset_id) {
+  public static function set_featured_id($asset_id) {
     $asset_ids = self::get_featured_ids();
 
     // Lets limit the featured to 200 ids.
@@ -61,7 +61,7 @@ class mediamosa_ck_views_rest_asset_featured extends mediamosa_ck_views_rest_ass
     variable_set('mediamosa_ck_featured_asset_ids', $asset_ids);
   }
 
-  static public function unset_featured_id($asset_id) {
+  public static function unset_featured_id($asset_id) {
     $asset_ids = self::get_featured_ids();
 
     if (!empty($asset_ids[$asset_id])) {

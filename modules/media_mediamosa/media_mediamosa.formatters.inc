@@ -66,6 +66,16 @@ function media_mediamosa_file_formatter_video_view($file, $display, $langcode) {
     }
     return $element;
   }
+  elseif ($scheme == 'mediamosa' && !empty($file->override['wysiwyg'])) {
+    $element = array(
+      '#theme' => 'media_formatter_large_icon',
+      '#uri' => $file->uri,
+    );
+    foreach (array('width', 'height', 'autoplay') as $setting) {
+      $element['#' . $setting] = isset($file->override[$setting]) ? $file->override[$setting] : $display['settings'][$setting];
+    }
+    return $element;
+  }
 }
 
 /**

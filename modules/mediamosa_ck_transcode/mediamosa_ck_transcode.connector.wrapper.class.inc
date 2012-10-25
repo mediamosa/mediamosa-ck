@@ -35,7 +35,7 @@ class MediaMosaCkConnectorTranscodeWrapper extends MediaMosaCkConnectorWrapper {
    *
    * @return profile names
    */
-  static public function get_profile_names() {
+  public static function get_profile_names() {
 
     try {
       // Do request.
@@ -65,7 +65,7 @@ class MediaMosaCkConnectorTranscodeWrapper extends MediaMosaCkConnectorWrapper {
    * @return
    *   Array with jobs.
    */
-  static public function get_asset_actual_jobs($asset_id, $owner_id = FALSE) {
+  public static function get_asset_actual_jobs($asset_id, $owner_id = FALSE) {
 
     $uri = strtr('asset/@asset_id/joblist', array('@asset_id' => $asset_id));
 
@@ -102,7 +102,7 @@ class MediaMosaCkConnectorTranscodeWrapper extends MediaMosaCkConnectorWrapper {
    *
    * @return bool.
    */
-  static public function delete_job($job_id, $owner_id) {
+  public static function delete_job($job_id, $owner_id) {
 
     // REST uri.
     $uri = strtr('job/@job_id/delete', array('@job_id' => $job_id));
