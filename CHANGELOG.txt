@@ -1,6 +1,20 @@
+Mediamosa CK 7.x-2.x-dev
+------------------------
+- Fixed case sensitive problem with parameter, causing fatal error on MediaMosa.
+- Adding field types for mediamosa media browser plugin filters and autocomplete
+  of taxonomy.
+- Adding views style plugin for mediamosa media browser plugin.
+- Changed behavior of metadata search filter.
+- Added a mediamosa view and metadata filter for the mediamosa media browser
+  plugin.
+- Mediamosa taxonomy integration;
+    - Settings page.
+    - Helpers to edit or add tags to an asset.
+- Fixed wysiwyg support.
 
-Mediamosa CK, 7.x-2.x-dev
--------------------------
+
+Mediamosa CK 7.x-2.0
+--------------------
 - Added hook_mediamosa_asset_view_object_alter, for altering asset objects after
   they where processed.
 - Added hook_mediamosa_collection_view_object_alter, for altering asset objects
@@ -47,10 +61,9 @@ Mediamosa CK, 7.x-2.x-dev
 - Updated modules to work with Media 2.0 and File Entity 2.0.
 - Added custom request function that is used with custom restview module.
 - Added new sync class for sync related functions.
-- Fixed case sensitive problem with parameter, causing fatal error on MediaMosa.
 
-Mediamosa CK, 7.x-1.x-dev
--------------------------
+Mediamosa CK, 7.x-1.1
+---------------------
 - Added code to return play link.
 - Fixed upload to MediaMosa.
 - Ticket 488, 490, 491, 494: ACL, still and transcode forms and REST calls.

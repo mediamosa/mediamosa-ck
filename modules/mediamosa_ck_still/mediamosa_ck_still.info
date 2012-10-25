@@ -1,7 +1,7 @@
 name = "MediaMosa CK: Stills"
 description = "This module enables still image creation for MediaMosa frontend applications."
 package = "MediaMosa - Construction Kit"
-version = "7.x-2.0"
+version = 7.x-2.x-dev
 core = 7.x
 
 dependencies[] = mediamosa_sdk
