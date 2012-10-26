@@ -1,29 +1,12 @@
 <?php
 /**
- * MediaMosa is Open Source Software to build a Full Featured, Webservice
- * Oriented Media Management and Distribution platform (http://mediamosa.org)
- *
- * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl)
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, you can find it at:
- * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
- */
-
-/**
  * @file
  * Theme related functions.
  */
 
 /**
+ * Show listing of mediafiles.
+ *
  * The theme used to generate a listing of mediafiles in the views using
  * mediamosa_ck_views_field_text_mediafiles.
  *
@@ -41,16 +24,15 @@ function theme_mediamosa_ck_views_theme_asset_mediafiles($variables) {
   // Loop.
   foreach ($variables['mediafiles'] as $mediafile) {
     if (empty($mediafile['metadata']['container_type'])) {
-      continue; // No analysed yet.
+      // Not analysed.
+      continue;
     }
- 
+
     // Build the link.
     $path = strtr($variables['asset_path'], array('[asset_id]' => $mediafile['asset_id'], '[mediafile_id]' => $mediafile['mediafile_id']));
 
     // Get filename.
     $output[] = '<li>';
-  //  $output[] = t(drupal_strtoupper($mediafile['metadata']['container_type']));
-  //  $output[] = ' ';
     $output[] = empty($mediafile['filename']) ? t('No filename present') : (l(trim($mediafile['filename']), $path));
     $output[] = '</li>';
   }
@@ -59,6 +41,8 @@ function theme_mediamosa_ck_views_theme_asset_mediafiles($variables) {
 }
 
 /**
+ * Show list of collections.
+ *
  * The theme used to generate a listing of collections in the views using
  * mediamosa_ck_views_field_text_collections.
  *
@@ -82,7 +66,9 @@ function theme_mediamosa_ck_views_theme_asset_collections($variables) {
 }
 
 /**
- * The theme used to generate a listing of collections in the views using
+ * Shows listing of asset metadata.
+ *
+ * The theme used to generate a listing of metadata in the views using
  * mediamosa_ck_views_field_text_metadata.
  *
  * @param array $variables
@@ -104,7 +90,9 @@ function theme_mediamosa_ck_views_theme_asset_metadata($variables) {
 }
 
 /**
- * The theme used to generate a listing of collections in the views using
+ * Shows listing of technical metadata.
+ *
+ * The theme used to generate a listing of technical metadata in the views using
  * mediamosa_ck_views_field_text_technical_metadata.
  *
  * @param array $variables
@@ -113,13 +101,14 @@ function theme_mediamosa_ck_views_theme_asset_metadata($variables) {
 function theme_mediamosa_ck_views_theme_asset_technical_metadata($variables) {
   // Empty.
   $rows = array();
-
   ksort($variables['technical_metadata']);
 
   foreach ($variables['technical_metadata'] as $name => $value) {
     $name = drupal_ucfirst(str_replace('_', ' ', $name));
-
-    $rows[] = array('name' => t($name), 'value' => (empty($value) ? ' ' : t($value)));
+    $rows[] = array(
+      'name' => t($name),
+      'value' => (empty($value) ? ' ' : t($value, array(), array('context' => ''))),
+    );
   }
 
   return theme('table', array('rows' => $rows));
@@ -152,18 +141,23 @@ function theme_mediamosa_ck_views_theme_asset_actions($variables) {
   // Empty.
   $output = array();
 
-  // @todo ; owner check.
-  $output[] = '<li>' . l(t('edit'), strtr($variables['action_path_edit'], array('[asset_id]' => $variables['asset_id']))) . '</li>';
-  $output[] = '<li>' . l(t('delete'), strtr($variables['action_path_delete'], array('[asset_id]' => $variables['asset_id']))) . '</li>';
+  // Check for ownership on asset.
+  if (mediamosa_sb::is_owner_asset($variables['asset_id'])) {
+    $output[] = '<li>' . l(t('edit'), strtr($variables['action_path_edit'], array('[asset_id]' => $variables['asset_id']))) . '</li>';
+    $output[] = '<li>' . l(t('delete'), strtr($variables['action_path_delete'], array('[asset_id]' => $variables['asset_id']))) . '</li>';
+  }
 
   return empty($output) ? t('No actions') : '<ul>' . implode('', $output) . '</ul>';
 }
 
 /**
+ * Create themed link to owner.
+ *
  * The theme will generate a link to the user using given data. When uid is 0 or
  * missing, then only the contents of user name is printed.
  *
- * @param type $variables
+ * @param array $variables
+ *   See theme definition for possible attributes.
  */
 function theme_mediamosa_ck_views_theme_owner($variables) {
   if (empty($variables['uid'])) {
@@ -174,8 +168,10 @@ function theme_mediamosa_ck_views_theme_owner($variables) {
 }
 
 /**
+ * Display the player image.
  *
- * @param type $variables
+ * @param array $variables
+ *   See theme definition for possible attributes.
  */
 function theme_mediamosa_ck_views_player_image($variables) {
 
@@ -190,7 +186,11 @@ function theme_mediamosa_ck_views_player_image($variables) {
     array(
       'path' => $image,
       'alt' => 'Mediafile not found',
-      'attributes' => array('width' => $variables['width'], 'height' => $variables['height'], 'class' => 'mediafile-notfound'),
+      'attributes' => array(
+        'width' => $variables['width'],
+        'height' => $variables['height'],
+        'class' => 'mediafile-notfound',
+      ),
     )
   );
   return $response;

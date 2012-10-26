@@ -11,7 +11,8 @@ Mediamosa CK 7.x-2.x-dev
     - Settings page.
     - Helpers to edit or add tags to an asset.
 - Fixed wysiwyg support.
-
+- Fixed metadata view handler, did not call theme function, causing notice about
+  array on check_plain function.
 
 Mediamosa CK 7.x-2.0
 --------------------
