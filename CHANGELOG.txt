@@ -13,6 +13,11 @@ Mediamosa CK 7.x-2.x-dev
 - Fixed wysiwyg support.
 - Fixed metadata view handler, did not call theme function, causing notice about
   array on check_plain function.
+- Added REST call info as Query debug info to the view (debug) options.
+- Cleanup of codestyle related stuff;
+    - Used Drupal Style Guide.
+    - Moved Copyrights to seperate txt file.
+
 
 Mediamosa CK 7.x-2.0
 --------------------
@@ -62,6 +67,7 @@ Mediamosa CK 7.x-2.0
 - Updated modules to work with Media 2.0 and File Entity 2.0.
 - Added custom request function that is used with custom restview module.
 - Added new sync class for sync related functions.
+- Fixed case sensitive problem with parameter, causing fatal error on MediaMosa.
 
 Mediamosa CK, 7.x-1.1
 ---------------------
