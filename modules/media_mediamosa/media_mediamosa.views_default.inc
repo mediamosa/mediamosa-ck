@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * Default views integration for the Mediamosa Media Browser module.
@@ -74,7 +73,7 @@ function media_mediamosa_views_default_views() {
   $handler->display->display_options['filters']['metadata']['table'] = 'mediamosa_asset_search';
   $handler->display->display_options['filters']['metadata']['field'] = 'metadata';
   $handler->display->display_options['filters']['metadata']['value'] = array(
-      'metadata' => '',
+    'metadata' => '',
   );
   $handler->display->display_options['filters']['metadata']['exposed'] = TRUE;
   $handler->display->display_options['filters']['metadata']['expose']['operator_id'] = '';
@@ -82,9 +81,9 @@ function media_mediamosa_views_default_views() {
   $handler->display->display_options['filters']['metadata']['expose']['operator'] = 'metadata_op';
   $handler->display->display_options['filters']['metadata']['expose']['identifier'] = 'metadata';
   $handler->display->display_options['filters']['metadata']['expose']['remember_roles'] = array(
-      2 => '2',
-      1 => 0,
-      3 => 0,
+    2 => '2',
+    1 => 0,
+    3 => 0,
   );
 
   $views[$view->name] = $view;

@@ -1,5 +1,10 @@
 <?php
 /**
+ * @file
+ * The mediamosa_ck profile.
+ */
+
+/**
  * Implements hook_form_FORM_ID_alter().
  *
  * Allows the profile to alter the site configuration form.
@@ -133,7 +138,14 @@ function _mediamosa_ck_profile_setup_wysiwyg() {
   $editor = 'ckeditor';
   $settings = 'a:20:{s:7:"default";i:1;s:11:"user_choose";i:0;s:11:"show_toggle";i:1;s:5:"theme";s:8:"advanced";s:8:"language";s:2:"en";s:7:"buttons";a:1:{s:6:"drupal";a:1:{s:5:"media";i:1;}}s:11:"toolbar_loc";s:3:"top";s:13:"toolbar_align";s:4:"left";s:8:"path_loc";s:6:"bottom";s:8:"resizing";i:1;s:11:"verify_html";i:1;s:12:"preformatted";i:0;s:22:"convert_fonts_to_spans";i:1;s:17:"remove_linebreaks";i:1;s:23:"apply_source_formatting";i:0;s:27:"paste_auto_cleanup_on_paste";i:0;s:13:"block_formats";s:32:"p,address,pre,h2,h3,h4,h5,h6,div";s:11:"css_setting";s:5:"theme";s:8:"css_path";s:0:"";s:11:"css_classes";s:0:"";}';
 
-  db_query("INSERT INTO {wysiwyg} SET editor = :editor, settings = :settings, format = :format", array(':editor' => $editor, ':settings' => $settings, ':format' => $format));
+  db_query(
+    "INSERT INTO {wysiwyg} SET editor = :editor, settings = :settings, format = :format",
+    array(
+      ':editor' => $editor,
+      ':settings' => $settings,
+      ':format' => $format,
+    )
+  );
 }
 
 /**
@@ -142,9 +154,12 @@ function _mediamosa_ck_profile_setup_wysiwyg() {
 function _mediamosa_ck_profile_setup_intro_page() {
   // Create basic page for explaining the user what to do...
   $node = new stdClass();
-  $node->uid = 1; // Admin
-  $node->status = 1; // Published
-  $node->promote = 1; // On front page.
+  // Admin.
+  $node->uid = 1;
+  // Published.
+  $node->status = 1;
+  // On front page.
+  $node->promote = 1;
   $node->type = 'page';
   $node->locked = 0;
   $node->has_title = 1;

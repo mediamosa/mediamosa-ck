@@ -1,30 +1,7 @@
 <?php
 /**
- * MediaMosa is Open Source Software to build a Full Featured, Webservice Oriented Media Management and
- * Distribution platform (http://mediamosa.org)
- *
- * Copyright (C) 2010 SURFnet BV (http://www.surfnet.nl) and Kennisnet
- * (http://www.kennisnet.nl)
- *
- * MediaMosa is based on the open source Drupal platform and
- * was originally developed by Madcap BV (http://www.madcap.nl)
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, you can find it at:
- * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
- */
-
-/**
  * @file
- * Our wrapper around the mediamosa_connector.
+ * Wrapper around the mediamosa_connector.
  */
 
 class MediaMosaCkConnectorTranscodeWrapper extends MediaMosaCkConnectorWrapper {
@@ -33,7 +10,8 @@ class MediaMosaCkConnectorTranscodeWrapper extends MediaMosaCkConnectorWrapper {
    *
    * @deprecated: uses deprecated function response2array().
    *
-   * @return profile names
+   * @return array
+   *   array of transcode profile names.
    */
   public static function get_profile_names() {
 
@@ -56,13 +34,13 @@ class MediaMosaCkConnectorTranscodeWrapper extends MediaMosaCkConnectorWrapper {
   /**
    * Retrieving all non-finished jobs.
    *
-   * @param $asset_id
+   * @param string $asset_id
    *   ID of asset.
-   * @param $owner_id
+   * @param string $owner_id
    *   If you already know an owner please supply; this will save from extra
    *   request.
    *
-   * @return
+   * @return array
    *   Array with jobs.
    */
   public static function get_asset_actual_jobs($asset_id, $owner_id = FALSE) {
@@ -98,9 +76,12 @@ class MediaMosaCkConnectorTranscodeWrapper extends MediaMosaCkConnectorWrapper {
    * Delete a particular job.
    *
    * @param string $job_id
+   *   id of job to delete.
    * @param string $owner_id
+   *   owner id of job.
    *
-   * @return bool.
+   * @return boolean
+   *   returns TRUE if succes.
    */
   public static function delete_job($job_id, $owner_id) {
 
@@ -114,8 +95,6 @@ class MediaMosaCkConnectorTranscodeWrapper extends MediaMosaCkConnectorWrapper {
       mediamosa_ck::watchdog_error('Unable to delete job; @message.', array('@message' => $e->getMessage()));
       return FALSE;
     }
-
     return $result->code == 200;
-
   }
 }

@@ -11,8 +11,8 @@ class mediamosa_ck_views_filter_metadataSelector extends mediamosa_ck_views_filt
    */
   public function query() {
     if (!empty($this->value)) {
-      foreach($this->value as $value) {
-        if(!empty($value['string']) && !empty($value['metadata'])) {
+      foreach ($this->value as $value) {
+        if (!empty($value['string']) && !empty($value['metadata'])) {
           $cql_or = array();
           $cql_or[] = $value['metadata'] . '="' . addslashes($value['string']) . '"';
           $this->query->add_filter($this->field, count($cql_or) > 1 ? '(' . implode(' OR ', $cql_or) . ')' : reset($cql_or));
@@ -30,20 +30,20 @@ class mediamosa_ck_views_filter_metadataSelector extends mediamosa_ck_views_filt
     // Get all metadata fields.
     $options = array();
     $types = mediamosa_ck::get_metadata_fields();
-    foreach($types as $type) {
+    foreach ($types as $type) {
       $options[$type['title']] = array();
-      if(!empty($type['fields']) && is_array($type['fields'])) {
+      if (!empty($type['fields']) && is_array($type['fields'])) {
         foreach ($type['fields'] as $key => $value) {
           $options[$type['title']][$key] = $key;
         }
       }
     }
     $form['value']['metadata'] = array(
-        '#type' => 'select',
-        '#title' => t('Type'),
-        '#options' => $options,
-        '#default_value' => '',
-      );
+      '#type' => 'select',
+      '#title' => t('Type'),
+      '#options' => $options,
+      '#default_value' => '',
+    );
     $form['value']['string'] = array(
       '#type' => 'textfield',
       '#title' => t('Text'),

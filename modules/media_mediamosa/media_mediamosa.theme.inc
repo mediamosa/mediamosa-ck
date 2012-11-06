@@ -1,32 +1,12 @@
 <?php
 /**
- * MediaMosa is Open Source Software to build a Full Featured, Webservice
- * Oriented Media Management and Distribution platform (http://mediamosa.org)
- *
- * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl) and Kennisnet
- * (http://www.kennisnet.nl)
- *
- * MediaMosa is based on the open source Drupal platform and
- * was originally developed by Madcap BV (http://www.madcap.nl)
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, you can find it at:
- * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
- */
-
-/**
  * @file
  * All theming functions.
  */
 
+/**
+ * Format the link.
+ */
 function theme_media_mediamosa_link($variables) {
   // Based on the asset_id and mediafile_id we will try to find the file in the
   // file_managed table.
@@ -54,8 +34,7 @@ function theme_media_mediamosa_link($variables) {
  * Preview for Styles UI.
  */
 function theme_media_mediamosa_preview_style($variables) {
-  // TODO
-  watchdog('media_mediamosa', t('Fixme: Style'), array(), WATCHDOG_WARNING);
+  // @todo: fixme.
   $variables['uri'] = 'FIXME: Theme';
   $variables['field_type'] = 'file';
   $variables['object'] = file_uri_to_object($variables['uri']);
@@ -63,60 +42,59 @@ function theme_media_mediamosa_preview_style($variables) {
 }
 
 /**
- * Video player theme
+ * Video player theme.
  */
 function theme_media_mediamosa_video($variables) {
-    global $user;
+  global $user;
 
-    // To render, asset_id must be present.
-    if (empty($variables['element']['#uri'])) {
-      return;
-    }
-    
-    $values = MediaMosaStreamWrapper::mediamosa_parse_url($variables['element']['#uri']);
+  // To render, asset_id must be present.
+  if (empty($variables['element']['#uri'])) {
+    return;
+  }
 
-    // Empty at start.
-    $options = array();
+  $values = MediaMosaStreamWrapper::mediamosa_parse_url($variables['element']['#uri']);
 
-    // What mediafile to play?
-    $mediafile_id_to_play = empty($values['mediafile_id']) ? NULL : $values['mediafile_id'];
+  // Empty at start.
+  $options = array();
 
-    // Take user_id of current watcher.
-    $user_id = mediamosa_ck::session_user_id();
+  // What mediafile to play?
+  $mediafile_id_to_play = empty($values['mediafile_id']) ? NULL : $values['mediafile_id'];
 
-    // Determine admin user
-    if (user_access('access administration pages')) {
-      $options['is_app_admin'] = TRUE;
-    }
+  // Take user_id of current watcher.
+  $user_id = mediamosa_ck::session_user_id();
 
-    // Response.
-    $options['response'] = 'object';
+  // Determine admin user.
+  if (user_access('access administration pages')) {
+    $options['is_app_admin'] = TRUE;
+  }
 
-    // Not specified? Then use default transcode profile ID.
-    if (empty($mediafile_id_to_play)) {
-      $options['profile_id'] = MediaMosaCkConnectorWrapper::get_default_transcode_profile();
-    }
+  // Response.
+  $options['response'] = 'object';
 
-    // Both not empty.
-    if (!empty($variables['element']['#width']) && !empty($variables['element']['#height'])) {
-      $options['width'] = $variables['element']['#width'];
-      $options['height'] = $variables['element']['#height'];
-      $options['autostart'] = $variables['element']['#autoplay'] ? 'TRUE' : 'FALSE';
-    }
+  // Not specified? Then use default transcode profile ID.
+  if (empty($mediafile_id_to_play)) {
+    $options['profile_id'] = MediaMosaCkConnectorWrapper::get_default_transcode_profile();
+  }
 
-    try {
-      $options['fatal'] = TRUE;
-      $response = MediaMosaCkConnectorWrapper::get_play_link($values['asset_id'], $mediafile_id_to_play, $user_id, $options);
-    }
-    catch (Exception $e) {
-      $response = theme('mediamosa_ck_views_player_image',
-        array(
-          'width' => $options['width'],
-          'height' => $options['height'],
-          'error_code' => $e->getCode(),
-          'asset_id' => $values['asset_id'],
-          'mediafile_id' => $mediafile_id_to_play,
-        ));
-    }
-    return $response;
+  // Both not empty.
+  if (!empty($variables['element']['#width']) && !empty($variables['element']['#height'])) {
+    $options['width'] = $variables['element']['#width'];
+    $options['height'] = $variables['element']['#height'];
+    $options['autostart'] = $variables['element']['#autoplay'] ? 'TRUE' : 'FALSE';
+  }
+
+  try {
+    $options['fatal'] = TRUE;
+    $response = MediaMosaCkConnectorWrapper::get_play_link($values['asset_id'], $mediafile_id_to_play, $user_id, $options);
+  }
+  catch (Exception $e) {
+    $response = theme('mediamosa_ck_views_player_image', array(
+      'width' => $options['width'],
+      'height' => $options['height'],
+      'error_code' => $e->getCode(),
+      'asset_id' => $values['asset_id'],
+      'mediafile_id' => $mediafile_id_to_play,
+    ));
+  }
+  return $response;
 }

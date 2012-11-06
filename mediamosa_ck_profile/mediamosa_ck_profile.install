@@ -1,5 +1,10 @@
 <?php
 /**
+ * @file
+ * Contains install and update functions for mediamosa_ck_profile.
+ */
+
+/**
  * Implements hook_install().
  *
  * Perform actions to set up the site for this profile.
@@ -186,7 +191,18 @@ function mediamosa_ck_profile_install() {
       'cache' => -1,
     ),
   );
-  $query = db_insert('block')->fields(array('module', 'delta', 'theme', 'status', 'weight', 'region', 'pages', 'cache'));
+  $query = db_insert('block')->fields(
+    array(
+      'module',
+      'delta',
+      'theme',
+      'status',
+      'weight',
+      'region',
+      'pages',
+      'cache',
+    )
+  );
   foreach ($values as $record) {
     $query->values($record);
   }
@@ -254,10 +270,12 @@ function mediamosa_ck_profile_install() {
   variable_set('node_options_page', array('status'));
   variable_set('comment_page', COMMENT_NODE_HIDDEN);
 
-  // Don't display date and author information for "Basic page" nodes by default.
+  // Don't display date and author information for "Basic page" nodes by
+  // default.
   variable_set('node_submitted_page', FALSE);
 
-  // Enable user picture support and set the default to a square thumbnail option.
+  // Enable user picture support and set the default to a square thumbnail
+  // option.
   variable_set('user_pictures', '1');
   variable_set('user_picture_dimensions', '1024x1024');
   variable_set('user_picture_file_size', '800');
@@ -266,7 +284,8 @@ function mediamosa_ck_profile_install() {
   // Allow visitor account creation with administrative approval.
   variable_set('user_register', USER_REGISTER_VISITORS_ADMINISTRATIVE_APPROVAL);
 
-  // Create a default vocabulary named "Tags", enabled for the 'article' content type.
+  // Create a default vocabulary named "Tags", enabled for the 'article'
+  // content type.
   $description = st('Use tags to group articles on similar topics into categories.');
   $help = st('Enter a comma-separated list of words to describe your content.');
   $vocabulary = (object) array(
@@ -318,10 +337,10 @@ function mediamosa_ck_profile_install() {
   field_create_instance($instance);
 
 
-  // Create an image field named "Image", enabled for the 'article' content type.
-  // Many of the following values will be defaulted, they're included here as an illustrative examples.
-  // See http://api.drupal.org/api/function/field_create_field/7
-
+  // Create an image field named "Image", enabled for the 'article' content
+  // type.  Many of the following values will be defaulted, they're included
+  // here as an illustrative examples.  See
+  // http://api.drupal.org/api/function/field_create_field/7
   $field = array(
     'field_name' => 'field_image',
     'type' => 'image',
@@ -341,8 +360,9 @@ function mediamosa_ck_profile_install() {
   field_create_field($field);
 
 
-  // Many of the following values will be defaulted, they're included here as an illustrative examples.
-  // See http://api.drupal.org/api/function/field_create_instance/7
+  // Many of the following values will be defaulted, they're included here as
+  // an illustrative examples. See
+  // http://api.drupal.org/api/function/field_create_instance/7
   $instance = array(
     'field_name' => 'field_image',
     'entity_type' => 'node',
@@ -389,10 +409,27 @@ function mediamosa_ck_profile_install() {
 
   // Enable default permissions for system roles.
   $filtered_html_permission = filter_permission_name($filtered_html_format);
-  user_role_grant_permissions(DRUPAL_ANONYMOUS_RID, array('access content', 'access comments', $filtered_html_permission));
-  user_role_grant_permissions(DRUPAL_AUTHENTICATED_RID, array('access content', 'access comments', 'post comments', 'skip comment approval', $filtered_html_permission));
+  user_role_grant_permissions(
+    DRUPAL_ANONYMOUS_RID,
+    array(
+      'access content',
+      'access comments',
+      $filtered_html_permission,
+    )
+  );
+  user_role_grant_permissions(
+    DRUPAL_AUTHENTICATED_RID,
+    array(
+      'access content',
+      'access comments',
+      'post comments',
+      'skip comment approval',
+      $filtered_html_permission,
+    )
+  );
 
-  // Create a default role for site administrators, with all available permissions assigned.
+  // Create a default role for site administrators, with all available
+  // permissions assigned.
   $admin_role = new stdClass();
   $admin_role->name = 'administrator';
   $admin_role->weight = 2;
@@ -416,14 +453,7 @@ function mediamosa_ck_profile_install() {
 
   // Update the menu router information.
   menu_rebuild();
-/*
-  // Enable the admin theme.
-  db_update('system')
-    ->fields(array('status' => 1))
-    ->condition('type', 'theme')
-    ->condition('name', 'garland')
-    ->execute();*/
+
   variable_set('admin_theme', 'garland');
   variable_set('node_admin_theme', '1');
 }
-

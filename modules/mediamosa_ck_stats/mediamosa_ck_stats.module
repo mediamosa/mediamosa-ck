@@ -1,35 +1,10 @@
 <?php
 /**
- * MediaMosa is Open Source Software to build a Full Featured, Webservice
- * Oriented Media Management and Distribution platform (http://mediamosa.org)
- *
- * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl) and Kennisnet
- * (http://www.kennisnet.nl)
- *
- * MediaMosa is based on the open source Drupal platform and
- * was originally developed by Madcap BV (http://www.madcap.nl)
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, you can find it at:
- * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
- */
-
-
-/**
  * @file
  * This module enables various statistics for frontend applications.
  */
 
-// Includes.
-
+// Some defines.
 define('MEDIAMOSA_CK_STATS_PERMISSION_VIEW_STATS', 'view mediamosa statistics');
 
 // @todo: move to setting.
@@ -50,7 +25,7 @@ define('MEDIAMOSA_CK_STATS_DATAUSAGE_TYPE_GROUP', 'group');
 define('MEDIAMOSA_CK_STATS_DATAUSAGE_TYPE_USER', 'user');
 
 /**
- * Implementation of hook_permission().
+ * Implements hook_permission().
  */
 function mediamosa_ck_stats_permission() {
   return array(
@@ -62,7 +37,7 @@ function mediamosa_ck_stats_permission() {
 }
 
 /**
- * Implementation of hook_menu().
+ * Implements hook_menu().
  */
 function mediamosa_ck_stats_menu() {
   $items['mediamosa/stats'] = array(
@@ -91,7 +66,7 @@ function mediamosa_ck_stats_menu() {
 }
 
 /**
- * Implementation of hook_help().
+ * Implements hook_help().
  */
 function mediamosa_ck_stats_help($path, $arg) {
   switch ($path) {
@@ -107,7 +82,7 @@ function mediamosa_ck_stats_help($path, $arg) {
 }
 
 /**
- * Implementation of hook_block_info().
+ * Implements hook_block_info().
  */
 function mediamosa_ck_stats_block_info() {
   $blocks['latest'] = array(
@@ -120,7 +95,7 @@ function mediamosa_ck_stats_block_info() {
 }
 
 /**
- * Implementation of hook_block_view().
+ * Implements hook_block_view().
  */
 function mediamosa_ck_stats_block_view($delta = 0) {
   $block = array();
@@ -225,7 +200,7 @@ function _mediamosa_ck_stats_used_diskspace() {
  */
 function _mediamosa_ck_stats_newest_mediafiles() {
   // No filter for this form.
-  $build[MEDIAMOSA_CK_STATS_FORMNAME_NEWEST_MEDIA .'_list'] = drupal_get_form('mediamosa_ck_stats_newest_mediafiles_form');
+  $build[MEDIAMOSA_CK_STATS_FORMNAME_NEWEST_MEDIA . '_list'] = drupal_get_form('mediamosa_ck_stats_newest_mediafiles_form');
   return $build;
 }
 
@@ -268,9 +243,9 @@ function mediamosa_ck_stats_filter_form($form, &$form_state, $form_name) {
     '#type' => 'select',
     '#title' => 'Type',
     '#options' => array(
-        MEDIAMOSA_CK_STATS_DATAUSAGE_TYPE_CONTAINER => t('Container'),
-        MEDIAMOSA_CK_STATS_DATAUSAGE_TYPE_GROUP => t('Group'),
-        MEDIAMOSA_CK_STATS_DATAUSAGE_TYPE_USER => t('User')
+      MEDIAMOSA_CK_STATS_DATAUSAGE_TYPE_CONTAINER => t('Container'),
+      MEDIAMOSA_CK_STATS_DATAUSAGE_TYPE_GROUP => t('Group'),
+      MEDIAMOSA_CK_STATS_DATAUSAGE_TYPE_USER => t('User'),
     ),
     '#default_value' => isset($session['type']) ? $session['type'] : MEDIAMOSA_CK_STATS_DATAUSAGE_TYPE_CONTAINER,
   );
@@ -278,7 +253,7 @@ function mediamosa_ck_stats_filter_form($form, &$form_state, $form_name) {
   $form['filter']['go'] = array(
     '#type' => 'submit',
     '#value' => t('Filter'),
-   );
+  );
 
   return $form;
 }
@@ -322,9 +297,21 @@ function mediamosa_ck_stats_used_diskspace_form() {
   $response = MediaMosaCkConnectorStatsWrapper::request_stats_datausage_video($session['type'], $session['month'], $session['year'], $data);
 
   $header = array(
-    array('field' => 'container_type', 'data' => t('Container Type'), 'class' => array('uds-container-type')),
-    array('field' => 'type', 'data' => t('Type'), 'class' => array('uds-type')),
-    array('field' => 'diskspace_mb', 'data' => t('Disk space used, MB'), 'class' => array('uds-size'), 'sort' => 'desc'),
+    array(
+      'field' => 'container_type',
+      'data' => t('Container Type'),
+      'class' => array('uds-container-type'),
+    ),
+    array(
+      'field' => 'type',
+      'data' => t('Type'),
+      'class' => array('uds-type'),
+    ),
+    array(
+      'field' => 'diskspace_mb',
+      'data' => t('Disk space used, MB'),
+      'class' => array('uds-size'),
+      'sort' => 'desc'),
   );
 
   $item_count_total = 0;
@@ -351,22 +338,22 @@ function mediamosa_ck_stats_used_diskspace_form() {
     '#page' => $session['page'],
     '#item_count_total' => $item_count_total,
     '#item_limit' => $session['limit'],
-    // Top
     '#title' => t('Total: @total', array('@total' => $item_count_total)),
-    //'#description' => t(''),
   );
   return $form;
 }
 
 /**
- * Form builder; disk space listing page.
+ * Implements hook_form().
  *
+ * Form builder; disk space listing page.
  */
 function mediamosa_ck_stats_newest_mediafiles_form() {
   // Include our css.
   drupal_add_css(drupal_get_path('module', 'mediamosa_ck.stats') . '/mediamosa_ck.stats.css');
 
-  // Note no 'field' elements in header cause table is always sorted by date, desc order.
+  // Note no 'field' elements in header cause table is always sorted by date,
+  // desc order.
   $header = array(
     array('data' => t('Mediafile ID'), 'class' => array('newest-id')),
     array('data' => t('Asset ID'), 'class' => array('newest-id')),
@@ -396,15 +383,12 @@ function mediamosa_ck_stats_newest_mediafiles_form() {
     '#header' => $header,
     '#rows' => $rows,
     '#empty' => t('No data available.'),
-    // Top
     '#description' => t(''),
     '#title' => t('Latest @total mediafiles', array('@total' => $item_count_total)),
   );
 
   return $form;
 }
-
-// THEME functions are below
 
 /**
  * Implements hook_theme().
@@ -415,7 +399,7 @@ function mediamosa_ck_stats_theme() {
   return array(
     'mediamosa_ck_stats_table' => array(
       'variables' => array(
-        // Table
+        // Table.
         'header' => NULL,
         'rows' => NULL,
         'attributes' => array(),
@@ -423,7 +407,7 @@ function mediamosa_ck_stats_theme() {
         'colgroups' => array(),
         'sticky' => TRUE,
         'empty' => '',
-        // Pager (optional)
+        // Pager (optional).
         'page' => 0,
         'item_count_total' => 0,
         'item_limit' => MEDIAMOSA_CK_STATS_PER_PAGE,
@@ -431,7 +415,7 @@ function mediamosa_ck_stats_theme() {
         'quantity' => 10,
         // Note (small font, bottom right).
         'note' => NULL,
-        // caption bottom, right.
+        // Caption bottom, right.
         'caption_bottom' => NULL,
         // Title, description (top).
         'title' => NULL,
@@ -453,15 +437,23 @@ function mediamosa_ck_stats_theme() {
 }
 
 /**
- * Our theme table wrapper.
+ * Theme table wrapper.
  *
- * @param $variables
+ * @param array $variables
+ *   Variables to use for the table.
  */
 function theme_mediamosa_ck_stats_table($variables) {
   drupal_add_css(drupal_get_path('module', 'mediamosa_ck.stats') . '/mediamosa_ck.stats.css');
 
   $pager_variables = array();
-  foreach (array('page', 'item_count_total', 'item_limit', 'element', 'quantity') as $var) {
+  $vars_allowed = array(
+    'page',
+    'item_count_total',
+    'item_limit',
+    'element',
+    'quantity',
+  );
+  foreach ($vars_allowed as $var) {
     if (isset($variables[$var])) {
       $pager_variables[$var] = $variables[$var];
     }
@@ -472,7 +464,16 @@ function theme_mediamosa_ck_stats_table($variables) {
   }
 
   $table_variables = array();
-  foreach (array('header', 'rows', 'attributes', 'caption', 'colgroups', 'sticky', 'empty') as $var) {
+  $vars_allowed = array(
+    'header',
+    'rows',
+    'attributes',
+    'caption',
+    'colgroups',
+    'sticky',
+    'empty',
+  );
+  foreach ($vars_allowed as $var) {
     if (isset($variables[$var])) {
       $table_variables[$var] = $variables[$var];
     }
@@ -491,7 +492,11 @@ function theme_mediamosa_ck_stats_table($variables) {
     foreach ($variables['summary'] as $summary_item) {
       if (isset($summary_item['title']) && isset($summary_item['data'])) {
         $variables['rows'][] = array(
-          array('data' => $summary_item['title'], 'class' => 'mfes-table-summary-right', 'colspan' => count($variables['header'])-1),
+          array(
+            'data' => $summary_item['title'],
+            'class' => 'mfes-table-summary-right',
+            'colspan' => count($variables['header']) - 1,
+          ),
           array('data' => $summary_item['data'], 'class' => 'mfes-table-summary'),
         );
       }
@@ -516,9 +521,10 @@ function theme_mediamosa_ck_stats_table($variables) {
 }
 
 /**
- * Our pager wrapper.
+ * Pager wrapper.
  *
  * @param array $variables
+ *   variables to use in the pager.
  */
 function theme_mediamosa_ck_stats_pager($variables) {
   global $pager_page_array, $pager_total, $pager_total_items, $pager_limits;
@@ -546,18 +552,25 @@ function theme_mediamosa_ck_stats_pager($variables) {
 /**
  * This function returns a trimmed string, optionally in an HTML <span> tag.
  *
- * @param $text
+ * @param string $text
  *   text to trim
- * @param $length
+ * @param integer $length
  *   length limitation
- * @param $plain
+ * @param boolean $plain
  *   Keep plain or make HTML.
  */
 function _mediamosa_ck_stats_trim_string($text, $length = FALSE, $plain = FALSE) {
 
   // To big to fit?
   if ($length && drupal_strlen($text) > $length) {
-    return $plain ? drupal_substr($text, 0, $length - 1) . '...' : strtr('<span title="@text">@text</span>', array('@text' => check_plain(drupal_substr($text, 0, $length - 1)) . '&hellip;'));
+    return $plain ?
+      drupal_substr($text, 0, $length - 1) . '...' :
+      strtr(
+        '<span title="@text">@text</span>',
+        array(
+          '@text' => check_plain(drupal_substr($text, 0, $length - 1)) . '&hellip;',
+        )
+      );
   }
 
   return $plain ? $text : check_plain($text);

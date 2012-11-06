@@ -1,42 +1,23 @@
 <?php
 /**
- * MediaMosa is Open Source Software to build a Full Featured, Webservice
- * Oriented Media Management and Distribution platform (http://mediamosa.org)
- *
- * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl)
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, you can find it at:
- * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
- */
-
-/**
  * @file
  * The plugin query object for MediaMosa allows REST calls inside views. It
  * uses the Views 3 plugin option to query another source instead of the normal
  * Drupal database.
  *
  * View is based on the REST call 'asset'.
- *
  */
+
 class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest {
 
   /**
    * Execute the REST call.
    *
-   * @param $view
+   * @param object $view
    *   The view object.
-   * @param $params
+   * @param array $params
    *   Array of view options and settings.
-   * @param $options
+   * @param array $options
    *   Options that can be used for overrides on the view params and REST call
    *   related options.
    */
@@ -81,8 +62,8 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest {
 
     // Something went wrong, then stop the view generation.
     if (empty($response)) {
-       $view->total_rows = 0;
-       return;
+      $view->total_rows = 0;
+      return;
     }
 
     $fields = array(
@@ -96,7 +77,7 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest {
     $owners = array();
 
     // Now process the xml into an object views can work with.
-    foreach($response->xml->xpath('items/item') as $item) {
+    foreach ($response->xml->xpath('items/item') as $item) {
       $object = new stdClass();
       $object->asset_id = (string) $item->asset_id;
       $object->fid = MediaMediaMosa::get_fid_from_asset($item->asset_id);
@@ -147,7 +128,7 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest {
   /**
    * Returns the default value for mediamosa_is_public_list option.
    *
-   * @return
+   * @return boolean
    *   Returns FALSE by default.
    */
   public function mediamosa_option_is_public_list_default() {
@@ -157,8 +138,8 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest {
   /**
    * Returns the value for mediamosa_is_public_list option.
    *
-   * @return
-   *   The value of mediamosa_is_public_list
+   * @return boolean
+   *   The value of mediamosa_is_public_list.
    */
   public function mediamosa_option_is_public_list() {
 
@@ -173,7 +154,7 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest {
   /**
    * Returns the default value for mediamosa_hide_empty_assets option.
    *
-   * @return
+   * @return boolean
    *   Returns TRUE by default.
    */
   public function mediamosa_option_hide_empty_assets_default() {
@@ -183,7 +164,7 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest {
   /**
    * Returns the value for mediamosa_hide_empty_assets option.
    *
-   * @return
+   * @return boolean
    *   The value of mediamosa_is_public_list
    */
   public function mediamosa_option_hide_empty_assets() {
@@ -278,7 +259,7 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest {
           'handler' => 'mediamosa_ck_views_filter_text',
         ),
       ),
-        
+
       'metadata' => array(
         'title' => t('Search metadata'),
         'help' => t('Search the assets with a pre configured metadata'),

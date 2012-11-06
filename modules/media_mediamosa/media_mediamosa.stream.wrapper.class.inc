@@ -11,14 +11,19 @@
  *
  * Formats;
  * mediamosa://asset/[asset_id]/[mediafile_id]/[filename]
- *
  */
 class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
 
+  /**
+   * No getTarget().
+   */
   function getTarget($f) {
     return FALSE;
   }
 
+  /**
+   * InterpolateUrl().
+   */
   function interpolateUrl() {
     $parameters = $this->get_parameters();
     if (empty($parameters)) {
@@ -29,13 +34,15 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
   }
 
   /**
-   *  Returns an array of any parameters stored in the URL's path.
-   *  @param $url
-   *    The URL to parse, such as
-   *    mediamosa://asset/[asset_id]/[mediafile_id]/file_name.
-   *  @return
-   *    An associative array of all the parameters in the path,
-   *    or FALSE if the $url is ill-formed.
+   * Returns an array of any parameters stored in the URL's path.
+   *
+   * @param string $url
+   *   The URL to parse, such as
+   *   mediamosa://asset/[asset_id]/[mediafile_id]/file_name.
+   *
+   * @return array
+   *   An associative array of all the parameters in the path,
+   *   or FALSE if the $url is ill-formed.
    */
   protected function _parse_url($url) {
 
@@ -75,7 +82,7 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
   /**
    * Get and split up the URL into its parts.
    *
-   * @param $fid
+   * @param integer $fid
    *   The Drupal file ID.
    *
    * @return array
@@ -91,11 +98,13 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
   }
 
   /**
+   * Translate non standard video mimetypes.
+   *
    * Some mimetypes are valid, but might not match some of the Media definition
    * of mimetypes. So are some mimetypes not seen as video types, because they
    * don't start with 'video/'.
    *
-   * @param $mimetype
+   * @param string $mimetype
    *   Get the mimetype.
    */
   public static function translateMimeType($mimetype) {
@@ -110,8 +119,8 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
   /**
    * The mimetype returned is based on the URI and content we return.
    *
-   * @param $url
-   * @param $mapping
+   * @param string $url
+   *   url
    */
   public static function getMimeType($url, $mapping = NULL) {
     $mimetypes = &drupal_static(__CLASS__ . '::' . __FUNCTION__);
@@ -145,10 +154,10 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
   /**
    * Returns the still url of the asset. Made static for external access.
    *
-   * @param $asset_id
+   * @param string $asset_id
    *   The asset_id for the still.
    *
-   * @return
+   * @return string
    *   The url to the still.
    *
    * @see getOriginalThumbnailPath()
@@ -169,7 +178,7 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
   /**
    * Returns the still url of the asset.
    *
-   * @return
+   * @return string
    *   The url to the still.
    *
    * @see mediamosa_getOriginalThumbnailPath()
@@ -182,10 +191,10 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
   /**
    * Returns the local version path of the still.
    *
-   * @param $asset_id
+   * @param string $asset_id
    *   The asset_id for the still.
    *
-   * @return
+   * @return string
    *   The local path of the still.
    *
    * @see getLocalThumbnailPath()
@@ -208,7 +217,7 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
   /**
    * Returns the local version path of the still.
    *
-   * @return
+   * @return string
    *   The local path of the still.
    *
    * @see mediamosa_getLocalThumbnailPath()

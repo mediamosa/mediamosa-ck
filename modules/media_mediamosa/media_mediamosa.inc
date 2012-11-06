@@ -177,17 +177,15 @@ function _media_mediamosa_get_media_id($asset_id) {
 }
 
 /**
- * Get running jobs and create a form item for that information.
+ * Get running jobs.
+ * And create a form item for that information.
  *
  * @param &$form
- *   The form to add to.
  * @param $mediafile_id
- *   The mediafile_id of the item to get jobs from.
  * @param $job_type
- *   The job type to show.
  */
 function _media_mediamosa_get_running_jobs(&$form, $mediafile_id, $job_type) {
-  $jobs = MediaMosaCkConnectorWrapper::get_mediafile_jobs($mediafile_id, mediamosa_ck::session_user_id());
+  $jobs = MediaMosaCkConnectorWrapper::get_jobs($mediafile_id, mediamosa_ck::session_user_id());
   $jobs_count = 0;
   if ($jobs->items->item) {
     foreach ($jobs->items->item as $job) {
@@ -199,18 +197,8 @@ function _media_mediamosa_get_running_jobs(&$form, $mediafile_id, $job_type) {
   if ($jobs_count) {
     $form['running_jobs'] = array(
       '#type' => 'item',
-      '#title' => t(
-        'Running @job_type jobs',
-        array(
-          '@job_type' => drupal_strtolower($job_type)
-        )
-      ),
-      '#markup' => format_plural(
-        $jobs_count,
-        'There is @count @job_type job in progress.',
-        'There are @count @job_type jobs in progress.',
-        array('@job_type' => drupal_strtolower($job_type))
-      ),
+      '#title' => t('Running @job_type jobs', array('@job_type' => drupal_strtolower($job_type),)),
+      '#markup' => format_plural($jobs_count, 'There is @count @job_type job in progress.', 'There are @count @job_type jobs in progress.', array('@job_type' => drupal_strtolower($job_type))),
     );
   }
 }

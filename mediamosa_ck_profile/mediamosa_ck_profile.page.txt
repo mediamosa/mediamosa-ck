@@ -1,4 +1,4 @@
-You have completed the installation of the MediaMosa Construction Kit. 
+You have completed the installation of the MediaMosa Construction Kit.
 
 But before you proceed, setup the cron job for this website first. You can read how to configure your cron on page http://drupal.org/cron/.
 

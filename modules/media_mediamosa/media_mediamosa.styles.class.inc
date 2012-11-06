@@ -1,28 +1,5 @@
 <?php
 /**
- * MediaMosa is Open Source Software to build a Full Featured, Webservice
- * Oriented Media Management and Distribution platform (http://mediamosa.org)
- *
- * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl) and Kennisnet
- * (http://www.kennisnet.nl)
- *
- * MediaMosa is based on the open source Drupal platform and
- * was originally developed by Madcap BV (http://www.madcap.nl)
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, you can find it at:
- * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
- */
-
-/**
  * @file
  * Still file.
  */
@@ -31,23 +8,38 @@ class MediaMediaMosaFileStyles extends FileStyles {
   public $autoplay;
   public $fullscreen;
 
-  function get_autoplay() {
+  /**
+   * Autoplay getter.
+   */
+  public function get_autoplay() {
     return $this->get('autoplay');
   }
 
-  function set_autoplay($value) {
+  /**
+   * Autoplay setter.
+   */
+  public function set_autoplay($value) {
     return $this->set('autoplay', $value);
   }
 
-  function get_fullscreen() {
+  /**
+   * Fullscreen getter.
+   */
+  public function get_fullscreen() {
     return $this->get('fullscreen');
   }
 
-  function set_fullscreen($value) {
+  /**
+   * Fullscreen setter.
+   */
+  public function set_fullscreen($value) {
     return $this->set('fullscreen', $value);
   }
 
-  function getImageUri() {
+  /**
+   * Get URI of image.
+   */
+  public function getImageUri() {
     $image_uri = $this->get('image_uri');
     if ($image_uri) {
       return $image_uri;
@@ -85,7 +77,8 @@ class MediaMediaMosaFileStyles extends FileStyles {
           @copy($still_url, $local_path);
         }
         catch (Exception $e) {
-          return NULL; // No image link.
+          // No image link.
+          return NULL;
         }
       }
 
@@ -93,7 +86,10 @@ class MediaMediaMosaFileStyles extends FileStyles {
     }
   }
 
-  function video($effect) {
+  /**
+   * Get Video.
+   */
+  public function video($effect) {
     $params = MediaMosaStreamWrapper::mediamosa_parse_url($this->getUri());
     $asset_id = $params['asset_id'];
     $mediafile_id = $params['mediafile_id'];
@@ -114,7 +110,7 @@ class MediaMediaMosaFileStyles extends FileStyles {
       'autostart' => $this->get_autoplay(),
       'height' => $this->getHeight(),
       'width' => $this->getWidth(),
-      //'fullscreen' => $this->get_fullscreen(),
+      // 'fullscreen' => $this->get_fullscreen(),
       'response' => 'object',
     );
     $output = MediaMosaCkConnectorWrapper::get_play_link($asset_id, $mediafile_id_transcoded, $user_id, $options);

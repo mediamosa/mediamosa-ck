@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * Theme views implementations.
@@ -8,12 +7,14 @@
 /**
  * Display the view as a media browser.
  *
- * @param arra $vars Variables to preprocess for the mediamosa media browser
+ * @param array $vars
+ *   Variables to preprocess for the mediamosa media browser
  */
 function template_preprocess_media_mediamosa_views_view_media_browser(&$vars) {
 
-  // Default media preprocess with customisation
+  // Default media preprocess with customisation.
   module_load_include('inc', 'media', 'includes/media.browser');
+
   // Load file objects for each View result.
   $fids = array();
   foreach ($vars['rows'] as $index => $row) {
@@ -25,17 +26,18 @@ function template_preprocess_media_mediamosa_views_view_media_browser(&$vars) {
   foreach ($vars['rows'] as $index => $row) {
 
     $file = $files[$row->fid];
-    // Add url/preview to the file object
+    // Add url/preview to the file object.
     media_browser_build_media_item($file);
     $vars['rows'][$index] = $file;
+
     // Add fields to the preview.
-    if(!empty($vars['view']->style_plugin->rendered_fields[$index])){
+    if (!empty($vars['view']->style_plugin->rendered_fields[$index])) {
       $file->preview .= '<div class="mediamosabrowser-field-wrapper">';
     }
-    foreach($vars['view']->style_plugin->rendered_fields[$index] as $key => $field){
+    foreach ($vars['view']->style_plugin->rendered_fields[$index] as $key => $field) {
       $file->preview .= '<div class="mediamosabrowser-field-' . $key . '">' . $field . '</div>';
     }
-    if(!empty($vars['view']->style_plugin->rendered_fields[$index])){
+    if (!empty($vars['view']->style_plugin->rendered_fields[$index])) {
       $file->preview .= '</div>';
     }
     $vars['rows'][$index]->preview = l($file->preview, 'media/browser', array(
@@ -47,7 +49,7 @@ function template_preprocess_media_mediamosa_views_view_media_browser(&$vars) {
     );
   }
 
-  // Add the files to JS so that they are accessible inside the browser
+  // Add the files to JS so that they are accessible inside the browser.
   drupal_add_js(array('media' => array('files' => array_values($files))), 'setting');
 
   // Add classes and wrappers from the style plugin.
@@ -71,7 +73,7 @@ function template_preprocess_media_mediamosa_views_view_media_browser(&$vars) {
 
   // Add media browser javascript and CSS.
   drupal_add_js(drupal_get_path('module', 'media') . '/js/plugins/media.views.js');
-  // We need to see if we can depricate this
+  // @todo: We need to see if we can deprecate this.
   drupal_add_js(drupal_get_path('module', 'media') . '/js/plugins/media.library.js');
 
 }

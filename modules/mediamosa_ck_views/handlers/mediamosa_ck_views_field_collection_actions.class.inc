@@ -1,26 +1,12 @@
 <?php
 /**
- * MediaMosa is Open Source Software to build a Full Featured, Webservice
- * Oriented Media Management and Distribution platform (http://mediamosa.org)
- *
- * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl)
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, you can find it at:
- * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+ * @file
+ * Views field collections actions.
  */
 
 class mediamosa_ck_views_field_collection_actions extends views_handler_field_xss {
 
-  function option_definition() {
+  public function option_definition() {
     $options = parent::option_definition();
 
     $options['collection_actions_theme'] = array('default' => 'mediamosa_ck_views_theme_collection_actions');
@@ -30,7 +16,7 @@ class mediamosa_ck_views_field_collection_actions extends views_handler_field_xs
     return $options;
   }
 
-  function options_form(&$form, &$form_state) {
+  public function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
     $form['collection_actions_theme'] = array(
       '#title' => t('Theme function to use'),
@@ -54,12 +40,12 @@ class mediamosa_ck_views_field_collection_actions extends views_handler_field_xs
   /**
    * Get the value that's supposed to be rendered.
    *
-   * @param $values
+   * @param object $values
    *   An object containing all retrieved values.
-   * @param $field
+   * @param string $field
    *   Optional name of the field where the value is stored.
    */
-  function get_value($values, $field = NULL) {
+  public function get_value($values, $field = NULL) {
     // Get the data.
     $coll_id = $values->coll_id;
 
@@ -76,20 +62,20 @@ class mediamosa_ck_views_field_collection_actions extends views_handler_field_xs
 
   // The following methods express strong SQLisms in the base field handler
   // class. Override and blank them out.
-  function pre_render(&$values) {
+  public function pre_render(&$values) {
   }
 
-  function add_additional_fields($fields = NULL) {
+  public function add_additional_fields($fields = NULL) {
     foreach ($fields as $field) {
       $this->aliases[$field] = $this->query->add_field($this->table, $field);
     }
   }
 
-  function click_sort($order) {
+  public function click_sort($order) {
     $this->query->add_orderby($this->table, $this->real_field, $order);
   }
 
-  function query() {
+  public function query() {
     $this->field_alias = $this->query->add_field($this->table, $this->real_field);
 
     // Add in additional fields.

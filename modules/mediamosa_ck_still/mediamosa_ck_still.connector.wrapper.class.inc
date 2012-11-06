@@ -1,20 +1,21 @@
 <?php
 /**
  * @file
- * Our wrapper around the MediaMosaCkConnectorWrapper.
+ * Wrapper around the MediaMosaCkConnectorWrapper.
  */
 
 class MediaMosaCkConnectorStillWrapper extends MediaMosaCkConnectorWrapper {
 
   /**
-   * Create a still for specific mediafile. Code moved to
-   * MediaMosaCkConnectorWrapper.
+   * Create a still for specific mediafile.
    *
-   * @param $mediafile_id
+   * Code moved to MediaMosaCkConnectorWrapper.
+   *
+   * @param string $mediafile_id
    *   The mediafile ID.
-   * @param $user_id
+   * @param string $user_id
    *   The owner of the mediafile.
-   * @param $data
+   * @param array $data
    *   Array with all the still parameters.
    *
    * @return mediamosa_connector_response
@@ -28,10 +29,13 @@ class MediaMosaCkConnectorStillWrapper extends MediaMosaCkConnectorWrapper {
    * Set still default.
    *
    * @param string $asset_id
+   *   The asset id.
    * @param string $mediafile_id
+   *   The mediafile id.
    * @param string $still_id
+   *   The still id.
    * @param string $user_id
-   * @param array $data
+   *   The user id.
    */
   public static function still_default($asset_id, $mediafile_id, $still_id, $user_id, array $data = array()) {
     // Check the parameters.
@@ -67,7 +71,6 @@ class MediaMosaCkConnectorStillWrapper extends MediaMosaCkConnectorWrapper {
    *   The still ID to delete.
    * @param string $user_id
    *   The owner of the asset.
-   * @param array $data
    */
   public static function still_delete($asset_id, $mediafile_id, $still_id, $user_id, $options = array()) {
     // Check the parameters.

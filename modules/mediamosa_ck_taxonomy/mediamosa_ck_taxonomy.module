@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * This module enables taxonomy for frontend applications.
@@ -61,9 +60,6 @@ function mediamosa_ck_taxonomy_mediamosa_ck_configuration_collect() {
 
 /**
  * Implements hook_mediamosa_ck_configuration_collect_submit().
- *
- * @param array $form Description of the form
- * @param array $form_state Description of the form state
  */
 function mediamosa_ck_taxonomy_mediamosa_ck_configuration_collect_submit($form, &$form_state) {
   $values = $form_state['values'];
@@ -83,14 +79,15 @@ function mediamosa_ck_taxonomy_tags_autocomplete($tags_typed = '') {
   $args = func_get_args();
   $tags_typed = implode('/', $args);
 
-  // The user enters a comma-separated list of tags. We only autocomplete the last tag.
+  // The user enters a comma-separated list of tags. We only
+  // autocomplete the last tag.
   $tags_typed = drupal_explode_tags($tags_typed);
   $tag_last = drupal_strtolower(array_pop($tags_typed));
 
   $matches = array();
   if ($tag_last != '') {
 
-    // Get the vids
+    // Get the vids.
     $vids = mediamosa_ck_taxonomy_get_vocs();
 
     $query = db_select('taxonomy_term_data', 't');
@@ -189,12 +186,13 @@ function mediamosa_ck_taxonomy_add_terms($asset_id, $terms = array()) {
  *   All term ids.
  *
  * @return string
+ *   The string terms.
  */
 function mediamosa_ck_taxonomy_terms_to_string($terms) {
   foreach ($terms as &$term) {
     $parents = taxonomy_get_parents_all($term);
     $list_terms = array();
-    if(!empty($parents)) {
+    if (!empty($parents)) {
       foreach ($parents as $parent_term) {
         $list_terms[] = $parent_term->name;
       }

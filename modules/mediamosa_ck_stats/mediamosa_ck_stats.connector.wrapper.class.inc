@@ -1,30 +1,7 @@
 <?php
 /**
- * MediaMosa is Open Source Software to build a Full Featured, Webservice Oriented Media Management and
- * Distribution platform (http://mediamosa.org)
- *
- * Copyright (C) 2010 SURFnet BV (http://www.surfnet.nl) and Kennisnet
- * (http://www.kennisnet.nl)
- *
- * MediaMosa is based on the open source Drupal platform and
- * was originally developed by Madcap BV (http://www.madcap.nl)
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, you can find it at:
- * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
- */
-
-/**
  * @file
- * Our wrapper around the mediamosa_connector.
+ * Wrapper around the mediamosa_connector.
  */
 
 class MediaMosaCkConnectorStatsWrapper extends MediaMosaCkConnectorWrapper {
@@ -33,6 +10,7 @@ class MediaMosaCkConnectorStatsWrapper extends MediaMosaCkConnectorWrapper {
    * Give me the assets/mediafiles that are most popular.
    *
    * @param array $options
+   *   Optional settings such as limit/offset.
    */
   public static function get_stats_popular_mediafiles($options) {
 
@@ -64,7 +42,11 @@ class MediaMosaCkConnectorStatsWrapper extends MediaMosaCkConnectorWrapper {
       }
 
       // Get me the assets.
-      $data = array('asset_id' => $popular_mediafiles['asset_ids'], 'asset_id_match' => 'exact', 'operator' => 'or');
+      $data = array(
+        'asset_id' => $popular_mediafiles['asset_ids'],
+        'asset_id_match' => 'exact',
+        'operator' => 'or',
+      );
 
       // Get the assets.
       $popular_mediafiles['response'] = mediamosa_ck::request_get_fatal('asset', array('data' => $data));
@@ -80,7 +62,8 @@ class MediaMosaCkConnectorStatsWrapper extends MediaMosaCkConnectorWrapper {
   /**
    * Get the latest mediafiles / videos.
    *
-   * @param $options
+   * @param array $options
+   *   Optional settings such as limit/offset.
    */
   public static function request_stats_latest_mediafiles($options = array()) {
 
@@ -94,8 +77,8 @@ class MediaMosaCkConnectorStatsWrapper extends MediaMosaCkConnectorWrapper {
     $data = array(
       'limit' => $options['limit'],
       'offset' => $options['offset'],
-      'order_by'=> 'videotimestamp',
-      'order_direction'=> 'desc',
+      'order_by' => 'videotimestamp',
+      'order_direction' => 'desc',
     );
 
     try {
@@ -115,7 +98,9 @@ class MediaMosaCkConnectorStatsWrapper extends MediaMosaCkConnectorWrapper {
    * @param string $type
    *   Value must be either "container" or "group" or "user".
    * @param integer $month
+   *   get stats of a month.
    * @param integer $year
+   *   year to get stats from.
    * @param array $data
    *   - limit
    *     Max items.
@@ -146,7 +131,8 @@ class MediaMosaCkConnectorStatsWrapper extends MediaMosaCkConnectorWrapper {
   /**
    * Get newest mediafiles list.
    *
-   * @return FALSE on failure, XML with data otherwise
+   * @return object
+   *   FALSE on failure, XML with data otherwise
    */
   public static function request_stats_newest_mediafiles($data = array()) {
     try {

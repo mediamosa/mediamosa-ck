@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * The media browser style plugin.
@@ -14,12 +13,12 @@
 class media_mediamosa_views_plugin_style_media_browser extends views_plugin_style_list {
 
   // Stores the files loaded with pre_render.
-  var $files = array();
+  public $files = array();
 
   /**
    * Set default options.
    */
-  function option_definition() {
+  public function option_definition() {
     $options = parent::option_definition();
 
     $options['type'] = array('default' => 'ul');
@@ -29,14 +28,14 @@ class media_mediamosa_views_plugin_style_media_browser extends views_plugin_styl
     return $options;
   }
 
-  // Prevents a problem with views when get_row_class() is not set
-  function get_row_class($row_index) {
+  // Prevents a problem with views when get_row_class() is not set.
+  public function get_row_class($row_index) {
   }
 
   /**
    * Add the base field (fid) to the query.
    */
-  function query() {
+  public function query() {
     $this->view->query->add_field($this->view->base_table, $this->view->base_field);
     parent::query();
   }

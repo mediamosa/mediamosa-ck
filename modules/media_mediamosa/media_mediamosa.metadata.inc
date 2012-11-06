@@ -1,30 +1,7 @@
 <?php
 /**
- * MediaMosa is Open Source Software to build a Full Featured, Webservice Oriented Media Management and
- * Distribution platform (http://mediamosa.org)
- *
- * Copyright (C) 2010 SURFnet BV (http://www.surfnet.nl) and Kennisnet
- * (http://www.kennisnet.nl)
- *
- * MediaMosa is based on the open source Drupal platform and
- * was originally developed by Madcap BV (http://www.madcap.nl)
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, you can find it at:
- * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
- */
-
-/**
- *  @file
- *  Dublin Core & Qualified Dublin Core fields definition goes here.
+ * @file
+ * Dublin Core & Qualified Dublin Core fields definition goes here.
  */
 
 assert(module_load_include('inc', 'field', 'field.crud') !== FALSE);
@@ -43,12 +20,12 @@ assert(module_load_include('inc', 'field', 'field.crud') !== FALSE);
  *   - 'section'
  *     Can be 'dublincore', 'qualified_dublincore' or 'technical' use it to
  *     group data in section;
- *   - 'rdf'
- *     Property name for RDF, if differs from key value.
- *      @see http://www.w3.org/TR/xhtml-rdfa-primer/ ,
- *           http://dublincore.org/documents/library-application-profile/index.shtml
  *   - 'field_name'
  *     Field name in Drupal.
+ *   - 'rdf'
+ *     Property name for RDF, if differs from key value.
+ * @see http://www.w3.org/TR/xhtml-rdfa-primer/
+ * @see http://dublincore.org/documents/library-application-profile/index.shtml
  */
 function _media_mediamosa_metadata_get_default() {
 
@@ -60,131 +37,131 @@ function _media_mediamosa_metadata_get_default() {
 
   $fields_dc = array(
     'contributor' => array(
-        'label' => t('Contributor'),
-      ),
+      'label' => t('Contributor'),
+    ),
     'coverage_spatial' => array(
-        'label' => t('Сoverage spatial'),
-        'rdf'   => 'spatial',
-      ),
+      'label' => t('Сoverage spatial'),
+      'rdf'   => 'spatial',
+    ),
     'coverage_temporal' => array(
-        'label' => t('Сoverage temporal'),
-        'rdf'   => 'temporal',
-      ),
+      'label' => t('Сoverage temporal'),
+      'rdf'   => 'temporal',
+    ),
     'creator' => array(
-        'label' => t('Creator'),
-      ),
+      'label' => t('Creator'),
+    ),
     'date' => array(
-        'label' => t('Date'),
-      ),
+      'label' => t('Date'),
+    ),
     'description' => array(
-        'label' => t('Description'),
-      ),
+      'label' => t('Description'),
+    ),
     'format' => array(
-        'label' => t('Format'),
-      ),
+      'label' => t('Format'),
+    ),
     'identifier' => array(
-        'label' => t('Identifier'),
-      ),
+      'label' => t('Identifier'),
+    ),
     'language' => array(
-        'label' => t('Language'),
-      ),
+      'label' => t('Language'),
+    ),
     'publisher' => array(
-        'label' => t('Publisher'),
-      ),
+      'label' => t('Publisher'),
+    ),
     'relation' => array(
-        'label' => t('Relation'),
-      ),
+      'label' => t('Relation'),
+    ),
     'rights' => array(
-        'label' => t('Rights'),
-      ),
+      'label' => t('Rights'),
+    ),
     'source' => array(
-        'label' => t('Source'),
-      ),
+      'label' => t('Source'),
+    ),
     'subject' => array(
-        'label' => t('Subject'),
-      ),
+      'label' => t('Subject'),
+    ),
     'title' => array(
-        'label' => t('Title'),
-      ),
+      'label' => t('Title'),
+    ),
     'type' => array(
-        'label' => t('Type'),
-      ),
+      'label' => t('Type'),
+    ),
   );
 
   $fields_qdc = array(
     'created' => array(
-        'label' => t('Created'),
-      ),
+      'label' => t('Created'),
+    ),
     'description_abstract' => array(
-        'label' => t('Description abstract'),
-        'rdf'   => 'abstract',
-      ),
+      'label' => t('Description abstract'),
+      'rdf'   => 'abstract',
+    ),
     'format_extent' => array(
-        'label' => t('Format extent'),
-        'rdf'   => 'extent',
-      ),
+      'label' => t('Format extent'),
+      'rdf'   => 'extent',
+    ),
     'format_medium' => array(
-        'label' => t('Format medium'),
-        'rdf'   => 'medium',
-      ),
+      'label' => t('Format medium'),
+      'rdf'   => 'medium',
+    ),
     'hasformat' => array(
-        'label' => t('Has format'),
-        'rdf'   => 'hasFormat',
-      ),
+      'label' => t('Has format'),
+      'rdf'   => 'hasFormat',
+    ),
     'isformatof' => array(
-        'label' => t('Is format of'),
-        'rdf'   => 'isFormatOf',
-      ),
+      'label' => t('Is format of'),
+      'rdf'   => 'isFormatOf',
+    ),
     'isreferencedby' => array(
-        'label' => t('Is referenced by'),
-        'rdf'   => 'isReferencedBy',
-      ),
+      'label' => t('Is referenced by'),
+      'rdf'   => 'isReferencedBy',
+    ),
     'issued' => array(
-        'label' => t('Issued'),
-      ),
+      'label' => t('Issued'),
+    ),
     'license' => array(
-        'label' => t('License'),
-      ),
+      'label' => t('License'),
+    ),
     'rightsholder' => array(
-        'label' => t('Rightsholder'),
-        'rdf'   => 'rights',
-      ),
+      'label' => t('Rightsholder'),
+      'rdf'   => 'rights',
+    ),
     'title_alternative' => array(
-        'label' => t('Alternative title'),
-        'rdf'   => 'alternative',
-      ),
+      'label' => t('Alternative title'),
+      'rdf'   => 'alternative',
+    ),
   );
 
   // Some of the keys are named exactly as entries in metadata array inside
   // Mediamosa.Different story for 'mediafile_id', 'size', 'original'.
   $fields_tech = array(
     'file_duration' => array(
-        'label' => t('Duration'),
-      ),
+      'label' => t('Duration'),
+    ),
     'filesize' => array(
-        'label' => t('File size'),
-      ),
+      'label' => t('File size'),
+    ),
     'mediafile_id' => array(
-        'label' => t('Mediafile ID'),
-      ),
+      'label' => t('Mediafile ID'),
+    ),
     'mime_type' => array(
-        'label' => t('MIME type'),
-      ),
+      'label' => t('MIME type'),
+    ),
     'container_type' => array(
-        'label' => t('Container'),
-      ),
+      'label' => t('Container'),
+    ),
     'size' => array(
-        'label' => t('Video size'),
-      ),
+      'label' => t('Video size'),
+    ),
     'fps' => array(
-        'label' => t('FPS'),
-      ),
+      'label' => t('FPS'),
+    ),
     'video_codec' => array(
-        'label' => t('Video Codec'),
-      ),
+      'label' => t('Video Codec'),
+    ),
     'original' => array(
-        'label' => t('Original'),
-      ),
+      'label' => t('Original'),
+    ),
   );
 
   // Set 'section' and 'readonly' to all DC.
@@ -228,9 +205,10 @@ function _media_mediamosa_metadata_get_default() {
 }
 
 /**
- * Small helper for _media_mediamosa_metadata_get_default. Return array where
- * Drupal field name is a key and Mediamosa field name is a value, both plain
- * string.
+ * Small helper for _media_mediamosa_metadata_get_default.
+ *
+ * Return array where Drupal field name is a key and Mediamosa field name is a
+ * value, both plain string.
  *
  * @see _media_mediamosa_metadata_get_default()
  */
@@ -268,8 +246,10 @@ function _media_mediamosa_metadata_link_fields() {
     }
 
     // Handy presets to use for 'default' array parameter.
-    $display_show = array( 'label' => 'above', 'type' => 'text_default', 'module' => 'text', 'weight' => $weight);
-    $display_off = array( 'type' => 'hidden');
+    $display_show = array(
+      'label' => 'above', 'type' => 'text_default', 'module' => 'text', 'weight' => $weight,
+    );
+    $display_off = array('type' => 'hidden');
 
     foreach ($media_types as $type_name => $media_type) {
       if (!$media_type->base) {
@@ -282,30 +262,30 @@ function _media_mediamosa_metadata_link_fields() {
         continue;
       }
 
-    $instance = array(
-      'field_name' => $field_name,
-      'entity_type' => 'media',
-      'bundle' => $type_name,
-      'label' => $item['label'],
-      'required' => FALSE,
+      $instance = array(
+        'field_name' => $field_name,
+        'entity_type' => 'media',
+        'bundle' => $type_name,
+        'label' => $item['label'],
+        'required' => FALSE,
 
-      // Widget goes here - responsible for editing.
-      'widget_type' => 'text',
-      'widget' => array(
-        'weight' => $weight,
-        'type' => 'text_textarea',
-        'module' => 'text',
-        'active' => TRUE,
-      ),
+        // Widget goes here - responsible for editing.
+        'widget_type' => 'text',
+        'widget' => array(
+          'weight' => $weight,
+          'type' => 'text_textarea',
+          'module' => 'text',
+          'active' => TRUE,
+        ),
 
-      // Setup displaying - responsible for viewing.
-      'display' => array(
-        'default' => $display_show,
-        'media_preview' => $display_show,
-        'media_original' => $display_show,
-        'media_link' => $display_off,
-        'media_small' => $display_off,
-        'media_large' => $display_show,
+        // Setup displaying - responsible for viewing.
+        'display' => array(
+          'default' => $display_show,
+          'media_preview' => $display_show,
+          'media_original' => $display_show,
+          'media_link' => $display_off,
+          'media_small' => $display_off,
+          'media_large' => $display_show,
         ),
       );
       field_create_instance($instance);
@@ -316,7 +296,9 @@ function _media_mediamosa_metadata_link_fields() {
   // for editing and displaying. So 'form' is a must, plus values for
   // displaying. See 'default' array above. Keeping with consistency is
   // recommended.
-  $section_modes = array('form', 'default', 'media_preview', 'media_original', 'media_large');
+  $section_modes = array(
+    'form', 'default', 'media_preview', 'media_original', 'media_large',
+  );
 
   $format_settings_edit = array(
     'formatter' => 'closed',
@@ -367,6 +349,7 @@ function _media_mediamosa_metadata_link_fields() {
  * Definitions of common part of fieldsets.
  *
  * @return array
+ *   fieldsets.
  */
 function _media_mediamosa_metadata_get_default_fieldsets() {
   static $groups = FALSE;
@@ -375,22 +358,23 @@ function _media_mediamosa_metadata_get_default_fieldsets() {
     return $groups;
   }
 
-  $group_core =
-    array(
-      'group_name' => 'TO BE FILLED',
-      'bundle' => 'TO BE FILLED ON INSTANCE CREATION',
-      'entity_type' => 'media',
+  $group_core = array(
+    'group_name' => 'TO BE FILLED',
+    'bundle' => 'TO BE FILLED ON INSTANCE CREATION',
+    'entity_type' => 'media',
 
-      // Seems that in Drupal 7 we have to create two different section instances for editing and displaying.
-      'mode' => 'TO BE FILLED ON INSTANCE CREATION',
+    // Seems that in Drupal 7 we have to create two different section
+    // instances for editing and displaying.
+    'mode' => 'TO BE FILLED ON INSTANCE CREATION',
 
-      'parent_name' => '',
-      'label' => 'TO BE FILLED',
-      'weight' => 'TO BE FILLED',
-      'children' => array(), // Fields will be stored here.
-      'format_type' => 'TO BE FILLED ON INSTANCE CREATION: tab or fieldset',
-      'format_settings' => 'TO BE FILLED ON INSTANCE CREATION',
-      );
+    'parent_name' => '',
+    'label' => 'TO BE FILLED',
+    'weight' => 'TO BE FILLED',
+    // Fields will be stored here.
+    'children' => array(),
+    'format_type' => 'TO BE FILLED ON INSTANCE CREATION: tab or fieldset',
+    'format_settings' => 'TO BE FILLED ON INSTANCE CREATION',
+  );
 
   // Initial weight for our sections.
   $weight = -8;

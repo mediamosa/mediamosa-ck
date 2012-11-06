@@ -1,39 +1,18 @@
 <?php
 /**
- * MediaMosa is Open Source Software to build a Full Featured, Webservice
- * Oriented Media Management and Distribution platform (http://mediamosa.org)
- *
- * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl) and Kennisnet
- * (http://www.kennisnet.nl)
- *
- * MediaMosa is based on the open source Drupal platform and
- * was originally developed by Madcap BV (http://www.madcap.nl)
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, you can find it at:
- * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
- */
-
-/**
  * @file
  * Extends base class with supplying Media needs.
  */
-class MediaMosaConnectorMediaWrapper extends MediaMosaCkConnectorWrapper {
 
+class MediaMosaConnectorMediaWrapper extends MediaMosaCkConnectorWrapper {
   /**
    * Check for assets existence.
    *
    * @param array $asset_ids
+   *   id's to check.
    *
-   * @return array with existing IDs, subset of input array.
+   * @return array
+   *   array with existing IDs, subset of input array.
    */
   public static function request_check_assets_existense($asset_ids) {
 
@@ -59,16 +38,17 @@ class MediaMosaConnectorMediaWrapper extends MediaMosaCkConnectorWrapper {
   /**
    * Parse to store in resulting array only 'asset_id'.
    *
-   * @param xml_response
+   * @param object $xml_response
    *   The simplexmlelement object holding the result of the response.
    *
-   * @return array with asset IDs.
+   * @return array
+   *   array with asset IDs.
    */
   public static function get_asset_ids_array($xml_response) {
     $items = array();
     if (isset($xml_response->items) && isset($xml_response->items->item)) {
       foreach ($xml_response->items->item as $obj_item) {
-        $items[] = (string)$obj_item->asset_id;
+        $items[] = (string) $obj_item->asset_id;
       }
     }
     return $items;
@@ -82,11 +62,15 @@ class MediaMosaConnectorMediaWrapper extends MediaMosaCkConnectorWrapper {
    *   be removed some. Will return simplexmlelement in future instead of
    *   array.
    *
-   * @param $time_last
-   *  Timestamp of the last time we asked for assets.
-   * @param $limit
+   * @param integer $time_last
+   *   Timestamp of the last time we asked for assets.
+   * @param integer $offset
+   *   offset the query.
+   * @param integer $limit
+   *   limit the query.
    *
-   * @return $assets
+   * @return array
+   *   $assets
    */
   public static function get_current_assets($time_last = 0, $offset = 0, $limit = 100) {
     // We used 'changed' parameter here before, but at the moment
@@ -131,9 +115,11 @@ class MediaMosaConnectorMediaWrapper extends MediaMosaCkConnectorWrapper {
   /**
    * Get mediafiles of asset.
    *
-   * @param $asset_id
+   * @param string $asset_id
+   *   id of asset.
    *
-   * @return array $mediafiles
+   * @return array
+   *   $mediafiles
    */
   public static function get_asset_mediafiles($asset_id, $options = array()) {
 

@@ -1,26 +1,7 @@
 <?php
 /**
- * MediaMosa is a Full Featured, Webservice Oriented Media Management and
- * Distribution platform (http://mediamosa.org)
- *
- * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl)
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, you can find it at:
- * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
- */
-
-/**
  * @file
- * Our formatters related hooks.
+ * Formatters related hooks.
  */
 
 /**
@@ -31,9 +12,12 @@ function media_mediamosa_file_formatter_info() {
     'label' => t('MediaMosa Video'),
     'file types' => array('video'),
     'default settings' => array(
-      'width' => 480,//media_mediamosa_variable_get('width'),
-      'height' => 360,//media_mediamosa_variable_get('height'),
-      'autoplay' => FALSE, //media_mediamosa_variable_get('autoplay'),
+      // media_mediamosa_variable_get('width'),
+      'width' => 480,
+      // media_mediamosa_variable_get('height'),
+      'height' => 360,
+      // media_mediamosa_variable_get('autoplay'),
+      'autoplay' => FALSE,
     ),
     'view callback' => 'media_mediamosa_file_formatter_video_view',
     'settings callback' => 'media_mediamosa_file_formatter_video_settings',
@@ -179,7 +163,7 @@ function media_mediamosa_file_default_displays() {
   $default_image_styles = array(
     'media_preview' => 'square_thumbnail',
     'media_large' => 'large',
-    'media_original' => ''
+    'media_original' => '',
   );
   foreach ($default_image_styles as $view_mode => $image_style) {
     $display_name = 'video__' . $view_mode . '__media_mediamosa_image';

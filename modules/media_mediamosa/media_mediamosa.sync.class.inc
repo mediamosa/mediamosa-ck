@@ -1,42 +1,19 @@
 <?php
 /**
- * MediaMosa is Open Source Software to build a Full Featured, Webservice
- * Oriented Media Management and Distribution platform (http://mediamosa.org)
- *
- * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl) and Kennisnet
- * (http://www.kennisnet.nl)
- *
- * MediaMosa is based on the open source Drupal platform and
- * was originally developed by Madcap BV (http://www.madcap.nl)
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, you can find it at:
- * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
- */
-
-/**
  * @file
  * Static class for sync related functions.
  */
 
 class MediaMediaMosaSync {
-/**
+  /**
    * Syncs a set of assets with our database.
    *
-   * @param $offset
+   * @param integer $offset
    *   The offset of the range.
-   * @param $limit
+   * @param integer $limit
    *   The limit of the range.
    *
-   * @return
+   * @return array
    *   An array filled with data about the sync.
    */
   public static function sync_mediamosa_to_drupal_by_range($offset, $limit) {
@@ -64,23 +41,25 @@ class MediaMediaMosaSync {
     }
 
     return array(
-      'offset' => $offset + $limit, // Return next offset.
+      // Return next offset.
+      'offset' => $offset + $limit,
       'processed_total' => count($assets),
       'assets_created' => $assets_created,
-      'assets_updated' => $assets_updated
+      'assets_updated' => $assets_updated,
     );
   }
 
   /**
-   * Syncs a range of file_managed and compares it MediaMosa. Removes any
-   * missing Media that is no longer found in MediaMosa.
+   * Syncs a range of file_managed and compares it MediaMosa.
    *
-   * @param $offset
+   * Removes any missing Media that is no longer found in MediaMosa.
+   *
+   * @param integer $offset
    *   The offset of the range.
-   * @param $limit
+   * @param integer $limit
    *   The limit of the range.
    *
-   * @return
+   * @return array
    *   An array filled with data about the sync.
    */
   public static function sync_drupal_to_mediamosa_by_range($offset, $limit) {
@@ -132,10 +111,16 @@ class MediaMediaMosaSync {
     $offset += ($limit - count($asset_ids_missing));
 
     // Return next offset.
-    return array('offset' => $offset, 'deleted' => count($asset_ids_missing), 'processed_total' => $processed_total);
+    return array(
+      'offset' => $offset,
+      'deleted' => count($asset_ids_missing),
+      'processed_total' => $processed_total,
+    );
   }
 
   /**
+   * Do the syncronization Drupal -> MediaMosa.
+   *
    * When asset has been deleted on the mediamosa side, we have to remove
    * corresponding Media entity.
    */
@@ -144,7 +129,8 @@ class MediaMediaMosaSync {
     // Dont set this to high, don't choke the cron.
     // Set the # of runs in this cron and per run # of media to check.
     $runs = 3;
-    $limit = 10; // Keep this below 30.
+    // Keep this below 30.
+    $limit = 10;
 
     // Is sync from Drupal to MediaMosa on for cron?
     if (!self::do_sync_drupal_to_mediamosa()) {
@@ -217,7 +203,7 @@ class MediaMediaMosaSync {
 
     // Connector not setup, don't bother.
     if (!MediaMosaConnectorMediaWrapper::check_connection()) {
-      MediaMediaMosa::watchdog('Unanle to connect with MediaMosa; can not sync with MediaMosa');
+      MediaMediaMosa::watchdog('Unable to connect with MediaMosa; can not sync with MediaMosa');
       return;
     }
 
@@ -230,8 +216,7 @@ class MediaMediaMosaSync {
     $assets_updated = 0;
     $assets_created = 0;
 
-    // Really low what we are going to do here. 1st sync will take time. Lets not
-    // choke cron.
+    // 1st sync will take time. Lets not choke cron.
     $limit = max(min(variable_get('media_mediamosa_cron_sync_throttle_cron_limit', 100), 199), 10);
 
     // Get the assets.
@@ -280,10 +265,11 @@ class MediaMediaMosaSync {
       // More to come? ($asset_last is only set when we had more results than
       // limit).
       //
-      // Has the last asset (that we didn't process) and the last processed asset
-      // have the same videotimestampmodified? Then take the offset when we first
-      // offset found with this videotimestamp and store it, so the next time the
-      // videotimestampmodified is used again but with the next unsynced results.
+      // Has the last asset (that we didn't process) and the last processed
+      // asset have the same videotimestampmodified? Then take the offset when
+      // we first offset found with this videotimestamp and store it, so the
+      // next time the videotimestampmodified is used again but with the next
+      // unsynced results.
       if ($asset_last && $asset_last['videotimestampmodified'] == $videotimestampmodified) {
         $time_last = mediamosa_ck::date2unix($videotimestampmodified);
         variable_set('media_mediamosa_sync_time_' . MediaMosaConnectorMediaWrapper::build_connection_id(), $time_last);
@@ -321,7 +307,7 @@ class MediaMediaMosaSync {
   /**
    * Return the setting for during the cron sync MediaMosa to Drupal.
    *
-   * @return
+   * @return boolean
    *   TRUE or FALSE.
    */
   public static function do_cron_sync_mediamosa_to_drupal() {
@@ -331,7 +317,7 @@ class MediaMediaMosaSync {
   /**
    * Return the setting for during the cron sync MediaMosa to Drupal.
    *
-   * @return
+   * @return boolean
    *   TRUE or FALSE.
    */
   public static function do_cron_sync_drupal_to_mediamosa() {
@@ -341,7 +327,7 @@ class MediaMediaMosaSync {
   /**
    * Return the setting for syncing Drupal to MediaMosa during the sync batch.
    *
-   * @return
+   * @return boolean
    *   TRUE or FALSE.
    */
   public static function do_sync_drupal_to_mediamosa() {
@@ -351,7 +337,7 @@ class MediaMediaMosaSync {
   /**
    * Return the setting for syncing Drupal to MediaMosa during the sync batch.
    *
-   * @return
+   * @return boolean
    *   TRUE or FALSE.
    */
   public static function do_sync_mediamosa_to_drupal() {

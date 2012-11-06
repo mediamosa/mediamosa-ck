@@ -1,33 +1,24 @@
 <?php
 /**
- * MediaMosa is Open Source Software to build a Full Featured, Webservice
- * Oriented Media Management and Distribution platform (http://mediamosa.org)
- *
- * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl)
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, you can find it at:
- * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+ * @file
+ * Views filter boolean.
  */
 
 class mediamosa_ck_views_filter_boolean extends mediamosa_ck_views_filter {
 
-  // exposed filter options
-  var $always_multiple = TRUE;
-  // Don't display empty space where the operator would be.
-  var $no_operator = TRUE;
-  // Whether to accept NULL as a false value or not
-  var $accept_null = FALSE;
+  // Exposed filter options.
+  public $always_multiple = TRUE;
 
-  function construct() {
+  // Don't display empty space where the operator would be.
+  public $no_operator = TRUE;
+
+  // Whether to accept NULL as a false value or not.
+  public $accept_null = FALSE;
+
+  /**
+   * Construtor.
+   */
+  public function construct() {
     $this->value_value = t('True');
     if (isset($this->definition['label'])) {
       $this->value_value = $this->definition['label'];
@@ -35,7 +26,7 @@ class mediamosa_ck_views_filter_boolean extends mediamosa_ck_views_filter {
     if (isset($this->definition['accept null'])) {
       $this->accept_null = (bool) $this->definition['accept null'];
     }
-    else if (isset($this->definition['accept_null'])) {
+    elseif (isset($this->definition['accept_null'])) {
       $this->accept_null = (bool) $this->definition['accept_null'];
     }
     $this->value_options = NULL;
@@ -58,6 +49,9 @@ class mediamosa_ck_views_filter_boolean extends mediamosa_ck_views_filter {
     $this->value_options = array('TRUE' => t('True'), 'FALSE' => t('False'));
   }
 
+  /**
+   * Default option is false.
+   */
   public function option_definition() {
     $options = parent::option_definition();
 
@@ -66,10 +60,16 @@ class mediamosa_ck_views_filter_boolean extends mediamosa_ck_views_filter {
     return $options;
   }
 
+  /**
+   * Form operator is empty.
+   */
   public function operator_form(&$form, &$form_state) {
     $form['operator'] = array();
   }
 
+  /**
+   * Implements hook_form().
+   */
   public function value_form(&$form, &$form_state) {
     if (empty($this->value_options)) {
       // Initialize the array of possible values for this filter.
@@ -105,12 +105,18 @@ class mediamosa_ck_views_filter_boolean extends mediamosa_ck_views_filter {
     }
   }
 
+  /**
+   * Implements hook_form_validate().
+   */
   public function value_validate($form, &$form_state) {
     if ($form_state['values']['options']['value'] == 'All' && !empty($form_state['values']['options']['expose']['required'])) {
       form_set_error('value', t('You must select a value unless this is an non-required exposed filter.'));
     }
   }
 
+  /**
+   * Function admin_summary.
+   */
   public function admin_summary() {
     if (!empty($this->options['exposed'])) {
       return t('exposed');
@@ -125,35 +131,13 @@ class mediamosa_ck_views_filter_boolean extends mediamosa_ck_views_filter {
     return $this->value_options[!empty($this->value)];
   }
 
+  /**
+   * Expose options.
+   */
   public function expose_options() {
     parent::expose_options();
     $this->options['expose']['operator_id'] = '';
     $this->options['expose']['label'] = $this->value_value;
     $this->options['expose']['required'] = TRUE;
   }
-/*
-  public function query() {
-    $this->ensure_my_table();
-    $field = "$this->table_alias.$this->real_field";
-
-    if (empty($this->value)) {
-      if ($this->accept_null) {
-        $or = db_or()
-          ->condition($field, 0, '=')
-          ->condition($field, NULL, 'IS NULL');
-        $this->query->add_where($this->options['group'], $or);
-      }
-      else {
-        $this->query->add_where($this->options['group'], $field, 0, '=');
-      }
-    }
-    else {
-      if (!empty($this->definition['use equal'])) {
-        $this->query->add_where($this->options['group'], $field, 1, '=');
-      }
-      else {
-        $this->query->add_where($this->options['group'], $field, 0, '<>');
-      }
-    }
-  }*/
 }

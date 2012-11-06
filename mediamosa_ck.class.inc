@@ -1,38 +1,15 @@
 <?php
 /**
- * MediaMosa is Open Source Software to build a Full Featured, Webservice
- * Oriented Media Management and Distribution platform (http://mediamosa.org)
- *
- * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl) and Kennisnet
- * (http://www.kennisnet.nl)
- *
- * MediaMosa is based on the open source Drupal platform and
- * was originally developed by Madcap BV (http://www.madcap.nl)
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, you can find it at:
- * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
- */
-
-/**
  * @file
- *  Our global class for settings and static functions.
+ * Global class for settings and static functions.
  */
-class mediamosa_ck extends mediamosa_sdk {
 
+class mediamosa_ck extends mediamosa_sdk {
   /**
    * Create or return the current connector.
    *
-   * @param $reset_session
-   *  TRUE / FALSE to reset session.
+   * @param boolean $reset_session
+   *   TRUE / FALSE to reset session.
    *
    * @return MediaMosaCkConnectorWrapper
    *   Returns the connector object.
@@ -54,6 +31,8 @@ class mediamosa_ck extends mediamosa_sdk {
   }
 
   /**
+   * Wrapper function around watchdog_error().
+   *
    * This wrapper is indended when in the future if we want to tell the user
    * that something went wrong and log the problem. We might want to make
    * options for the admin in which we log the error, but will not bore the user
@@ -79,7 +58,11 @@ class mediamosa_ck extends mediamosa_sdk {
    * Wrapper for quick debug messages.
    */
   public static function debug($file, $line, $message, array $variables = array(), $severity = WATCHDOG_DEBUG, $link = NULL, $type = 'MediaMosa CK - Debug') {
-    $variables = array('@file' => $file, '@line' => $line, '@message' => t($message, $variables));
+    $variables = array(
+      '@file' => $file,
+      '@line' => $line,
+      '@message' => t($message, $variables),
+    );
     $message = '@message (In file @file on line @line).';
     drupal_set_message(t($message, $variables));
     watchdog(substr($type, 0, 64), $message, $variables, $severity, $link);
@@ -104,6 +87,8 @@ class mediamosa_ck extends mediamosa_sdk {
   }
 
   /**
+   * Get current session user ID.
+   *
    * Get the current session user ID to use for ownership or calls where
    * user_id is required.
    */
@@ -115,7 +100,9 @@ class mediamosa_ck extends mediamosa_sdk {
   }
 
   /**
-   * builds static unique ID for entries in static array. Use for storing REST
+   * Builds static unique ID.
+   *
+   * Builds static unique ID for entries in static array. Use for storing REST
    * call output based on the (asset/mediafile) ID and its options used for the
    * REST call.
    */
@@ -129,16 +116,17 @@ class mediamosa_ck extends mediamosa_sdk {
    *
    * @param string $uri
    *   The REST uri
-   * @param $options
+   * @param array $options
    *   Options for REST call.
-   * @param $check
+   * @param boolean $check
    *   Do result check, will display drupal message when needed.
-   * @param $cached
+   * @param boolean $cached
    *   Cache the result for REST call result.
-   * @param $reset
+   * @param boolean $reset
    *   Reset the cache.
    *
    * @return string
+   *   return result.
    */
   public static function request($uri, array $options = array(), $check = FALSE, $cached = FALSE, $reset = FALSE) {
     // Get the connection class object.
@@ -148,7 +136,8 @@ class mediamosa_ck extends mediamosa_sdk {
     if ($mediamosa_connector) {
       // Only GET will be supported for caching.
       if ($options['method'] != 'GET' && $cached) {
-        assert(0); // Do not set for other than GET.
+        // Do not set for other than GET.
+        assert(0);
         $cached = FALSE;
       }
 
@@ -197,12 +186,12 @@ class mediamosa_ck extends mediamosa_sdk {
    *   Options for REST call.
    * @param boolean $check
    *   Do result check.
-   * @param $cached
+   * @param boolean $cached
    *   Cache the result for REST call result.
-   * @param $reset
+   * @param boolean $reset
    *   Reset the cache.
    *
-   * @return
+   * @return object
    *   The response object.
    */
   public static function request_get($uri, array $options = array(), $check = FALSE, $cached = FALSE, $reset = FALSE) {
@@ -219,10 +208,10 @@ class mediamosa_ck extends mediamosa_sdk {
    *   Options for REST call.
    * @param boolean $check
    *   Do result check.
-   * @param $reset
+   * @param boolean $reset
    *   Reset the cache.
    *
-   * @return
+   * @return object
    *   The response object.
    */
   public static function request_get_cached($uri, array $options = array(), $check = FALSE, $reset = FALSE) {
@@ -232,18 +221,18 @@ class mediamosa_ck extends mediamosa_sdk {
   /**
    * Do GET request to MediaMosa but any error is fatal (expecting 601 code).
    *
-   * @param $uri
+   * @param string $uri
    *   The REST uri
-   * @param $options
+   * @param array $options
    *   Options for REST call.
-   * @param $check
+   * @param boolean $check
    *   Do result check.
-   * @param $cached
+   * @param boolean $cached
    *   Cache the result for REST call result.
-   * @param $reset
+   * @param boolean $reset
    *   Reset the cache.
    *
-   * @return
+   * @return object
    *   The response object.
    */
   public static function request_get_fatal($uri, array $options = array(), $check = FALSE, $cached = FALSE, $reset = FALSE) {
@@ -255,16 +244,16 @@ class mediamosa_ck extends mediamosa_sdk {
   /**
    * Do GET request to MediaMosa but any error is fatal (expecting 601 code).
    *
-   * @param $uri
+   * @param string $uri
    *   The REST uri
-   * @param $options
+   * @param array $options
    *   Options for REST call.
-   * @param $check
+   * @param boolean $check
    *   Do result check.
-   * @param $reset
+   * @param boolean $reset
    *   Reset the cache.
    *
-   * @return
+   * @return object
    *   The response object.
    */
   public static function request_get_fatal_cached($uri, array $options = array(), $check = FALSE, $reset = FALSE) {
@@ -274,14 +263,14 @@ class mediamosa_ck extends mediamosa_sdk {
   /**
    * Do POST request to MediaMosa.
    *
-   * @param $uri
+   * @param string $uri
    *   The REST uri
-   * @param $options
+   * @param array $options
    *   Options for REST call.
-   * @param $check
+   * @param boolean $check
    *   Do result check.
    *
-   * @return
+   * @return object
    *   The response object.
    */
   public static function request_post($uri, array $options = array(), $check = FALSE) {
@@ -293,13 +282,13 @@ class mediamosa_ck extends mediamosa_sdk {
    * Do POST request to MediaMosa but any error is fatal (expecting 601 code).
    *
    * @param string $uri
-   *  The REST uri
+   *   The REST uri
    * @param array $options
-   *  Options for REST call.
+   *   Options for REST call.
    * @param boolean $check
-   *  Do result check.
+   *   Do result check.
    *
-   * @return
+   * @return object
    *   The response object.
    */
   public static function request_post_fatal($uri, array $options = array(), $check = FALSE) {
@@ -332,9 +321,10 @@ class mediamosa_ck extends mediamosa_sdk {
   /**
    * Opposite of parse_url.
    *
-   * @param $urls
-   * @param $return_parts
-   *  Return the array with host and uri.
+   * @param array $urls
+   *
+   * @param boolean $return_parts
+   *   Return the array with host and uri.
    */
   public static function build_url($urls, $return_parts = FALSE) {
 
@@ -353,7 +343,7 @@ class mediamosa_ck extends mediamosa_sdk {
       'fragment' => '',
     );
 
-    // Add user : pass
+    // Add user:pass.
     if ($urls['user'] != '' || $urls['pass'] != '') {
       $result['host'][] = $urls['user'];
       $result['host'][] = ':';
@@ -364,7 +354,7 @@ class mediamosa_ck extends mediamosa_sdk {
     // Host.
     $result['host'][] = trim($urls['host'], '/');
 
-    // Optional port
+    // Optional port.
     if ($urls['port']) {
       $result['host'][] = ':' . $urls['port'];
     }
@@ -385,7 +375,10 @@ class mediamosa_ck extends mediamosa_sdk {
     }
 
     // Now rebuild url.
-    return $return_parts ? array('host' => implode('', $result['host']), 'uri' => implode('', $result['uri'])) : (implode('', $result['host']) . implode('', $result['uri']));
+    return $return_parts ? array(
+      'host' => implode('', $result['host']),
+      'uri' => implode('', $result['uri'])) : (implode('', $result['host']) . implode('', $result['uri'])
+    );
   }
 
   /**
@@ -394,13 +387,19 @@ class mediamosa_ck extends mediamosa_sdk {
    * @param array $query
    */
   public static function http_build_query($query) {
-    return strtr(http_build_query($query, '', '&'), array('%5B' => '[', '%5D' => ']', '%5b' => '[', '%5d' => ']'));
+    return strtr(http_build_query($query, '', '&'), array(
+        '%5B' => '[',
+        '%5D' => ']',
+        '%5b' => '[',
+        '%5d' => ']',
+      )
+    );
   }
 
   /**
-   * Opposite of http_build_query()
+   * Opposite of http_build_query().
    *
-   * @param $query_str
+   * @param string $query_str
    */
   public static function parse_query($query_str) {
     // Split the url.
@@ -430,32 +429,32 @@ class mediamosa_ck extends mediamosa_sdk {
   /**
    * Convert any date into unix timestamp.
    *
-   * @param $any_date
+   * @param date $any_date
    *   The date to convert.
    *
-   * @return
+   * @return int
    *   The number of seconds since 1970 (UTC/GMT).
    */
   public static function date2unix($any_date) {
     // Parse the date, date_parse is new in 5.2.
     $date_parsed = date_parse($any_date);
 
-    // Convert to integer
+    // Convert to integer.
     return gmmktime($date_parsed['hour'], $date_parsed['minute'], $date_parsed['second'], $date_parsed['month'], $date_parsed['day'], $date_parsed['year']);
   }
 
   /**
    * Converts mediafile duration format into unix timestamp.
    *
-   * @param $any_date
+   * @param date $any_date
    *   The date to convert.
    *
-   * @return
+   * @return int
    *   The number of seconds since 1970 (UTC/GMT).
    */
   public static function duration2unix($mediafile_duration) {
-    // Split into pieces.
 
+    // Split into pieces.
     if (preg_match('/(?P<hours>\d+):(?P<minutes>\d+):(?P<seconds>\d+).(?P<milliseconds>\d+)/', $mediafile_duration, $matches)) {
       $hours = isset($matches['hours']) ? $matches['hours'] : '';
       $minutes = isset($matches['minutes']) ? $matches['minutes'] : '';
@@ -468,6 +467,8 @@ class mediamosa_ck extends mediamosa_sdk {
   }
 
   /**
+   * Get active metadata fields.
+   *
    * This function will return the active metadata fields on the active
    * MediaMosa connection. For now we return DC/QDC, but in future we need to
    * find out or query MediaMosa what metadata is allowed. MediaMosa does not
@@ -528,8 +529,9 @@ class mediamosa_ck extends mediamosa_sdk {
   }
 
   /**
-   * Returns the metadata field that is used for title. Must be in format as
-   * SET.NAME and must be metadata.
+   * Returns the metadata field that is used for title.
+   *
+   * Must be in format as SET.NAME and must be metadata.
    *
    * @see get_asset_title()
    */
@@ -538,8 +540,9 @@ class mediamosa_ck extends mediamosa_sdk {
   }
 
   /**
-   * Returns the metadata field that is used for title. Must be in format as
-   * SET.NAME and must be metadata.
+   * Returns the metadata field that is used for title.
+   *
+   * Must be in format as SET.NAME and must be metadata.
    *
    * @see get_asset_description()
    */
@@ -559,10 +562,10 @@ class mediamosa_ck extends mediamosa_sdk {
    *
    * @param object $asset
    *   The asset in simplexmlelement or other object.
-   * @param $default
+   * @param string $default
    *   Default value when empty (=== '').
    *
-   * @return
+   * @return string
    *   The title or ''.
    *
    * @see get_metadata_name_title()
@@ -577,10 +580,10 @@ class mediamosa_ck extends mediamosa_sdk {
    *
    * @param object $asset
    *   The asset in simplexmlelement or other object.
-   * @param $default
+   * @param string $default
    *   Default value when empty (=== '').
    *
-   * @return
+   * @return string
    *   The title or ''.
    *
    * @see get_metadata_name_title()
@@ -591,17 +594,18 @@ class mediamosa_ck extends mediamosa_sdk {
   }
 
   /**
-   * Returns the a value of an asset using it scope name ([set].[name]). Used
-   * now for retieving metadata values.
+   * Returns the value of an asset using it scope name ([set].[name]).
+   *
+   * Used now for retieving metadata values.
    *
    * @param object $asset
    *   The asset in simplexmlelement or other object.
-   * @param $field
+   * @param string $field
    *   The name of the field to retrieve.
-   * @param $default
+   * @param string $default
    *   The default value when value was not found or empty string (=== '').
    *
-   * @return
+   * @return string
    *   The value or default.
    *
    * @see get_metadata_name_title()
@@ -625,7 +629,7 @@ class mediamosa_ck extends mediamosa_sdk {
     // Need parts.
     list($set, $name) = explode('.', $field, 2);
 
-     // Need metadata info.
+    // Need metadata info.
     $metadata_fields = self::get_metadata_fields();
 
     // Field name is known metadata?
@@ -638,7 +642,6 @@ class mediamosa_ck extends mediamosa_sdk {
     }
 
     // Not found. In future version we can extend it more 'normal' fields.
-
     return $default;
   }
 
@@ -704,10 +707,10 @@ class mediamosa_ck extends mediamosa_sdk {
   /**
    * Lookup the Drupal user using his mail address.
    *
-   * @param $mail
+   * @param string $mail
    *   The mail address of the Drupal user.
    *
-   * @return
+   * @return array
    *   The user array.
    */
   public static function lookup_user_with_mail($mail) {
@@ -722,12 +725,13 @@ class mediamosa_ck extends mediamosa_sdk {
   }
 
   /**
-   * Lookup the Drupal users using his name. Although I would like to use
-   * user_load_by_name(), I better use something I can pre-cache when a lot of
-   * users need to be looked up. Also we only need mail, uid and name from the
-   * users table.
+   * Lookup the Drupal users using his name.
    *
-   * @param $mails
+   * Although I would like to use user_load_by_name(), I better use something
+   * we can pre-cache when a lot of users need to be looked up. Also we only
+   * need mail, uid and name from the users table.
+   *
+   * @param string $mails
    *   The mail address of the Drupal users to precache.
    */
   public static function precache_users_with_mails(array $mails) {
@@ -741,7 +745,10 @@ class mediamosa_ck extends mediamosa_sdk {
     foreach ($mails as $mail) {
       if (!isset($users_mails[$mail])) {
         if (!isset($query)) {
-          $query = db_select('users', 'u')->fields('u', array('mail', 'uid', 'name'));
+          $query = db_select('users', 'u')->fields(
+            'u',
+            array('mail', 'uid', 'name')
+          );
         }
 
         $query->condition('mail', $mail);

@@ -1,42 +1,23 @@
 <?php
 /**
- * MediaMosa is Open Source Software to build a Full Featured, Webservice
- * Oriented Media Management and Distribution platform (http://mediamosa.org)
- *
- * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl)
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, you can find it at:
- * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
- */
-
-/**
  * @file
  * The plugin query object for MediaMosa allows REST calls inside views. It
  * uses the Views 3 plugin option to query another source instead of the normal
  * Drupal database.
  *
  * View will return the featured assets.
- *
  */
+
 class mediamosa_ck_views_rest_asset_get extends mediamosa_ck_views_rest {
 
   /**
    * Execute the REST call.
    *
-   * @param $view
+   * @param object $view
    *   The view object.
-   * @param $params
+   * @param array $params
    *   Array of view options and settings.
-   * @param $options
+   * @param array $options
    *   Options that can be used for overrides on the view params and REST call
    *   related options.
    */
@@ -149,7 +130,8 @@ class mediamosa_ck_views_rest_asset_get extends mediamosa_ck_views_rest {
   /**
    * Get the views data for this REST call.
    *
-   * @return
+   * @return array
+   *   data array.
    */
   public static function get_views_data($title, $class) {
     $data = array(
@@ -212,7 +194,7 @@ class mediamosa_ck_views_rest_asset_get extends mediamosa_ck_views_rest {
     foreach (mediamosa_ck::get_metadata_fields() as $set => $metadata) {
       // Mediafiles.
       $data['metadata_' . $set] = array(
-        'title' => t('Metadata block for ' . $metadata['title']),
+        'title' => t('Metadata block for ') . $metadata['title'],
         'help' => t('Shows a listing of the metadata.'),
         'field' => array(
           'handler' => 'mediamosa_ck_views_field_text_metadata',

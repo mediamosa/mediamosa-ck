@@ -1,28 +1,5 @@
 <?php
 /**
- * MediaMosa is Open Source Software to build a Full Featured, Webservice
- * Oriented Media Management and Distribution platform (http://mediamosa.org)
- *
- * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl) and Kennisnet
- * (http://www.kennisnet.nl)
- *
- * MediaMosa is based on the open source Drupal platform and
- * was originally developed by Madcap BV (http://www.madcap.nl)
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, you can find it at:
- * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
- */
-
-/**
  * @file
  * Static class for helper functions.
  */
@@ -30,10 +7,8 @@
 class MediaMediaMosa {
 
   // Settings;
-
   // Expire default for thumbnails in seconds.
   const THUMBNAIL_EXPIRE_TIME = 600;
-
 
   /**
    * Wrapper for quicker logging.
@@ -45,16 +20,21 @@ class MediaMediaMosa {
 
   /**
    * Check and validate a datestamp string for metadata.
-   * returns FALSE or valid string to use
    *
-   * @param string $str
-   * @return string or FALSE
+   * returns FALSE or valid string to use.
+   *
+   * @param string $str_date
+   *   string to check.
+   *
+   * @return string
+   *   or FALSE
    */
   public static function check_datestamp($str_date) {
 
     $str_date = trim($str_date);
     if ($str_date == '') {
-      return '0000-00-00 00:00:00'; // Empty is ok
+      // Empty is ok.
+      return '0000-00-00 00:00:00';
     }
 
     if (!preg_match('/^\d{4}-\d{2}-\d{2}( \d{2}:\d{2}:\d{2})?$/', $str_date)) {
@@ -78,11 +58,8 @@ class MediaMediaMosa {
     return $str_date;
   }
 
-   /**
+  /**
    * Create Drupal media object in accordance with given asset info.
-   *
-   * @param array
-    *  Return
    */
   public static function create_media($asset) {
     try {
@@ -96,8 +73,13 @@ class MediaMediaMosa {
       }
 
       if ($mediafile && $mediafile['is_original_file'] == 'TRUE') {
-        // We need to build the scheme uri. (mediamosa://asset/[id]/[id]/[filename]).
-        $uri = strtr('mediamosa://asset/@asset_id/@mediafile_id/@filename', array('@asset_id' => $mediafile['asset_id'], '@mediafile_id' => $mediafile['mediafile_id'], '@filename' => $mediafile['filename']));
+        // Build the scheme uri (mediamosa://asset/[id]/[id]/[filename]).
+        $uri = strtr('mediamosa://asset/@asset_id/@mediafile_id/@filename', array(
+                 '@asset_id' => $mediafile['asset_id'],
+                 '@mediafile_id' => $mediafile['mediafile_id'],
+                 '@filename' => $mediafile['filename'],
+               )
+        );
 
         // Save it using uri.
         $file = file_uri_to_object($uri);
@@ -121,19 +103,17 @@ class MediaMediaMosa {
    * Update Drupal media object by given asset info.
    *
    * @param array() $asset
+   *   asset info.
    * @param int $media_id
+   *   media id.
    */
   public static function update_media($asset, $media_id) {
 
     // Processing the Dublin core metadata fields.
     $metadata = array_merge($asset['dublin_core'], $asset['qualified_dublin_core']);
 
-    // To distinct data in Drupal and in Mediamosa we use drupal_ prefix for the Drupal side variables.
-
-    // $drupal_media = media_load($media_id);
-    // Due to changes in Media module, there's no more media_load() function. Instead they
-    // have media_multi_load, that takes multiple ids in a string, separated by spaces.
-
+    // To distinct data in Drupal and in Mediamosa we use drupal_ prefix for
+    // the Drupal side variables.
     $drupal_multiple_media = media_multi_load("{$media_id}");
     $drupal_media = $drupal_multiple_media[$media_id];
 
@@ -157,11 +137,13 @@ class MediaMediaMosa {
       }
     }
 
-    // We have done with DC/QDC fields. Now lets take care about mediafiles itself and mediafiles tech info.
-
+    // We have done with DC/QDC fields. Now lets take care about mediafiles
+    // itself and mediafiles tech info.
     $mediafiles = MediaMosaConnectorMediaWrapper::get_asset_mediafiles($asset['asset_id']);
-    // We get array of arrays for each asset. But we need one global array for all essets. So pick just
-    // first element of each. It doesn't seem like a best solution.
+
+    // We get array of arrays for each asset. But we need one global array for
+    // all assets. So pick just first element of each. It doesn't seem like a
+    // best solution.
     $mediafiles = reset($mediafiles);
 
     if (empty($mediafiles)) {
@@ -172,28 +154,29 @@ class MediaMediaMosa {
 
     $mediafile = FALSE;
 
-    //foreach ($mediafiles as $item) {
-      if ($mediafiles['mediafile_id'] == $drupal_mediafile) {
-        $mediafile = $mediafiles;
-        // We found current mediafile. Hope 99.99.... % cases will fall into this category.
-        //break;
-      }
-    //}
+    if ($mediafiles['mediafile_id'] == $drupal_mediafile) {
+      // We found a match.
+      $mediafile = $mediafiles;
+    }
 
     if (empty($mediafile)) {
       // We didn't find our file, lets use other file from this asset.
-      // @todo: changing uri is not saved to DB by media_save(); we need direct write if we need this functionality.
       $mediafile = $mediafiles;
       MediaMediaMosa::watchdog('Mediafile @mediafile disappeared, will use another one from this asset @asset_id. Media id is @media_id.',
-               array('@mediafile' => $drupal_mediafile, '@asset_id' => $asset['asset_id'], '@media_id' => $media_id), WATCHDOG_NOTICE);
+        array(
+          '@mediafile' => $drupal_mediafile,
+          '@asset_id' => $asset['asset_id'],
+          '@media_id' => $media_id),
+        WATCHDOG_NOTICE);
       $drupal_media->uri = 'mediamosa://asset/' . $asset['asset_id'] . '/' . $mediafile['mediafile_id'] . '/' . $mediafile['filename'];
       $changes_counter++;
     }
 
     $tech_metadata = $mediafile['metadata'];
 
-    // The mediafile_id and is_original_file are special cases.
-    // Mostly parameters can be taken directly from 'metadata' subarray, keys are the same.
+    // The mediafile_id and is_original_file are special cases.  Mostly
+    // parameters can be taken directly from 'metadata' subarray, keys are the
+    // same.
     $field_name = FIELD_PREFIX . 'mediafile_id';
     if (empty($drupal_media->{$field_name}) || $drupal_media->{$field_name}[LANGUAGE_NONE]['0']['value'] != $mediafile['mediafile_id']) {
       $drupal_media->{$field_name}[LANGUAGE_NONE]['0']['value'] = $mediafile['mediafile_id'];
@@ -207,7 +190,7 @@ class MediaMediaMosa {
     }
 
     // Video size is combined from two metavariables.
-    $size = $tech_metadata['width'] .'px * '. $tech_metadata['height'] .'px';
+    $size = $tech_metadata['width'] . 'px * ' . $tech_metadata['height'] . 'px';
     $field_name = FIELD_PREFIX . 'size';
     if (empty($drupal_media->{$field_name}) || $drupal_media->{$field_name}[LANGUAGE_NONE]['0']['value'] != $size) {
       $drupal_media->{$field_name}[LANGUAGE_NONE]['0']['value'] = $size;
@@ -215,7 +198,9 @@ class MediaMediaMosa {
     }
 
     // And here goes transparent stuff.
-    $meta_keys = array( 'file_duration', 'filesize', 'mime_type', 'container_type', 'fps', 'video_codec', );
+    $meta_keys = array(
+      'file_duration', 'filesize', 'mime_type', 'container_type', 'fps', 'video_codec',
+    );
 
     foreach ($meta_keys as $key) {
       $field_name = FIELD_PREFIX . $key;
@@ -231,7 +216,12 @@ class MediaMediaMosa {
       }
       catch (Exception $e) {
         MediaMediaMosa::watchdog('Error on update media for media @media_id, asset @asset_id: @error.',
-                array('@media_id' => $media_id, '@asset_id' => $asset['asset_id'], '@error' => $e->getMessage()), WATCHDOG_ERROR);
+          array(
+            '@media_id' => $media_id,
+            '@asset_id' => $asset['asset_id'],
+            '@error' => $e->getMessage(),
+          ),
+          WATCHDOG_ERROR);
         return FALSE;
       }
       MediaMediaMosa::watchdog('Updated @counter properties for media object @media_id while syncronizing with Mediamosa.',
@@ -242,7 +232,7 @@ class MediaMediaMosa {
   /**
    * Figure out how many assets are in MediaMosa.
    *
-   * @return
+   * @return integer
    *   The number of assets in MediaMosa.
    */
   public static function assets_in_mediamosa() {
@@ -252,7 +242,7 @@ class MediaMediaMosa {
   /**
    * Figure out how many assets are in file_managed.
    *
-   * @return
+   * @return integer
    *   The number of assets in Drupal.
    */
   public static function assets_in_drupal() {
@@ -264,12 +254,14 @@ class MediaMediaMosa {
   /**
    * Figure out the fid from an asset.
    *
-   * @param string $asset_id The id of the asset
-   * @return
+   * @param string $asset_id
+   *   The id of the asset
+   *
+   * @return integer
    *   The fid in Drupal.
    */
   static public function get_fid_from_asset($asset_id) {
-    // TODO. add media id?
+    // TODO: add media id?
     $query = db_select('file_managed', 'fm');
     $query->addField('fm', 'fid');
     $query->condition('fm.uri', 'mediamosa://asset/' . $asset_id . '%', 'LIKE');

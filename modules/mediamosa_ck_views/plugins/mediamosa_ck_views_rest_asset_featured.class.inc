@@ -1,38 +1,19 @@
 <?php
 /**
- * MediaMosa is Open Source Software to build a Full Featured, Webservice
- * Oriented Media Management and Distribution platform (http://mediamosa.org)
- *
- * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl)
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, you can find it at:
- * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
- */
-
-/**
  * @file
  * The plugin query object for MediaMosa allows REST calls inside views. It
  * uses the Views 3 plugin option to query another source instead of the normal
  * Drupal database.
  *
  * View will return the featured assets.
- *
  */
+
 class mediamosa_ck_views_rest_asset_featured extends mediamosa_ck_views_rest_asset_search {
 
   /**
    * Use this function to retrieve the current selected featured assets.
    *
-   * @return
+   * @return array
    *   Returns an array with current selected featured asset ids.
    */
   public static function get_featured_ids() {
@@ -42,7 +23,7 @@ class mediamosa_ck_views_rest_asset_featured extends mediamosa_ck_views_rest_ass
   /**
    * Use this function to set a featured id.
    *
-   * @param $asset_id
+   * @param string $asset_id
    *   The ID of the asset to set as featured.
    */
   public static function set_featured_id($asset_id) {
@@ -75,11 +56,11 @@ class mediamosa_ck_views_rest_asset_featured extends mediamosa_ck_views_rest_ass
   /**
    * Executes the REST call and process the results.
    *
-   * @param $view
+   * @param object $view
    *   The view object.
-   * @param $params
+   * @param array $params
    *   Array of view options and settings.
-   * @param $options
+   * @param array $options
    *   Options that can be used for overrides on the view params and REST call
    *   related options.
    */
@@ -87,7 +68,10 @@ class mediamosa_ck_views_rest_asset_featured extends mediamosa_ck_views_rest_ass
 
     // If not set, use default for order;
     if (empty($this->orderby)) {
-      $this->orderby[__CLASS__ . '.' . 'viewed'] = array('orderby' => 'videotimestamp', 'order' => 'DESC', 'params' => array());
+      $this->orderby[__CLASS__ . '.viewed'] = array(
+        'orderby' => 'videotimestamp',
+        'order' => 'DESC',
+        'params' => array());
     }
 
     // Featured assets are stored by their IDs in a global variable.
@@ -126,7 +110,7 @@ class mediamosa_ck_views_rest_asset_featured extends mediamosa_ck_views_rest_ass
   /**
    * Returns the default value for mediamosa_is_public_list option.
    *
-   * @return
+   * @return boolean
    *   Returns TRUE by default.
    */
   public function mediamosa_option_is_public_list_default() {

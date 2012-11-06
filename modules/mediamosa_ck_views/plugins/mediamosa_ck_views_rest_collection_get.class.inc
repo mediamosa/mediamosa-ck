@@ -1,41 +1,22 @@
 <?php
 /**
- * MediaMosa is Open Source Software to build a Full Featured, Webservice
- * Oriented Media Management and Distribution platform (http://mediamosa.org)
- *
- * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl)
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, you can find it at:
- * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
- */
-
-/**
  * @file
  * The plugin query object for MediaMosa allows REST calls inside views. It
  * uses the Views 3 plugin option to query another source instead of the normal
  * Drupal database.
  */
+
 class mediamosa_ck_views_rest_collection_get extends mediamosa_ck_views_rest {
 
   /**
    * Execute the REST call.
    *
-   * @param $view
+   * @param object $view
    *   The view object.
-   * @param $params
-   *   View params.
-   * @param $options
+   * @param array $params
+   *   unused.
+   * @param array $options
    *   Options for REST call.
-   *
    */
   public function do_rest_call($view, $params, array $options = array()) {
     // Total results.
@@ -57,7 +38,7 @@ class mediamosa_ck_views_rest_collection_get extends mediamosa_ck_views_rest {
     $fields = self::get_fields(self::get_views_data('foo', 'foo'));
 
     // Now process the xml into an object views can work with.
-    foreach($xml->xpath('items/item') as $item) {
+    foreach ($xml->xpath('items/item') as $item) {
       $object = new stdClass();
 
       foreach ($fields as $field) {
@@ -87,7 +68,8 @@ class mediamosa_ck_views_rest_collection_get extends mediamosa_ck_views_rest {
   /**
    * Get the views data for this REST call.
    *
-   * @return
+   * @return array
+   *  returns the views data.
    */
   public static function get_views_data($title, $class) {
     $data = array(

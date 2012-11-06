@@ -1,46 +1,29 @@
 <?php
 /**
- * MediaMosa is Open Source Software to build a Full Featured, Webservice
- * Oriented Media Management and Distribution platform (http://mediamosa.org)
- *
- * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl)
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, you can find it at:
- * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
- */
-
-/**
  * @file
  * The plugin query object for MediaMosa allows REST calls inside views. It
  * uses the Views 3 plugin option to query another source instead of the normal
  * Drupal database.
  */
+
 abstract class mediamosa_ck_views_rest extends views_plugin_query {
   // ---------------------------------------------------------------- Variables.
-  var $requests;
-  var $aliases;
-  var $params;
-  var $orderby;
-  var $required_fields;
+  public $requests;
+  public $aliases;
+  public $params;
+  public $orderby;
+  public $required_fields;
 
-  // ----------------------------------------------------- Functions (abstract).
-  // Execute the rest call.
+  /**
+   * Execute the rest call.
+   */
   abstract protected function do_rest_call($view, $params, array $options = array());
 
   // ---------------------------------------------------------------- Functions.
   /**
    * Builds the necessary info to execute the query.
    *
-   * @param $view
+   * @param object $view
    *   The view object.
    */
   public function build(&$view) {
@@ -61,19 +44,20 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
   }
 
   /**
-   * Add a field to the query table, possibly with an alias. This will
-   * automatically call ensure_table to make sure the required table
+   * Add a field to the query table, possibly with an alias.
+   *
+   * This will automatically call ensure_table to make sure the required table
    * exists, *unless* $table is unset.
    *
-   * @param $table
+   * @param string $table
    *   The table this field is attached to, here it is the ID of the REST view
    *   class.
-   * @param $field
+   * @param string $field
    *   The name of the field to add.
-   * @param $required
+   * @param boolean $required
    *   TRUE or FALSE, will add the field to required listing as input.
    *
-   * @return $name
+   * @return string
    *   The name that this field can be referred to as. Usually this is the
    *   alias.
    */
@@ -92,13 +76,16 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
    * Is called when sort option is added/used.
    */
   public function add_orderby($table, $field = NULL, $order = 'ASC', $alias = '', $params = array()) {
-    $this->orderby[$table . '.' . $field] = array('orderby' => $field, 'order' => $order, 'params' => $params);
+    $this->orderby[$table . '.' . $field] = array(
+      'orderby' => $field,
+      'order' => $order,
+      'params' => $params);
   }
 
   /**
-   * Executes the query and fills the associated view object with according
-   * values.
+   * Executes the query.
    *
+   * And fills the associated view object with according values.
    * Values to set:
    * $view->result,
    * $view->total_rows,
@@ -191,7 +178,7 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
   /**
    * Add metadata fields to the view data.
    *
-   * @param $data
+   * @param array $data
    *   The data array to add metadata definitions to.
    */
   public static function get_views_data_metadata(&$data) {
@@ -468,7 +455,7 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
   /**
    * Add common fields for asset.
    *
-   * @param $data
+   * @param array $data
    *   The data array to add asset definitions to.
    */
   public static function get_views_data_asset_common(&$data) {
@@ -603,12 +590,11 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
   /**
    * Fields that only are in the asset call.
    *
-   * @param $data
+   * @param array $data
    *   The data array to add asset definitions to.
    */
   public static function get_views_data_asset_specific(&$data) {
-    $data += array(
-    );
+    $data += array();
   }
 
   /**
