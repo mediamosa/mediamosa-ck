@@ -17,7 +17,9 @@ Mediamosa CK 7.x-2.x-dev
 - Cleanup of codestyle related stuff;
     - Used Drupal Style Guide.
     - Moved Copyrights to seperate txt file.
-
+- Moved code of function _media_mediamosa_get_media_id() to
+  MediaMediaMosa::get_fid_from_asset(). Function _media_mediamosa_get_media_id()
+  is now deprecated.
 
 Mediamosa CK 7.x-2.0
 --------------------

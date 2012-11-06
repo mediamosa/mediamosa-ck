@@ -261,11 +261,25 @@ class MediaMediaMosa {
    *   The fid in Drupal.
    */
   static public function get_fid_from_asset($asset_id) {
-    // TODO: add media id?
+    // Some cache.
+    $assetids_to_fids = &drupal_static('get_fid_from_asset', array());
+
+    if (isset($assetids_to_fids[$asset_id])) {
+      return $assetids_to_fids[$asset_id];
+    }
+
+    // When to many, remove the 1st in the array.
+    // Need to be careful with memory.
+    if (count($assetids_to_fids) > 10000) {
+      array_shift($assetids_to_fids);
+    }
+
     $query = db_select('file_managed', 'fm');
-    $query->addField('fm', 'fid');
-    $query->condition('fm.uri', 'mediamosa://asset/' . $asset_id . '%', 'LIKE');
-    $query->orderBy('fid');
-    return $query->execute()->fetchField();
+    $query->fields('fm', array('fid'));
+    $query->condition('uri', 'mediamosa://asset/' . db_like($asset_id) .  '/%', 'LIKE');
+    $query->orderBy('fid', 'ASC');
+    $assetids_to_fids[$asset_id] = $query->execute()->fetchField();
+
+    return $assetids_to_fids[$asset_id];
   }
 }

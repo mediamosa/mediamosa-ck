@@ -26,7 +26,7 @@ class MediaMediaMosaSync {
     // Now loop through the found assets.
     foreach ($assets as $asset) {
       $asset_id = $asset['asset_id'];
-      $media_id = _media_mediamosa_get_media_id($asset_id);
+      $media_id = MediaMediaMosa::get_fid_from_asset($asset_id);
 
       // Not found in our database? Then create it.
       if (!$media_id) {
@@ -234,7 +234,7 @@ class MediaMediaMosaSync {
       $offset = $offset_last - 1;
       foreach ($assets as $asset) {
         $asset_id = $asset['asset_id'];
-        $media_id = _media_mediamosa_get_media_id($asset_id);
+        $media_id = MediaMediaMosa::get_fid_from_asset($asset_id);
 
 
         // Not found in our database? Then create it.

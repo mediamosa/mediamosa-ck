@@ -1,28 +1,5 @@
 <?php
 /**
- * MediaMosa is Open Source Software to build a Full Featured, Webservice
- * Oriented Media Management and Distribution platform (http://mediamosa.org)
- *
- * Copyright (C) 2012 SURFnet BV (http://www.surfnet.nl) and Kennisnet
- * (http://www.kennisnet.nl)
- *
- * MediaMosa is based on the open source Drupal platform and
- * was originally developed by Madcap BV (http://www.madcap.nl)
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, you can find it at:
- * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
- */
-
-/**
  * @file
  * All non-hooks are put in this file.
  */
@@ -57,14 +34,11 @@ function _media_mediamosa_upload_form($form, &$form_state, $types = NULL) {
   // Get upload URL.
   $upload_url = $result['action'];
 
-/*
-  drupal 6;
-  <input type="file" name="file"  class="form-file required" id="edit-file" size="60" />
-
-  drupal 7
-  <input type="file" id="edit-file" name="files[file]" size="60" class="form-file" />
-*/
-
+  // Drupal 6;
+  // <input type="file" name="file"  class="form-file required" id="edit-file"/>
+  // Drupal 7
+  // <input type="file" id="edit-file" name="files[file]" class="form-file" />
+  //
   // Because we override.
   $form_state['has_file_element'] = TRUE;
 
@@ -132,7 +106,7 @@ function _media_mediamosa_file_type_check($fid) {
   $multi_media = media_multi_load($fid);
 
   if ($multi_media) {
-    foreach($multi_media as $media) {
+    foreach ($multi_media as $media) {
       if (!isset($media->uri)) {
         return FALSE;
       }
@@ -150,42 +124,28 @@ function _media_mediamosa_file_type_check($fid) {
 /**
  * Return media ID for a given asset ID.
  *
- * @return media ID AKA managed file ID, or FALSE if not found.
+ * @deprecated Please use MediaMediaMosa::get_fid_from_asset() instead.
+ *
+ * @return id
+ *   media ID AKA managed file ID, or FALSE if not found.
  */
 function _media_mediamosa_get_media_id($asset_id) {
-
-  // Some cache.
-  $assetids_to_fids = &drupal_static(__FUNCTION__, array());
-
-  if (isset($assetids_to_fids[$asset_id])) {
-    return $assetids_to_fids[$asset_id];
-  }
-
-  $query = db_select('file_managed', 'fm');
-  $query->fields('fm', array('fid'));
-  $query->condition('uri', 'mediamosa://asset/' . db_like($asset_id) .  '/%', 'LIKE');
-  $query->orderBy('fid', 'ASC');
-  $assetids_to_fids[$asset_id] = $query->execute()->fetchField();
-
-  // When to many, remove the 1st in the array.
-  // Need to be careful with memory.
-  if (count($assetids_to_fids) > 10000) {
-    array_shift($assetids_to_fids);
-  }
-
-  return $assetids_to_fids[$asset_id];
+  assert(0); // deprecated, see note.
+  return MediaMediaMosa::get_fid_from_asset($asset_id);
 }
 
 /**
- * Get running jobs.
- * And create a form item for that information.
+ * Get running jobs and create a form item for that information.
  *
- * @param &$form
- * @param $mediafile_id
- * @param $job_type
+ * @param array &$form
+ *   The form to add to.
+ * @param string $mediafile_id
+ *   The mediafile_id of the item to get jobs from.
+ * @param string $job_type
+ *   The job type to show.
  */
 function _media_mediamosa_get_running_jobs(&$form, $mediafile_id, $job_type) {
-  $jobs = MediaMosaCkConnectorWrapper::get_jobs($mediafile_id, mediamosa_ck::session_user_id());
+  $jobs = MediaMosaCkConnectorWrapper::get_mediafile_jobs($mediafile_id, mediamosa_ck::session_user_id());
   $jobs_count = 0;
   if ($jobs->items->item) {
     foreach ($jobs->items->item as $job) {
@@ -197,21 +157,33 @@ function _media_mediamosa_get_running_jobs(&$form, $mediafile_id, $job_type) {
   if ($jobs_count) {
     $form['running_jobs'] = array(
       '#type' => 'item',
-      '#title' => t('Running @job_type jobs', array('@job_type' => drupal_strtolower($job_type),)),
-      '#markup' => format_plural($jobs_count, 'There is @count @job_type job in progress.', 'There are @count @job_type jobs in progress.', array('@job_type' => drupal_strtolower($job_type))),
+      '#title' => t(
+        'Running @job_type jobs',
+        array(
+          '@job_type' => drupal_strtolower($job_type),
+        )
+      ),
+      '#markup' => format_plural(
+        $jobs_count,
+        'There is @count @job_type job in progress.',
+        'There are @count @job_type jobs in progress.',
+        array('@job_type' => drupal_strtolower($job_type))
+      ),
     );
   }
 }
 
 /**
  * Return the time in RFC 3339 format.
+ *
  * Eg. 2003-12-13T18:30:02Z
  * @link http://www.ietf.org/rfc/rfc3339.txt RFC 3339
  *
- * @param $time
+ * @param datetime $time
  *   The time. If not given, the application uses the current time.
  *
- * @return date
+ * @return string
+ *   The formatted string.
  */
 function _media_mediamosa_time_to_rfc_3339($time = NULL) {
   return $time ? gmdate('Y-m-d\TH:i:s\Z', $time) : gmdate('Y-m-d\TH:i:s\Z');
@@ -220,7 +192,8 @@ function _media_mediamosa_time_to_rfc_3339($time = NULL) {
 /**
  * Delete the transcoded mediafile of an asset.
  *
- * @param $asset_id.
+ * @param string $asset_id
+ *   asset id.
  *
  * @return array
  *   Returns an array with the mediafile IDs that where deleted.
