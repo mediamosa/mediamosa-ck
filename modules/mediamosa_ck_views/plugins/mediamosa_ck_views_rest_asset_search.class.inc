@@ -66,6 +66,9 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest {
       return;
     }
 
+    // Show query in admin view.
+    $view->build_info['query'] = str_replace('&', "\n", $response->header->request_uri);
+
     $fields = array(
       'viewed', 'played',
       'videotimestamp', 'videotimestampmodified',
