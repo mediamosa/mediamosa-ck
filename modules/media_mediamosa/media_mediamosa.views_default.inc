@@ -68,6 +68,11 @@ function media_mediamosa_views_default_views() {
   $handler->display->display_options['fields']['videotimestamp_1']['label'] = '';
   $handler->display->display_options['fields']['videotimestamp_1']['element_label_colon'] = FALSE;
   $handler->display->display_options['fields']['videotimestamp_1']['date_format'] = 'mediamosa_ck_normal';
+  /* Sort criterion: MediaMosa: Created */
+  $handler->display->display_options['sorts']['videotimestamp']['id'] = 'videotimestamp';
+  $handler->display->display_options['sorts']['videotimestamp']['table'] = 'mediamosa_asset_search';
+  $handler->display->display_options['sorts']['videotimestamp']['field'] = 'videotimestamp';
+  $handler->display->display_options['sorts']['videotimestamp']['order'] = 'DESC';
   /* Filter criterion: MediaMosa: Search metadata */
   $handler->display->display_options['filters']['metadata']['id'] = 'metadata';
   $handler->display->display_options['filters']['metadata']['table'] = 'mediamosa_asset_search';
