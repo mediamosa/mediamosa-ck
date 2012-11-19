@@ -20,6 +20,24 @@ Mediamosa CK 7.x-2.x-dev
 - Moved code of function _media_mediamosa_get_media_id() to
   MediaMediaMosa::get_fid_from_asset(). Function _media_mediamosa_get_media_id()
   is now deprecated.
+- Fixed: File media save no longer generates a notice when image dimensions are
+  empty.
+- Fixed: Added missing permission for roles to allow uploaded files to trigger
+  completed URL on Drupal.
+- Renamed '_media_mediamosa_upload_form' to 'media_mediamosa_upload_form'. Old
+  '_media_mediamosa_upload_form' will still work, but is now deprecated. Please
+  use 'media_mediamosa_upload_form' instead.
+- Added media_mediamosa_upload_ticket array to 'media_mediamosa_upload_form' to
+  contain the data from the upload ticket call. This enables alter hooks on the
+  form to access data from the ticket creation call. This data is not rendered
+  to the client in the form, using 'value' type.
+- Fixed: notice on missing options on player form.
+- Allow sorting on created value in upload view.
+- Added option to control 'granted' value on asset search views. The 'granted'
+  value controls filtering on assets; with granted on 'FALSE' the assets are
+  only returned in the search results when access was granted. The 'TRUE' value
+  will always return all assets, no matter the access. The 'granted' value on
+  the returned assets contains TRUE or FALSE to indicate if the user has access.
 
 Mediamosa CK 7.x-2.0
 --------------------
