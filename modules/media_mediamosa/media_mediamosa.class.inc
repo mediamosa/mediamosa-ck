@@ -210,6 +210,12 @@ class MediaMediaMosa {
       }
     }
 
+    // Fill in image dimensions to prevent notice when updating.
+    if($drupal_media->type == 'image' && !isset($drupal_media->image_dimensions)){
+      $drupal_media->image_dimensions = '';
+      $drupal_media->original->image_dimensions = '';
+    }
+
     if ($changes_counter) {
       try {
         file_save($drupal_media);
