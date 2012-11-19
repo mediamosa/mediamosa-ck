@@ -659,3 +659,14 @@ function media_mediamosa_views_plugins() {
   );
   return $plugins;
 }
+
+/**
+ * Implements hook_entity_info_alter(&$entity_info);
+ *
+ * Play tickets from mediamosa inserted in a wysiwyg can not be cached.
+ * This has performance access issues.
+ */
+function media_mediamosa_entity_info_alter(&$entity_info){
+  // FIXME: Needs review.
+  //$entity_info['node']['field cache'] = FALSE;
+}

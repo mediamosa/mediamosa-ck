@@ -10,7 +10,7 @@ class MediamosaMediaBrowserUpload extends MediaBrowserPlugin {
    * View function of Upload.
    */
   public function view() {
-    $from_web_form = drupal_get_form('_media_mediamosa_upload_form', $this->params['types'], $this->params['multiselect']);
+    $from_web_form = drupal_get_form('media_mediamosa_upload_form', $this->params['types'], $this->params['multiselect']);
     return array(
       'form' => array($from_web_form),
       '#attached' => array(
