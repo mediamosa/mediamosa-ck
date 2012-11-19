@@ -47,6 +47,7 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest {
       'hide_empty_assets' => $this->mediamosa_option_hide_empty_assets() ? 'TRUE' : 'FALSE',
       'is_public_list' => $this->mediamosa_option_is_public_list() ? 'TRUE' : 'FALSE',
       'cql' => $cql,
+      'granted' => $this->mediamosa_option_granted() ? 'TRUE' : 'FALSE',
       'acl_user_id' => array(mediamosa_ck::session_user_id()),
     );
 
@@ -83,7 +84,7 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest {
     foreach ($response->xml->xpath('items/item') as $item) {
       $object = new stdClass();
       $object->asset_id = (string) $item->asset_id;
-      $object->fid = MediaMediaMosa::get_fid_from_asset($item->asset_id);
+      $object->fid = MediaMediaMosa::get_fid_from_asset((string) $item->asset_id);
       $object->granted = MediaMosaCkConnectorWrapper::string2bool($item->granted) ? 'TRUE' : 'FALSE';
       $object->is_owner = mediamosa_ck::session_user_id() == $item->owner_id;
 
@@ -181,6 +182,32 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest {
   }
 
   /**
+   * Returns the default value for mediamosa_granted option.
+   *
+   * @return boolean
+   *   Returns TRUE by default.
+   */
+  public function mediamosa_option_granted_default() {
+    return TRUE;
+  }
+
+  /**
+   * Returns the value for mediamosa_hide_empty_assets option.
+   *
+   * @return boolean
+   *   The value of mediamosa_is_public_list
+   */
+  public function mediamosa_option_granted() {
+
+    if (isset($this->options['mediamosa_granted'])) {
+      return $this->options['mediamosa_granted'];
+    }
+
+    // Return the public list option value.
+    return $this->mediamosa_option_granted_default();
+  }
+
+  /**
    * Provide a form to edit options for this plugin.
    */
   public function options_form(&$form, &$form_state) {
@@ -201,6 +228,14 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest {
       '#description' => t("Assets can be created without mediafiles or mediafile without content, therefor are not useful to include in most view results."),
       '#type' => 'checkbox',
       '#default_value' => $this->mediamosa_option_hide_empty_assets(),
+    );
+
+    // Checkbox to include empty assets.
+    $form['mediamosa_granted'] = array(
+      '#title' => t('Filter on access.'),
+      '#description' => t("By default, all media is included, even when its protected by access. You can use the value of 'granted' variable to see if the user has access to the media. When the value of granted is 'TRUE', then access is allowed. If granted is 'FALSE', then the user has no access to the media. This 'granted' value is used if you want to show the all the media, but use an 'lock' image to indicate that the user has no access. If you turn on the filter, it will only return media on which the user has access on. In that case the value of 'granted' is always 'TRUE'."),
+      '#type' => 'checkbox',
+      '#default_value' => !$this->mediamosa_option_granted(),
     );
   }
 

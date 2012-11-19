@@ -117,7 +117,7 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
       }
 
       // Perform request to MediaMosa.
-      $this->do_rest_call($view, $params);
+      $this->do_rest_call($view, $params, $this->options);
 
       // Store the results.
       $this->pager->total_items = $view->total_rows;
