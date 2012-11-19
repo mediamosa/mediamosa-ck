@@ -14,10 +14,10 @@ function theme_media_mediamosa_link($variables) {
 
   // Find in the file managed.
   $file_managed = db_select('file_managed', 'fm')
-    ->fields('fm', array('fid', 'uri'))
-    ->condition('uri', $uri, 'LIKE')
-    ->range(0, 1)
-    ->execute()->fetchAssoc();
+                  ->fields('fm', array('fid', 'uri'))
+                  ->condition('uri', $uri, 'LIKE')
+                  ->range(0, 1)
+                  ->execute()->fetchAssoc();
 
   if (!$file_managed) {
     return t('Broken file');
@@ -45,8 +45,6 @@ function theme_media_mediamosa_preview_style($variables) {
  * Video player theme.
  */
 function theme_media_mediamosa_video($variables) {
-  global $user;
-
   // To render, asset_id must be present.
   if (empty($variables['element']['#uri'])) {
     return;
@@ -54,8 +52,11 @@ function theme_media_mediamosa_video($variables) {
 
   $values = MediaMosaStreamWrapper::mediamosa_parse_url($variables['element']['#uri']);
 
-  // Empty at start.
+  // Get options if set.
   $options = array();
+  if (isset($variables['element']['#options']) && !empty($variables['element']['#options'])) {
+    $options = $variables['element']['#options'];
+  }
 
   // What mediafile to play?
   $mediafile_id_to_play = empty($values['mediafile_id']) ? NULL : $values['mediafile_id'];
@@ -88,13 +89,16 @@ function theme_media_mediamosa_video($variables) {
     $response = MediaMosaCkConnectorWrapper::get_play_link($values['asset_id'], $mediafile_id_to_play, $user_id, $options);
   }
   catch (Exception $e) {
-    $response = theme('mediamosa_ck_views_player_image', array(
+    $response = theme(
+      'mediamosa_ck_views_player_image',
+      array(
       'width' => $options['width'],
       'height' => $options['height'],
       'error_code' => $e->getCode(),
       'asset_id' => $values['asset_id'],
       'mediafile_id' => $mediafile_id_to_play,
-    ));
+      )
+    );
   }
   return $response;
 }
