@@ -284,7 +284,7 @@ function _media_mediamosa_metadata_link_fields() {
 
     $instance = array(
       'field_name' => $field_name,
-      'entity_type' => 'media',
+      'entity_type' => 'file',
       'bundle' => $type_name,
       'label' => $item['label'],
       'required' => FALSE,
@@ -379,7 +379,7 @@ function _media_mediamosa_metadata_get_default_fieldsets() {
     array(
       'group_name' => 'TO BE FILLED',
       'bundle' => 'TO BE FILLED ON INSTANCE CREATION',
-      'entity_type' => 'media',
+      'entity_type' => 'file',
 
       // Seems that in Drupal 7 we have to create two different section instances for editing and displaying.
       'mode' => 'TO BE FILLED ON INSTANCE CREATION',
