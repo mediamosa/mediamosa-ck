@@ -4,6 +4,14 @@
  * The install file for media_mediamosa module.
  */
 
+// Need these.
+
+// Include the media_mediamosa.module.
+assert(module_load_include('module', 'media_mediamosa') !== FALSE);
+
+// Include the media_mediamosa.class.inc.
+assert(module_load_include('inc', 'media_mediamosa', 'media_mediamosa.class') !== FALSE);
+
 /**
  * Implements hook_install().
  */
