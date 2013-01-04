@@ -40,3 +40,122 @@ function media_mediamosa_uninstall() {
     ->condition('name', 'media_mediamosa_%', 'LIKE')
     ->execute();
 }
+
+/**
+ * Update Media entities to File entities. Update (7016) copied from Media
+ * module.
+ */
+function media_mediamosa_update_7000() {
+  // Allow File Entity module to take over the {file_managed}.type field. It
+  // will create new indexes as it needs to, but it doesn't know about old ones,
+  // so delete them.
+  if (db_index_exists('file_managed', 'file_type')) {
+    db_drop_index('file_managed', 'file_type');
+  }
+  module_enable(array('file_entity'));
+
+  // Move all field instances from Media entity to File entity.
+  $instances = field_read_instances(array('entity_type' => 'media'), array('include_inactive' => TRUE, 'include_deleted' => TRUE));
+  foreach ($instances as $instance) {
+    // Skip the old self-referencing file field. It will be deleted later in
+    // this function.
+    if ($instance['field_name'] === 'file') {
+      continue;
+    }
+
+    $fields = field_read_fields(array('id' => $instance['field_id']), array('include_inactive' => TRUE, 'include_deleted' => TRUE));
+    $field = $fields[$instance['field_id']];
+
+    // There is no API for updating the entity_type foreign key within field
+    // data storage. We can do a direct db_update() for when the default SQL
+    // storage back-end is being used, but must skip updating fields that use a
+    // different storage type.
+    // @todo What else should be added here (e.g., logging and/or a message to
+    //   the administrator)?
+    if ($field['storage']['type'] !== 'field_sql_storage' || !module_exists('field_sql_storage') || !$field['storage']['active']) {
+      continue;
+    }
+
+    // Update the data tables.
+    $table_name = _field_sql_storage_tablename($field);
+    $revision_name = _field_sql_storage_revision_tablename($field);
+    db_update($table_name)
+      ->fields(array('entity_type' => 'file'))
+      ->condition('entity_type', 'media')
+      ->condition('bundle', $instance['bundle'])
+      ->execute();
+    db_update($revision_name)
+      ->fields(array('entity_type' => 'file'))
+      ->condition('entity_type', 'media')
+      ->condition('bundle', $instance['bundle'])
+      ->execute();
+
+    // Once all the data has been updated, update the {field_config_instance}
+    // record.
+    db_update('field_config_instance')
+      ->fields(array('entity_type' => 'file'))
+      ->condition('id', $instance['id'])
+      ->execute();
+  }
+
+  // Update the field_bundle_settings configuration variable: move media bundle
+  // settings to file bundles, and move settings of the old self-referencing
+  // file field to the new file pseudo-field.
+  $settings = variable_get('field_bundle_settings', array());
+  if (!isset($settings['file'])) {
+    $settings['file'] = array();
+  }
+  if (isset($settings['media'])) {
+    $settings['file'] = array_merge($settings['file'], $settings['media']);
+    unset($settings['media']);
+  }
+  foreach ($instances as $instance) {
+    if ($instance['field_name'] === 'file' && !$instance['deleted']) {
+      if (isset($instance['widget']['weight'])) {
+        $settings['file'][$instance['bundle']]['extra_fields']['form']['file']['weight'] = $instance['widget']['weight'];
+      }
+      if (isset($instance['display'])) {
+        foreach ($instance['display'] as $view_mode => $display) {
+          if (isset($display['weight'])) {
+            $settings['file'][$instance['bundle']]['extra_fields']['display']['file'][$view_mode]['weight'] = $display['weight'];
+          }
+          if (isset($display['type'])) {
+            $settings['file'][$instance['bundle']]['extra_fields']['display']['file'][$view_mode]['visible'] = ($display['type'] != 'hidden');
+          }
+        }
+      }
+    }
+  }
+  variable_set('field_bundle_settings', $settings);
+
+
+  // Copy field formatter settings of old self-referencing file field to file
+  // pseudo-field formatter settings.
+  $file_displays = variable_get('file_displays', array());
+  foreach ($instances as $instance) {
+    if ($instance['field_name'] === 'file' && !$instance['deleted']) {
+      if (isset($instance['display'])) {
+        foreach ($instance['display'] as $view_mode => $display) {
+          if (isset($display['type']) && $display['type'] != 'hidden') {
+            $file_formatter = 'file_field_' . $display['type'];
+            $file_displays[$instance['bundle']][$view_mode][$file_formatter]['status'] = TRUE;
+            if (isset($display['settings'])) {
+              $file_displays[$instance['bundle']][$view_mode][$file_formatter]['settings'] = $display['settings'];
+            }
+          }
+        }
+      }
+    }
+  }
+  variable_set('file_displays', $file_displays);
+
+  // Delete the old self-referencing file field instances. If all instances are
+  // deleted, field_delete_instance() will delete the field too.
+  foreach ($instances as $instance) {
+    if ($instance['field_name'] === 'file' && !$instance['deleted']) {
+      field_delete_instance($instance);
+    }
+  }
+
+  field_cache_clear();
+}

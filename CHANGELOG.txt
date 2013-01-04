@@ -38,6 +38,7 @@ Mediamosa CK 7.x-2.x-dev
   only returned in the search results when access was granted. The 'TRUE' value
   will always return all assets, no matter the access. The 'granted' value on
   the returned assets contains TRUE or FALSE to indicate if the user has access.
+- Added 2 includes to allow for the uninstall function to be called properly.
 
 Mediamosa CK 7.x-2.0
 --------------------
