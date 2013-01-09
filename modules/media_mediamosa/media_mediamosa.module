@@ -206,7 +206,7 @@ function media_mediamosa_file_delete($file) {
  *
  * for file/[fid]. Main purpose is to make technical metadata readonly.
  */
-function media_mediamosa_form_media_edit_alter(&$form, &$form_state, $form_id) {
+function media_mediamosa_form_file_entity_edit_alter(&$form, &$form_state, $form_id) {
 
   // Some fields are read-only.
   // Get MediaMosa metadata definitions.
