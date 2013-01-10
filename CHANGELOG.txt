@@ -39,6 +39,9 @@ Mediamosa CK 7.x-2.x-dev
   will always return all assets, no matter the access. The 'granted' value on
   the returned assets contains TRUE or FALSE to indicate if the user has access.
 - Added 2 includes to allow for the uninstall function to be called properly.
+- Changed entity_type to file instead of media because we are working with
+  file_entity.
+- Made the metadata fields locked so they cannot be deleted, altered or reused.
 
 Mediamosa CK 7.x-2.0
 --------------------
