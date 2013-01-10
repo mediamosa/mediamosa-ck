@@ -240,6 +240,7 @@ function _media_mediamosa_metadata_link_fields() {
         'field_name' => $field_name,
         'type' => 'text_long',
         'module' => 'media_mediamosa',
+        'locked' => TRUE,
       );
 
       $field = field_create_field($field);
@@ -255,7 +256,7 @@ function _media_mediamosa_metadata_link_fields() {
       if (!$media_type->base) {
         continue;
       }
-      $instance = field_info_instance('media', $field_name, $type_name);
+      $instance = field_info_instance('file', $field_name, $type_name);
       if (!empty($instance)) {
         watchdog('Mediamosa CK', 'No need to recreate instance for field @fieldname, it already exists in bundle @bundle.',
           array('@fieldname' => $field_name, '@bundle' => $type_name), WATCHDOG_INFO);
@@ -330,7 +331,7 @@ function _media_mediamosa_metadata_link_fields() {
         $group_name = $section_instance->group_name;
         $section_instance->identifier = $group_name . '|' . $type_name . '|' . $section_instance->entity_type . '|' . $mode;
         $section_instance->group_name = $section_instance->identifier;
-        if (field_group_exists($section_name, 'media', $type_name, 'default')) {
+        if (field_group_exists($section_name, 'file', $type_name, 'default')) {
           watchdog('Mediamosa CK', 'No need to recreate fieldgroup for @fieldgroup, it already exists in bundle @bundle.',
             array('@fieldgroup' => $section_name, '@bundle' => $type_name), WATCHDOG_INFO);
           continue;
