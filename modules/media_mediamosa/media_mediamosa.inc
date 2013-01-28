@@ -88,6 +88,8 @@ function media_mediamosa_upload_form($form, &$form_state, $types = NULL) {
     '#weight' => 100,
   );
 
+  $form['#mediamosa_upload_progress_id'] = $result['progress_id'];
+
   $form['#action'] = $upload_url;
 
   return $form;

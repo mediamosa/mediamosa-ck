@@ -110,6 +110,9 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       // Get the Action url from the result.
       $action = (string) $response->xml->items->item->action;
 
+      // Get the Progress id from the result.
+      $progress_id = (int) $response->xml->items->item->progress_id;
+
       // Inherit ACL / Create still.
       if ($options['transcode_inherits_acl'] || $options['create_still'] || !empty($options['transcode'])) {
         // Rebuild url.
@@ -143,6 +146,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       return array(
         'asset_id' => $data_create_mediafile['asset_id'],
         'mediafile_id' => $mediafile_id,
+        'progress_id' => $progress_id,
         'action' => $action,
       );
     }
