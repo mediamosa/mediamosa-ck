@@ -42,6 +42,7 @@ Mediamosa CK 7.x-2.x-dev
 - Changed entity_type to file instead of media because we are working with
   file_entity.
 - Made the metadata fields locked so they cannot be deleted, altered or reused.
+- Return progress_id for upload ticket response.
 
 Mediamosa CK 7.x-2.0
 --------------------
