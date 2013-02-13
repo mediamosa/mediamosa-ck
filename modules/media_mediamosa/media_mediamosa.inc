@@ -17,7 +17,7 @@ define('MEDIA_MEDIAMOSA_JOB_STATUS_FAILED', 'FAILED');
 define('MEDIA_MEDIAMOSA_JOB_STATUS_WAITING', 'WAITING');
 
 /**
- * Implements hook_form()
+ * Implements hook_form().
  *
  * @deprecated Use media_mediamosa_upload_form() instead.
  */
@@ -26,7 +26,7 @@ function _media_mediamosa_upload_form($form, &$form_state, $types = NULL) {
 }
 
 /**
- * Implements hook_form()
+ * Implements hook_form().
  *
  * Form callback for adding media via an upload form.
  */
@@ -45,8 +45,8 @@ function media_mediamosa_upload_form($form, &$form_state, $types = NULL) {
   // Save the upload ticket values to the form. This enables alter hooks to
   // access the data returned by create_upload_ticket().
   $form['media_mediamosa_upload_ticket'] = array(
-      '#type' => 'value',
-      '#value' => $result,
+    '#type' => 'value',
+    '#value' => $result,
   );
 
   // Get upload URL.
