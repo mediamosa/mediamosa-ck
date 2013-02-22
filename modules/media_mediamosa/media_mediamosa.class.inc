@@ -211,7 +211,7 @@ class MediaMediaMosa {
     }
 
     // Fill in image dimensions to prevent notice when updating.
-    if($drupal_media->type == 'image' && !isset($drupal_media->image_dimensions)){
+    if ($drupal_media->type == 'image' && !isset($drupal_media->image_dimensions)) {
       $drupal_media->image_dimensions = '';
       $drupal_media->original->image_dimensions = '';
     }

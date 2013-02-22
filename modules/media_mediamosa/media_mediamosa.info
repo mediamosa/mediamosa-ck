@@ -8,7 +8,8 @@ core = 7.x
 dependencies[] = field_group
 
 dependencies[] = mediamosa_ck
-dependencies[] = media_internet (>1.99)
+dependencies[] = media_internet (>=7.x-2.0-unstable7)
+dependencies[] = file_entity (>=7.x-2.0-unstable7)
 
 files[] = MediamosaMediaBrowserUpload.class.inc
 files[] = media_mediamosa.class.inc

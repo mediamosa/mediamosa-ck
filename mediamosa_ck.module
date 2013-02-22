@@ -17,7 +17,7 @@ function mediamosa_ck_permission() {
       'title' => t('Change MediaMosa construction kit configuration.'),
       'description' => t('Users with this permission can change the MediaMosa Construction Kit configuration.'),
     ),
-    MEDIAMOSA_CK_PERMISSION_ADD_MEDIA =>  array(
+    MEDIAMOSA_CK_PERMISSION_ADD_MEDIA => array(
       'title' => t('Add media to mediamosa.'),
       'description' => t('Users with this permission can add media to mediamosa.'),
     ),
