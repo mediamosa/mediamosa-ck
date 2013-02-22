@@ -30,6 +30,7 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
       return FALSE;
     }
 
+    // @todo: this needs a user id parameter.
     return MediaMosaCkConnectorWrapper::get_play_link($parameters['asset_id'], $parameters['mediafile_id']);
   }
 
