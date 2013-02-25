@@ -5,7 +5,7 @@ version = 7.x-2.x-dev
 core = 7.x
 
 ; Dependencies (module names)
-dependencies[] = field_group
+;dependencies[] = field_group
 
 dependencies[] = mediamosa_ck
 dependencies[] = media_internet (>1.99)

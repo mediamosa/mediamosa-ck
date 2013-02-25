@@ -11,4 +11,7 @@ dependencies[] = mediamosa_connector (>=3.1)
 files[] = mediamosa_ck.class.inc
 files[] = mediamosa_ck.connector.wrapper.class.inc
 
-configure = admin/config/media/media_mediamosa
+scripts[] = mediamosa_ck.js
+stylesheets[all][] = mediamosa_ck.css
+
+configure = admin/config/media/mediamosa_ck/config

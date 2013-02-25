@@ -8,7 +8,7 @@
  * Implements hook_menu().
  */
 function mediamosa_ck_taxonomy_menu() {
-  $items['mediamosa_ck_taxonomy/taxonomy/autocomplete'] = array(
+  $items['mediamosa/ck/taxonomy/autocomplete'] = array(
     'title' => 'Autocomplete taxonomy for mediamosa media browser filter',
     'page callback' => 'mediamosa_ck_taxonomy_tags_autocomplete',
     'access arguments' => array('access content'),

@@ -133,7 +133,7 @@ function _media_mediamosa_metadata_get_default() {
   );
 
   // Some of the keys are named exactly as entries in metadata array inside
-  // Mediamosa.Different story for 'mediafile_id', 'size', 'original'.
+  // Mediamosa. Different story for 'mediafile_id', 'size', 'original'.
   $fields_tech = array(
     'file_duration' => array(
       'label' => t('Duration'),
@@ -228,7 +228,7 @@ function _media_mediamosa_metadata_get_default_mapped() {
 function _media_mediamosa_metadata_link_fields() {
   $fields_dc = _media_mediamosa_metadata_get_default();
 
-  $media_types = media_type_get_types();
+  $file_types = file_type_get_enabled_types();
 
   $weight = 0;
   foreach ($fields_dc as $item) {
@@ -252,10 +252,10 @@ function _media_mediamosa_metadata_link_fields() {
     );
     $display_off = array('type' => 'hidden');
 
-    foreach ($media_types as $type_name => $media_type) {
-      if (!$media_type->base) {
-        continue;
-      }
+    foreach ($file_types as $type_name => $file_type) {
+//      if (!$file_type->base) {
+//        continue;
+//      }
       $instance = field_info_instance('file', $field_name, $type_name);
       if (!empty($instance)) {
         watchdog('Mediamosa CK', 'No need to recreate instance for field @fieldname, it already exists in bundle @bundle.',
@@ -320,7 +320,7 @@ function _media_mediamosa_metadata_link_fields() {
   $sections = _media_mediamosa_metadata_get_default_fieldsets();
 
   foreach ($sections as $section_name => $section) {
-    foreach ($media_types as $type_name => $media_type) {
+    foreach ($file_types as $type_name => $file_type) {
       foreach ($section_modes as $mode) {
         $section_instance = (object) $section;
         $section_instance->bundle = $type_name;
@@ -331,12 +331,12 @@ function _media_mediamosa_metadata_link_fields() {
         $group_name = $section_instance->group_name;
         $section_instance->identifier = $group_name . '|' . $type_name . '|' . $section_instance->entity_type . '|' . $mode;
         $section_instance->group_name = $section_instance->identifier;
-        if (field_group_exists($section_name, 'file', $type_name, 'default')) {
-          watchdog('Mediamosa CK', 'No need to recreate fieldgroup for @fieldgroup, it already exists in bundle @bundle.',
-            array('@fieldgroup' => $section_name, '@bundle' => $type_name), WATCHDOG_INFO);
-          continue;
-        }
-        field_group_group_save($section_instance);
+//        if (field_group_exists($section_name, 'file', $type_name, 'default')) {
+//          watchdog('Mediamosa CK', 'No need to recreate fieldgroup for @fieldgroup, it already exists in bundle @bundle.',
+//            array('@fieldgroup' => $section_name, '@bundle' => $type_name), WATCHDOG_INFO);
+//          continue;
+//        }
+//        field_group_group_save($section_instance);
       }
     }
   }

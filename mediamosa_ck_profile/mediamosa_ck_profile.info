@@ -22,7 +22,7 @@ dependencies[] = field_ui
 dependencies[] = file
 dependencies[] = rdf
 
-dependencies[] = field_group
+;dependencies[] = field_group
 dependencies[] = wysiwyg
 
 dependencies[] = media

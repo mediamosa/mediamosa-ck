@@ -5,6 +5,12 @@
  */
 
 class mediamosa_ck extends mediamosa_sdk {
+  // ------------------------------------------------------------------- Consts.
+  // Permissions.
+  const PERMISSION_ADMIN_CONFIGURATION = 'mediamosa-ck admin configuration';
+  const PERMISSION_ADD_MEDIA = 'add media to mediamosa';
+
+  // ---------------------------------------------------------------- Functions.
   /**
    * Create or return the current connector.
    *
@@ -211,7 +217,7 @@ class mediamosa_ck extends mediamosa_sdk {
    * @param boolean $reset
    *   Reset the cache.
    *
-   * @return object
+   * @return mediamosa_connector_response
    *   The response object.
    */
   public static function request_get_cached($uri, array $options = array(), $check = FALSE, $reset = FALSE) {
@@ -232,7 +238,7 @@ class mediamosa_ck extends mediamosa_sdk {
    * @param boolean $reset
    *   Reset the cache.
    *
-   * @return object
+   * @return mediamosa_connector_response
    *   The response object.
    */
   public static function request_get_fatal($uri, array $options = array(), $check = FALSE, $cached = FALSE, $reset = FALSE) {
@@ -253,7 +259,7 @@ class mediamosa_ck extends mediamosa_sdk {
    * @param boolean $reset
    *   Reset the cache.
    *
-   * @return object
+   * @return mediamosa_connector_response
    *   The response object.
    */
   public static function request_get_fatal_cached($uri, array $options = array(), $check = FALSE, $reset = FALSE) {
@@ -270,7 +276,7 @@ class mediamosa_ck extends mediamosa_sdk {
    * @param boolean $check
    *   Do result check.
    *
-   * @return object
+   * @return mediamosa_connector_response
    *   The response object.
    */
   public static function request_post($uri, array $options = array(), $check = FALSE) {
@@ -529,6 +535,70 @@ class mediamosa_ck extends mediamosa_sdk {
   }
 
   /**
+   * Convert metadata name into usable label for UI.
+   *
+   * @param string $name
+   *   The name of the metadata field. Can be in format [contextset].[name],
+   *   for example; 'dc.title'.
+   *
+   * @return string
+   *   The label to use.
+   */
+  public static function get_metadata_label($metadata_name) {
+    // Contains context set?
+    if (strpos($metadata_name, '.') !== FALSE) {
+      list(, $label) = explode('.', $metadata_name, 2);
+    }
+    else {
+      $label = $metadata_name;
+    }
+
+    $label_fixes = array(
+      'hasformat' => 'has format',
+      'isreferencedby' => 'is referenced by',
+      'isformatof' => 'is format of',
+      'videotimestamp' => 'video timestamp',
+      'videotimestampmodified' => 'video modified',
+      'app_id_search' => 'app id',
+      'title_alternative' => 'alternative title',
+    );
+
+    // Fix possible values.
+    $label = (isset($label_fixes[$label]) ? $label_fixes[$label] : $label);
+
+    // Remove _ and -.
+    $label = drupal_ucfirst(str_replace(array('_', '-'), ' ', $label));
+
+    return t($label);
+  }
+
+  /**
+   * Return the selection list for metadata.
+   *
+   * @return array
+   *   An array that can be used directly as SELECT #options array.
+   */
+  public static function get_metadata_fields_options() {
+    // Empty first.
+    $options = &drupal_static('mediamosa_ck_metadata_options', array());
+
+    if (empty($options)) {
+      $metadata_definition = self::get_metadata_fields();
+
+      // Build the select.
+      foreach ($metadata_definition as $metadata_group => $metadata_set) {
+        $group_title = $metadata_set['title'];
+        foreach (array_keys($metadata_set['fields']) as $name) {
+          $name = $metadata_group . '.' . $name;
+          $options[$group_title][$name] = self::get_metadata_label($name);
+        }
+      }
+    }
+
+    return $options;
+  }
+
+  /**
    * Returns the metadata field that is used for title.
    *
    * Must be in format as SET.NAME and must be metadata.
@@ -572,7 +642,13 @@ class mediamosa_ck extends mediamosa_sdk {
    * @see get_metadata_name_description()
    */
   public static function get_asset_title($asset, $default = '') {
-    return trim(self::get_asset_value($asset, self::get_metadata_name_title(), $default));
+    // Inside XML result?
+    if (isset($asset->items)) {
+      return self::get_asset_title($asset->items->item, $default);
+    }
+
+    $default = empty($default) ? t('@asset_id <asset has no title>', array('@asset_id' => $asset->asset_id)) : $default;
+    return $default; //trim(self::get_asset_value($asset, self::get_metadata_name_title(), $default));
   }
 
   /**
@@ -618,7 +694,7 @@ class mediamosa_ck extends mediamosa_sdk {
 
     // Might be object that already has it set as [set].[name]
     if (!empty($asset->{$field})) {
-      return $asset->{$field};
+      return (string) $asset->{$field};
     }
 
     // See if field contains set.
@@ -763,5 +839,43 @@ class mediamosa_ck extends mediamosa_sdk {
         $users_mails[$user->mail] = $user;
       }
     }
+  }
+
+  /**
+   * Search for assets, usage for UI.
+   *
+   * Does complex searches, except the data returned is processed and used for
+   * UI, like tables. Idea behind this function is to force all table asset
+   * output to have the same data formats for title and dates.
+   *
+   * @return array
+   *   An associtive array;
+   *   asset_id => array(
+   *     - 'title'
+   *       The title of the asset.
+   *     - 'videotimestampmodified'
+   *       Last modified date.
+   *   );
+   */
+  public static function search_asset() {
+    // Get the connector.
+    $mediamosa_connector = mediamosa_ck::get_connector();
+
+    // Do the request.
+    $items = $mediamosa_connector->search_asset();
+    if (!$items) {
+      return FALSE;
+    }
+
+    $assets = array();
+    foreach ($items->get()->xpath('items/item') as $item) {
+      $asset_id = (string) $item->asset_id;
+      $assets[$asset_id] = array(
+        'title' => mediamosa_ck::get_asset_title($item),
+        'videotimestampmodified' => (string) $item->videotimestampmodified,
+      );
+    }
+
+    return $assets;
   }
 }

@@ -99,7 +99,7 @@ function media_mediamosa_styles_styles() {
   );
 
   // Allow any image style to be applied to the thumbnail.
-  foreach (image_styles() as $style_name => $image_style) {
+  foreach (array_keys(image_styles()) as $style_name) {
     $styles['file']['containers']['media_mediamosa']['styles']['mediamosa_thumbnail_' . $style_name] = array(
       'name' => 'mediamosa_thumbnail_' . $style_name,
       'image_style' => $style_name,

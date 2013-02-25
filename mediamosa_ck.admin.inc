@@ -12,13 +12,44 @@
  * @return array
  *   An array representing the form definition.
  *
- * @ingroup forms
  * @see media_mediamosa_configuration_form_validate()
  * @see media_mediamosa_configuration_form_submit()
  */
 function mediamosa_ck_configuration_form() {
   // Build the settings form and enrich it with our settings collect hook.
-  return system_settings_form(module_invoke_all('mediamosa_ck_configuration_collect'));
+  $form = system_settings_form(module_invoke_all('mediamosa_ck_configuration_collect'));
+
+    // Create group.
+  $form['mediamosa_ck_settings'] = array(
+    '#type' => 'vertical_tabs',
+  );
+
+  // Collect the titles.
+  foreach ($form as $name => $item) {
+    if (empty($item['#type']) || $item['#type'] != 'fieldset') {
+      continue;
+    }
+
+    // Make sure the fieldset is collapsed.
+    $form[$name]['#collapsed'] = TRUE;
+
+    // Get the title for sorting.
+    $titles[$item['#title']] = $name;
+
+    // Add group type to fieldset.
+    $form[$name]['#group'] = 'mediamosa_ck_settings';
+  }
+
+  // Now sort on key.
+  ksort($titles, SORT_STRING);
+
+  // Now add weights.
+  $weight = -count($titles);
+  foreach ($titles as $name) {
+    $form[$name]['#weight'] = $weight++;
+  }
+
+  return $form;
 }
 
 /**

@@ -4,20 +4,16 @@
  * The MediaMosa Construction Kit module.
  */
 
-// Configuration administrator permission.
-define('MEDIAMOSA_CK_PERMISSION_ADMIN_CONFIGURATION', 'mediamosa-ck admin configuration');
-define('MEDIAMOSA_CK_PERMISSION_ADD_MEDIA', 'add media to mediamosa');
-
 /**
  * Implements hook_permission().
  */
 function mediamosa_ck_permission() {
   return array(
-    MEDIAMOSA_CK_PERMISSION_ADMIN_CONFIGURATION => array(
+    mediamosa_ck::PERMISSION_ADMIN_CONFIGURATION => array(
       'title' => t('Change MediaMosa construction kit configuration.'),
       'description' => t('Users with this permission can change the MediaMosa Construction Kit configuration.'),
     ),
-    MEDIAMOSA_CK_PERMISSION_ADD_MEDIA =>  array(
+    mediamosa_ck::PERMISSION_ADD_MEDIA =>  array(
       'title' => t('Add media to mediamosa.'),
       'description' => t('Users with this permission can add media to mediamosa.'),
     ),
@@ -35,8 +31,24 @@ function mediamosa_ck_menu() {
     'description' => 'Configuration settings of the MediaMosa Construction Kit.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('mediamosa_ck_configuration_form'),
-    'access arguments' => array(MEDIAMOSA_CK_PERMISSION_ADMIN_CONFIGURATION),
+    'access arguments' => array(mediamosa_ck::PERMISSION_ADMIN_CONFIGURATION),
     'file' => 'mediamosa_ck.admin.inc',
+  );
+
+  $items['mediamosa/ck/json/uploadticket/create'] = array(
+    'title' => 'Create the upload ticket for a file',
+    'page callback' => '_mediamosa_ck_json_create_upload_ticket',
+    'access arguments' => array(mediamosa_ck::PERMISSION_ADD_MEDIA),
+    'type' => MENU_CALLBACK,
+    'file' => 'mediamosa_ck.inc',
+  );
+
+  $items['mediamosa/ck/json/connector/status'] = array(
+    'title' => 'Check if the connector',
+    'page callback' => '_mediamosa_ck_json_connector_status',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+    'file' => 'mediamosa_ck.inc',
   );
 
   return $items;
@@ -76,6 +88,73 @@ function mediamosa_ck_date_formats() {
       'type' => 'mediamosa_ck_mf_duration',
       'format' => 'H:i:s',
       'locales' => array('en', 'en-us'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_theme().
+ */
+function mediamosa_ck_theme() {
+  return array(
+    'mediamosa_ck_table' => array(
+      'variables' => array(
+        // Table
+        'header' => NULL,
+        'rows' => NULL,
+        'attributes' => array(),
+        'caption' => NULL,
+        'colgroups' => array(),
+        'sticky' => TRUE,
+        'empty' => '',
+        // Pager (optional)
+        'page' => 0,
+        'item_count_total' => 0,
+        'item_limit' => 25,
+        'element' => 0,
+        'quantity' => 10,
+        // Note (small font, bottom right).
+        'note' => NULL,
+        // caption bottom, right.
+        'caption_bottom' => NULL,
+        // Title, description (top).
+        'title' => NULL,
+        'description' => NULL,
+        // Summary.
+        'summary' => NULL,
+      ),
+      'file' => 'mediamosa_ck.theme.inc',
+    ),
+    'mediamosa_ck_pager' => array(
+      'variables' => array(
+        'page' => 0,
+        'item_count_total' => 0,
+        'item_limit' => 25,
+        'element' => 0,
+        'quantity' => 10,
+      ),
+      'file' => 'mediamosa_ck.theme.inc',
+    ),
+    'mediamosa_ck_two_column_page' => array(
+      'variables' => array(
+        'left' => 'left column',
+        'right' => 'right column',
+      ),
+      'file' => 'mediamosa_ck.theme.inc',
+    ),
+    'mediamosa_ck_three_column_page' => array(
+      'variables' => array(
+        'left' => 'left column',
+        'middle' => 'middle column',
+        'right' => 'right column',
+      ),
+      'file' => 'mediamosa_ck.theme.inc',
+    ),
+    'mediamosa_ck_tabs' => array(
+      'variables' => array(
+        'tabs' => array(),
+      ),
+      'file' => 'mediamosa_ck.theme.inc',
     ),
   );
 }

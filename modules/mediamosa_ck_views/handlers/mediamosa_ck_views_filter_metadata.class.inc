@@ -71,7 +71,7 @@ class mediamosa_ck_views_filter_metadata extends mediamosa_ck_views_filter {
         $type = 'textfield';
         if ($metadata_name == 'tag' && module_exists('taxonomy') && module_exists('mediamosa_ck_taxonomy')) {
           $extra_form = array(
-            '#autocomplete_path' => 'mediamosa_ck_taxonomy/taxonomy/autocomplete',
+            '#autocomplete_path' => 'mediamosa/ck/taxonomy/autocomplete',
             '#maxlength' => 1024,
           );
         }

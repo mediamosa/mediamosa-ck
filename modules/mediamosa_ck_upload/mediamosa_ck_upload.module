@@ -1,0 +1,257 @@
+<?php
+/**
+ * @file
+ * The MediaMosa CK bulk uploader.
+ *
+ * The MediaMosa CK bulk uploader is based and has re-used code from the
+ * Drupal plupload module (http://drupal.org/project/plupload) made by slashrsm.
+ */
+
+/**
+ * Implements hook_library().
+ */
+function mediamosa_ck_upload_library() {
+  $library_path = mediamosa_ck_upload::get_library_path();
+  $libraries['plupload'] = array(
+    'title' => 'Plupload',
+    'website' => 'http://www.plupload.com',
+    'version' => '1.5.1.1',
+    'js' => array(
+      $library_path . '/js/jquery.plupload.queue/jquery.plupload.queue.js' => array(),
+      $library_path . '/js/plupload.full.js' => array(),
+      0 => array(
+        'type' => 'setting',
+        'data' => array(
+          'plupload' => array(
+            // Element-specific settings get keyed by the element id (see
+            // mediamosa_ck_upload_element_pre_render()), so put default
+            // settings in '_default' (Drupal element ids do not have
+            // underscores, because they have hyphens instead).
+            '_default' => array(
+              // Options?
+              'runtimes' => 'html5,flash,html4',
+              // Should be unchangable.
+              'url' => url('mediamosa/ck/upload/die'),
+
+              'max_file_size' => mediamosa_ck_upload::get_max_file_size() . 'mb',
+              'chunk_size' => mediamosa_ck_upload::get_max_file_size() . 'mb',
+
+              'unique_names' => TRUE,
+              'flash_swf_url' => file_create_url($library_path . '/js/plupload.flash.swf'),
+              'silverlight_xap_url' => file_create_url($library_path . '/js/plupload.silverlight.xap'),
+            ),
+            // The plupload.js integration file in the module folder can do
+            // additional browser checking to remove unsupported runtimes.
+            // This is in addition to what is done by the Plupload library.
+            '_requirements' => array(
+              'html5' => array(
+                // The Plupload library recognizes Firefox 3.5 as supporting
+                // HTML 5, but Firefox 3.5 does not support the HTML 5
+                // "multiple" attribute for file input controls. This makes the
+                // html5 runtime much less appealing, so we treat all Firefox
+                // versions less than 3.6 as ineligible for the html5 runtime.
+                'mozilla' => '1.9.2',
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  if (module_exists('locale')) {
+    $module_path = drupal_get_path('module', 'plupload');
+    $libraries['plupload']['js'][$module_path . '/i18n.js'] = array('scope' => 'footer');
+  }
+
+  return $libraries;
+}
+
+/**
+ * Implements hook_menu().
+ */
+function mediamosa_ck_upload_menu() {
+  if (module_exists('mediamosa_maintenance')) {
+    $items['admin/mediamosa/content'] = array(
+      'title' => 'Content',
+      'description' => 'MediaMosa Content tools.',
+      'type' => MENU_LOCAL_TASK,
+      'page callback' => '_mediamosa_maintenance_admin_page',
+      'page arguments' => array('admin/mediamosa/content'),
+      'access callback' => mediamosa_permission::CALLBACK_USER_ACCESS,
+      'access arguments' => array(mediamosa_permission::ACCESS_CONTENT),
+      'position' => 'left',
+      'weight' => -10,
+      'file' => 'mediamosa_maintenance.admin.inc',
+      'file path' => drupal_get_path('module', 'mediamosa_maintenance'),
+    );
+    $items['admin/mediamosa/content/list'] = array(
+      'title' => 'List',
+      'type' => MENU_DEFAULT_LOCAL_TASK,
+    );
+
+    $items['admin/mediamosa/content/upload'] = array(
+      'title' => 'Bulk uploader',
+      'description' => 'Upload one or more mediafiles to MediaMosa.',
+      'page callback' => '_mediamosa_ck_upload_page',
+      'access callback' => mediamosa_permission::CALLBACK_USER_ACCESS,
+      'access arguments' => array(mediamosa_permission::ACCESS_CONTENT_UPLOAD),
+      'file' => 'mediamosa_ck_upload.admin.inc',
+    );
+    $items['admin/mediamosa/content/upload/list'] = array(
+      'title' => 'Asset browser',
+      'type' => MENU_DEFAULT_LOCAL_TASK,
+      'weight' => mediamosa_settings::UI_TAB_WEIGHT_LIST,
+    );
+  }
+
+  // Extra upload path when /file is added by media module.
+  $items['file/add/mediamosa'] = array(
+    'title' => 'mediamosa',
+    'description' => 'Add files to MediaMosa.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mediamosa_ck_upload_file_add_form'),
+    'access callback' => 'media_internet_access',
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  // This url is used as default uri for uploading files. If for some reason the
+  // upload ticket fails, the file will target this url and does nothing.
+  $items['mediamosa/ck/upload/die'] = array(
+    'title' => 'Default upload url that does nothing',
+    'page callback' => '_mediamosa_ck_upload_die',
+    'access arguments' => array(mediamosa_ck::PERMISSION_ADD_MEDIA),
+    'type' => MENU_CALLBACK,
+    'file' => 'mediamosa_ck.inc',
+  );
+
+  $items['admin/content/mediamosa'] = array(
+    'title' => 'MediaMosa',
+    'description' => 'Upload one or more files to MediaMosa.',
+    'page callback' => '_mediamosa_ck_upload_page',
+    'access arguments' => array(mediamosa_ck::PERMISSION_ADD_MEDIA),
+    'type' => MENU_LOCAL_TASK | MENU_NORMAL_ITEM,
+    'file' => 'mediamosa_ck_upload.admin.inc',
+  );
+  $items['admin/content/mediamosa/upload'] = array(
+    'title' => 'Content upload',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_form().
+ */
+function mediamosa_ck_upload_file_add_form($form, $form_state) {
+  $form['mediamosa_ck_upload'] = array(
+    '#type' => 'mediamosa_ck_upload',
+    '#title' => 'MediaMosa Bulk Upload',
+    '#upload_validators' => array('file_validate_extensions' => mediamosa_ck_upload::get_default_upload_validators()),
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'Submit',
+  );
+
+  return $form;
+}
+
+/**
+ * Implements hook_element_info().
+ */
+function mediamosa_ck_upload_element_info() {
+  $types = array();
+  $module_path = drupal_get_path('module', 'mediamosa_ck_upload');
+  $types['mediamosa_ck_upload'] = array(
+    '#input' => TRUE,
+    '#attributes' => array('class' => array('mm-ck-upload-element')),
+    '#theme_wrappers' => array('form_element'),
+    '#theme' => 'container',
+    '#attached' => array(
+      'library' => array(array('mediamosa_ck_upload', 'plupload')),
+      'js' => array($module_path . '/mediamosa_ck_upload.js'),
+      'css' => array($module_path . '/mediamosa_ck_upload.css'),
+    ),
+    '#pre_render' => array('mediamosa_ck_upload_element_pre_render'),
+  );
+  return $types;
+}
+
+/**
+ * Pre render (#pre_render) callback to attach JS settings for the element.
+ */
+function mediamosa_ck_upload_element_pre_render($element) {
+  if (!mediamosa_ck::get_connector()->check_connection()) {
+    unset($element['#theme'], $element['#type']);
+    $element['#input'] = FALSE;
+    $element['#children'] = theme('file_upload_help', array('description' => t('Upload disabled, please !link first', array('!link' => l('setup MediaMosa connector', 'admin/config/media/mediamosa/connector')))));
+    return $element;
+  }
+
+  // Get possible settings.
+  $settings = isset($element['#mediamosa_ck_upload_settings']) ? $element['#mediamosa_ck_upload_settings'] : array();
+
+  // The Plupload library supports client-side validation of file extension, so
+  // pass along the information for it to do that. However, as with all client-
+  // side validation, this is a UI enhancement only, and not a replacement for
+  // server-side validation.
+  if (empty($settings['filters']) && isset($element['#upload_validators']['file_validate_extensions'][0])) {
+    $settings['filters'][] = array(
+      // @todo Some runtimes (e.g., flash) require a non-empty title for each
+      //   filter, but I don't know what this title is used for. Seems a shame
+      //   to hard-code it, but what's a good way to avoid that?
+      'title' => t('Allowed files'),
+      'extensions' => str_replace(' ', ',', $element['#upload_validators']['file_validate_extensions'][0]),
+    );
+  }
+  if (empty($element['#description'])) {
+    $element['#description'] = '';
+  }
+  $element['#description'] = theme('file_upload_help', array('description' => $element['#description'], 'upload_validators' => $element['#upload_validators']));
+
+  $element['#attached']['js'][] = array(
+    'type' => 'setting',
+    'data' => array('plupload' => array($element['#id'] => $settings)),
+  );
+
+  return $element;
+}
+
+
+/**
+ * Implements hook_mediamosa_ck_configuration_collect().
+ */
+function mediamosa_ck_upload_mediamosa_ck_configuration_collect() {
+
+  $form['mediamosa_ck_upload'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Bulk upload settings'),
+    '#description' => t('All these settings are client side settings and do not effect MediaMosa upload limits. If you unable to upload large files and these settings are large enough, contact the MediaMosa administrator about the upload limits.'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+
+  $size_bytes = mediamosa_ck_upload::MAX_FILE_SIZE * (1024 * 1024);
+  $form['mediamosa_ck_upload']['mediamosa_ck_upload_max_file_size'] = array(
+    '#title' => t('Maximum upload size in MB (megabytes)'),
+    '#description' => t('This will limit the size of the client to upload files to MediaMosa. Default size is !size This limit is client size; if this setting exceeds the maximum upload size of MediaMosa, this setting is ignored and maximum size of MediaMosa will limit the upload. However, this will only generate an error after the upload has been started.', array('!size' => format_size($size_bytes))),
+    '#type' => 'textfield',
+    '#size' => 15,
+    '#default_value' => mediamosa_ck_upload::get_max_file_size(),
+  );
+
+  return $form;
+}
+
+/**
+ * Implements hook_mediamosa_ck_configuration_collect().
+ */
+function mediamosa_ck_upload_mediamosa_ck_configuration_collect_validate($form, $form_state) {
+  if (!is_numeric($form_state['values']['mediamosa_ck_upload_max_file_size'])) {
+    form_set_error('mediamosa_ck_upload_max_file_size', t('Must be numeric'));
+  }
+}

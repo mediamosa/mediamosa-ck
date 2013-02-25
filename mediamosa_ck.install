@@ -3,3 +3,9 @@
  * @file
  * Contains future install and update functions for mediamosa_ck.
  */
+
+/**
+ * This empty update will force Drupal to rebuild the registry.
+ */
+function mediamosa_ck_update_7000() {
+}

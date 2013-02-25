@@ -120,6 +120,7 @@ function mediamosa_ck_transcode_mediamosa_ck_configuration_collect() {
   $form['transcode_profile']['media_mediamosa_transcode_profiles_allowed'] = array(
     '#title' => t('Select your allowed transcode profiles'),
     '#description' => t('By default, all transcodes are allowed.'),
+    '#size' => 20,
     '#type' => 'select',
     '#options' => $options,
     '#multiple' => TRUE,
@@ -130,9 +131,12 @@ function mediamosa_ck_transcode_mediamosa_ck_configuration_collect() {
 }
 
 /**
- * Implements hook_form().
- *
  * Show the transcodes + form.
+ *
+ * @param array $form
+ *   The form array.
+ * @param array $form_state
+ *   An associative array containing the current state of the form.
  */
 function _mediamosa_ck_transcoding_form($form, &$form_state) {
 

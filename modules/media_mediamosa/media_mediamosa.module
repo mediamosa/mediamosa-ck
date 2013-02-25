@@ -38,7 +38,7 @@ function media_mediamosa_menu() {
     'type' => MENU_CALLBACK,
     'page callback' => '_media_mediamosa_uploaded_file',
     'page arguments' => array(3, 4),
-    'access arguments' => array(MEDIAMOSA_CK_PERMISSION_ADD_MEDIA),
+    'access arguments' => array(mediamosa_ck::PERMISSION_ADD_MEDIA),
     'file' => 'media_mediamosa.admin.inc',
   );
 
@@ -120,6 +120,23 @@ function media_mediamosa_media_parse($url, $options = array()) {
 }
 
 /**
+ * Implementors return an multidim array, keyed by a class name
+ * with the following elements:
+ *
+ * - title
+ * - image (optional)
+ * - hidden: bool If the logo should be shown on form. (optional)
+ * - weight (optional)
+ */
+function media_mediamosa_media_internet_providers() {
+  return array(
+    'mediamosa' => array(
+      'title' => t('MediaMosa'),
+    ),
+  );
+}
+
+/**
  * Implements hook_media_browser_plugin_info().
  */
 function media_mediamosa_media_browser_plugin_info() {
@@ -188,18 +205,18 @@ function media_mediamosa_rdf_mapping() {
  */
 function media_mediamosa_file_delete($file) {
   $params = MediaMosaStreamWrapper::mediamosa_parse_url($file->uri);
-  $asset_id = $params['asset_id'];
+    $asset_id = $params['asset_id'];
 
-  try {
-    $asset = MediaMosaConnectorMediaWrapper::get_asset($asset_id, array('show_stills' => FALSE));
-    $user_id = (string) $asset->items->item->owner_id;
-    MediaMosaConnectorMediaWrapper::delete_asset($asset_id, $user_id);
+    try {
+      $asset = MediaMosaConnectorMediaWrapper::get_asset($asset_id, array('show_stills' => FALSE));
+      $user_id = (string) $asset->items->item->owner_id;
+      MediaMosaConnectorMediaWrapper::delete_asset($asset_id, $user_id);
+    }
+    catch (Exception $e) {
+      // Ignore, at this point we expect that the asset is either gone already
+      // or connection was lost.
+    }
   }
-  catch (Exception $e) {
-    // Ignore, at this point we expect that the asset is either gone already
-    // or connection was lost.
-  }
-}
 
 /**
  * Implements hook_form_FORM_ID_alter().
@@ -300,9 +317,6 @@ function _media_mediamosa_validate_language(&$form, &$form_state) {
 
 /**
  * Implements hook_mediamosa_ck_configuration_collect().
- *
- * @return
- *   An array with settings form.
  */
 function media_mediamosa_mediamosa_ck_configuration_collect() {
   $items = drupal_map_assoc(array(100, 200, 500, 1000, 2000, 5000, 10000));
@@ -320,8 +334,8 @@ function media_mediamosa_mediamosa_ck_configuration_collect() {
     $form['media_mediamosa_sync']['media_mediamosa_cron_not_configured'] = array(
       '#type' => 'item',
       '#title' => t(''),
-      '#markup' => t('Some parameters cannot be configured while you not specified your <a href="@link">connection to Mediamosa</a>.',
-         array('@link' => url('admin/config/media/mediamosa/connector'))),
+      '#markup' => t('These parameters can only be configured when you have specified your !link.',
+         array('!link' => l(t('connection to MediaMosa'), 'admin/config/media/mediamosa/connector'))),
     );
   }
   else {
@@ -397,7 +411,6 @@ function media_mediamosa_mediamosa_ck_configuration_collect() {
  */
 function media_mediamosa_media_edit_submit($form, &$form_state) {
 
-  global $user;
   // Fix for missing media_load() function.
   $multi_media = media_multi_load($form_state['values']['fid']);
 

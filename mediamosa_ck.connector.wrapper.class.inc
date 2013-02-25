@@ -16,7 +16,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    */
   public static function check_connection() {
     try {
-      $result = mediamosa_ck::request_get_fatal('version');
+      mediamosa_ck::request_get_fatal('version');
     }
     catch (Exception $e) {
       return FALSE;
@@ -39,9 +39,11 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    *
    * @param array $in
    *   Array with values to convert. May have other than specified in params.
-   *
    * @param array $params
    *   The params to convert.
+   *
+   * @return array
+   *   The converted values.
    */
   public static function bool2string(array $in, array $params = array()) {
     foreach ($params as $param) {
@@ -72,6 +74,17 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
 
   /**
    * Create a upload ticket and return the upload POST URL.
+   *
+   * @return array
+   *   Returns an associative array;
+   *   - 'action'
+   *     The upload URL for the file.
+   *   - 'progress_id'
+   *     Progress ID to use when getting upload progression from server.
+   *   - 'asset_id'
+   *     The asset ID of the upload.
+   *   - 'mediafile_id'
+   *     The mediafile ID of the upload.
    */
   public static function create_upload_ticket(array $options = array()) {
 
@@ -136,10 +149,10 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
           $parse_url['query']['transcode'] = $options['transcode'];
         }
 
-        // Rebuild.
+        // Rebuild into string.
         $parse_url['query'] = mediamosa_ck::http_build_query($parse_url['query']);
 
-        // We are returning json.
+        // Rebuild into url.
         $action = mediamosa_ck::build_url($parse_url);
       }
 
@@ -1016,7 +1029,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @param array $options
    *   Array with options for search.
    *
-   * @return object
+   * @return mediamosa_connector_response
    *   The assets contained in a mediamosa_connector_response object.
    */
   public static function search_asset(array $options = array()) {
@@ -1445,7 +1458,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @param string $user_id
    *   ID of the user to get.
    * @param array $options
-   *   Reserverd
+   *   Reservered
    * @param boolean $cached
    *   Cache the result for REST call result.
    * @param boolean $reset
@@ -1458,5 +1471,88 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
 
     // Do the REST call.
     return mediamosa_ck::request_get_fatal('user/' . rawurlencode($user_id), array(), FALSE, $cached, $reset)->xml;
+  }
+
+  /**
+   * Get one or more applications metadata tag definitions.
+   *
+   * @param array $options
+   *   An associative array;
+   *   - 'name'
+   *     Optional property name to search on.
+   * 	 - 'offset'
+   *     The starting items position in the result set.
+   *   - 'limit'
+   *     The maximum number of items to return.
+   *   - 'order_by'
+   *      On what column the result set should be ordered. Must be either
+   *      "prop_id" or "prop_name" or "type" or "created" or "changed".
+   *   - 'order_direction'
+   *     The direction of the result set.
+   *
+   * @return mediamosa_connector_response
+   *   The response object.
+   */
+  public static function get_metadata_tag($options = array()) {
+    $options += array(
+      'name' => '',
+      'offset' => 0,
+      'limit' => 10,
+      'order_by' => '',
+      'order_direction' => 'asc',
+    );
+
+    $data = array(
+      'name' => $options['name'],
+      'offset' => $options['offset'],
+      'limit' => $options['limit'],
+      'order_by' => $options['order_by'],
+      'order_direction' => $options['order_direction'],
+    );
+
+    try {
+      // Do request.
+      return mediamosa_ck::request_get_fatal('metadata_tag', array('data' => $data));
+    }
+    catch (Exception $e) {
+      mediamosa_ck::watchdog_error('Unable to retrieve metadata tags, reason; @message.', array('@message' => $e->getMessage()));
+    }
+
+    return FALSE;
+  }
+
+  /**
+   * @param string $name
+   *   The name of the property to create
+   * @param string $type
+   *   Either 'datetime', 'int', 'char'.
+   * @param array $options
+   *   An associative array.
+   *   - 'is_hidden' boolean
+   *     Either TRUE for hidden or FALSE. Hidden will hide the metadata on asset
+   *     output.
+   */
+  public static function create_metadata_tag($name, $type, array $options = array()) {
+    $options += array(
+      'is_hidden' => FALSE,
+    );
+
+    $options = self::bool2string($options, array('is_hidden'));
+
+    $data = array(
+      'name' => $name,
+      'type' => $type,
+      'is_hidden' => $options['is_hidden'],
+    );
+
+    try {
+      // Do request.
+      return mediamosa_ck::request_post_fatal('metadata_tag/create', array('data' => $data))->xml;
+    }
+    catch (Exception $e) {
+      mediamosa_ck::watchdog_error('Unable to retrieve metadata tags, reason; @message.', array('@message' => $e->getMessage()));
+    }
+
+    return FALSE;
   }
 }

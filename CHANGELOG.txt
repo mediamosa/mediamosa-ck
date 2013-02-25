@@ -43,6 +43,11 @@ Mediamosa CK 7.x-2.x-dev
   file_entity.
 - Made the metadata fields locked so they cannot be deleted, altered or reused.
 - Return progress_id for upload ticket response.
+- Menu uri 'mediamosa_ck_taxonomy/taxonomy/autocomplete' renamed to
+  'mediamosa/ck/taxonomy/autocomplete'.
+- Functions handle_upload() and handle_upload_still() have their input
+  parameters rearranged.
+- Removed dependency of CK transcode module in the CK views module.
 
 Mediamosa CK 7.x-2.0
 --------------------
