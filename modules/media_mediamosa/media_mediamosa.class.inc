@@ -60,6 +60,12 @@ class MediaMediaMosa {
 
   /**
    * Create Drupal media object in accordance with given asset info.
+   *
+   * @param array $asset
+   *   The asset array.
+   *
+   * @return integer
+   *   The file managed ID.
    */
   public static function create_media($asset) {
     try {
@@ -102,9 +108,9 @@ class MediaMediaMosa {
   /**
    * Update Drupal media object by given asset info.
    *
-   * @param array() $asset
+   * @param array $asset
    *   asset info.
-   * @param int $media_id
+   * @param integer $media_id
    *   media id.
    */
   public static function update_media($asset, $media_id) {
@@ -127,7 +133,7 @@ class MediaMediaMosa {
 
     foreach ($metadata as $key => $value) {
       $field_name = FIELD_PREFIX . $key;
-      $drupal_ref = &$drupal_file->$field_name;
+      $drupal_ref = &$drupal_media->$field_name;
 
       $drupal_value = empty($drupal_ref) ? '' : $drupal_ref[LANGUAGE_NONE]['0']['value'];
 
@@ -210,13 +216,13 @@ class MediaMediaMosa {
       }
     }
 
-    // Fill in image dimensions to prevent notice when updating.
-    if($drupal_media->type == 'image' && !isset($drupal_media->image_dimensions)){
-      $drupal_media->image_dimensions = '';
-      $drupal_media->original->image_dimensions = '';
-    }
-
     if ($changes_counter) {
+      // Fill in image dimensions to prevent notice when updating.
+      if ($drupal_media->type == 'image' && !isset($drupal_media->image_dimensions)) {
+        $drupal_media->image_dimensions = '';
+        $drupal_media->original->image_dimensions = '';
+      }
+
       try {
         file_save($drupal_media);
       }
@@ -230,8 +236,13 @@ class MediaMediaMosa {
           WATCHDOG_ERROR);
         return FALSE;
       }
-      MediaMediaMosa::watchdog('Updated @counter properties for media object @media_id while syncronizing with Mediamosa.',
-                 array('@counter' => $changes_counter, '@media_id' => $media_id), WATCHDOG_DEBUG);
+      MediaMediaMosa::watchdog(
+        'Updated @counter properties for media object @media_id while syncronizing with Mediamosa.',
+        array(
+          '@counter' => $changes_counter,
+          '@media_id' => $media_id,
+        ),
+        WATCHDOG_DEBUG);
     }
   }
 
