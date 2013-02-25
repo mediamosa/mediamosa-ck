@@ -36,7 +36,14 @@ class media_mediamosa_views_plugin_style_media_browser extends views_plugin_styl
    * Add the base field (fid) to the query.
    */
   public function query() {
-    $this->view->query->add_field($this->view->base_table, $this->view->base_field);
+    if (method_exists($this->view->query, 'add_field')) {
+      // Normal file_managed based view.
+      $this->view->query->add_field($this->view->base_table, $this->view->base_field);
+    }
+    if (method_exists($this->view->query, 'addField')) {
+      // Search API based view.
+      $this->view->query->addField('fid');
+    }
     parent::query();
   }
 }

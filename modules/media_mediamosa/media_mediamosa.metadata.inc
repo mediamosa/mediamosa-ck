@@ -228,7 +228,7 @@ function _media_mediamosa_metadata_get_default_mapped() {
 function _media_mediamosa_metadata_link_fields() {
   $fields_dc = _media_mediamosa_metadata_get_default();
 
-  $media_types = media_type_get_types();
+  $media_types = file_type_get_enabled_types();
 
   $weight = 0;
   foreach ($fields_dc as $item) {
