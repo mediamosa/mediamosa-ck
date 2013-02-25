@@ -648,7 +648,7 @@ class mediamosa_ck extends mediamosa_sdk {
     }
 
     $default = empty($default) ? t('@asset_id <asset has no title>', array('@asset_id' => $asset->asset_id)) : $default;
-    return $default; //trim(self::get_asset_value($asset, self::get_metadata_name_title(), $default));
+    return trim(self::get_asset_value($asset, self::get_metadata_name_title(), $default));
   }
 
   /**
