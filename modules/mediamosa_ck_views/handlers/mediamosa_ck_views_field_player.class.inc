@@ -108,7 +108,21 @@ class mediamosa_ck_views_field_player extends views_handler_field {
 
     // Not specified? Then use default transcode profile ID.
     if (empty($mediafile_id_to_play)) {
-      $options['profile_id'] = MediaMosaCkConnectorWrapper::get_default_transcode_profile();
+      $profile_id = MediaMosaCkConnectorWrapper::get_default_transcode_profile();
+
+      // Search if there is a mediafile with this default profile.
+      foreach ($values->mediafiles as $mf_id => $mf) {
+        if ($mf['is_original_file']) {
+          $mediafile_id_original = $mf_id;
+        }
+        if ($mf['transcode_profile_id'] == $profile_id) {
+          $mediafile_id_to_play = $mf_id;
+        }
+      }
+      // If no transcode profile available, take the original.
+      if (empty($mediafile_id_to_play) && !empty($mediafile_id_original)) {
+        $mediafile_id_to_play = $mediafile_id_original;
+      }
     }
 
     // Both not empty.
@@ -117,7 +131,6 @@ class mediamosa_ck_views_field_player extends views_handler_field {
       $options['height'] = $this->options['player_height'];
       $options['autostart'] = $this->options['player_autostart'] ? 'TRUE' : 'FALSE';
     }
-
     try {
       $options['fatal'] = TRUE;
       $response = MediaMosaCkConnectorWrapper::get_play_link($values->asset_id, $mediafile_id_to_play, $user_id, $options);
