@@ -115,15 +115,9 @@ class mediamosa_ck_views_field_player extends views_handler_field {
       foreach ($values->mediafiles as $mf_id => $mf) {
         if ($mf['is_original_file']) {
           $mediafile_id_original = $mf_id;
-          if (isset($mf['metadata']) && isset($mf['metadata']['mime_type'])) {
-            $mime_type = $mf['metadata']['mime_type'];
-          }
         }
         if ($mf['transcode_profile_id'] == $profile_id) {
           $mediafile_id_to_play = $mf_id;
-          if (isset($mf['metadata']) && isset($mf['metadata']['mime_type'])) {
-            $mime_type = $mf['metadata']['mime_type'];
-          }
         }
       }
       // If no transcode profile available, take the original.
