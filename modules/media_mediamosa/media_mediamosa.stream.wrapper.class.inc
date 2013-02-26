@@ -164,7 +164,7 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
     if (empty($thumb)) {
       // If no thumbnail, but the original is audio, we present an audio image.
       $mime_type = empty($asset->items->item->mediafiles->mediafile->metadata->mime_type) ? '' : $asset->items->item->mediafiles->mediafile->metadata->mime_type;
-      if (substr($mime_type, 0, 6) == 'audio/') {
+      if (substr($mime_type, 0, 5) == 'audio') {
         $thumb = DRUPAL_ROOT . '/' . drupal_get_path('module', 'mediamosa_ck') . '/modules/mediamosa_ck_views/images/' . 'audio.jpg';
       }
       else {
