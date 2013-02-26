@@ -647,16 +647,16 @@ class mediamosa_ck extends mediamosa_sdk {
       return self::get_asset_title($asset->items->item, $default);
     }
 
-    $default = trim($default) === '' ? t('@asset_id', array('@asset_id' => $asset->asset_id)) : $default;
+    $default = trim($default) === '' ? t('@asset_id', array('@asset_id' => (string) $asset->asset_id)) : $default;
     $title = trim(self::get_asset_value($asset, self::get_metadata_name_title()));
     if ($title !== '') {
       return $title;
     }
 
     // See if asset is synced to filemanaged.
-    $file = mediamosa_ck::get_filemanaged_from_assets(array($asset->asset_id));
+    $file = mediamosa_ck::get_filemanaged_from_assets(array((string) $asset->asset_id));
     if ($file) {
-      return $file[$asset->asset_id]['filename'];
+      return $file[(string) $asset->asset_id]['filename'];
     }
 
     return $default;
@@ -926,7 +926,7 @@ class mediamosa_ck extends mediamosa_sdk {
    *   The fid in Drupal or FALSE.
    */
   static public function get_fid_from_asset($asset_id) {
-    $file = self::get_filemanaged_from_assets($asset_id);
+    $file = self::get_filemanaged_from_assets(array($asset_id));
     return empty($file) ? 0 : $file['fid'];
   }
 
