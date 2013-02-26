@@ -164,6 +164,7 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
    * @see getOriginalThumbnailPath()
    */
   public static function mediamosa_getOriginalThumbnailPath($asset_id) {
+
     try {
       // Get the still url.
       $asset = MediaMosaCkConnectorWrapper::get_asset($asset_id);
@@ -172,8 +173,19 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
     catch (Exception $e) {
     }
 
-    // Return FALSE when no still.
-    return empty($thumb) ? FALSE : $thumb;
+    // What if we have no thumb.
+    if (empty($thumb)) {
+      // If no thumbnail, but the original is audio, we present an audio image.
+      $mime_type = @$asset->items->item->mediafiles->mediafile->metadata->mime_type;
+      if (substr($mime_type, 0, 5) == 'audio') {
+        $thumb = DRUPAL_ROOT . '/' . drupal_get_path('module', 'mediamosa_ck') . '/modules/mediamosa_ck_views/images/' . 'audio.jpg';
+      }
+      else {
+        // If all failes we present an borken image.
+        $thumb = DRUPAL_ROOT . '/' . drupal_get_path('module', 'mediamosa_ck') . '/modules/mediamosa_ck_views/images/' . 'notfound.jpg';
+      }
+    }
+    return $thumb;
   }
 
   /**
@@ -204,13 +216,9 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
     $local_path = 'public://media-mediamosa/' . $asset_id . '.jpg';
     if (!file_exists($local_path) || time() - filectime($local_path) > MediaMediaMosa::THUMBNAIL_EXPIRE_TIME) {
       $original_thumb = self::mediamosa_getOriginalThumbnailPath($asset_id);
-      if (empty($original_thumb)) {
-        return NULL;
-      }
-
       $dirname = drupal_dirname($local_path);
       file_prepare_directory($dirname, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-      @copy($original_thumb, $local_path);
+      copy($original_thumb, $local_path);
     }
     return $local_path;
   }
