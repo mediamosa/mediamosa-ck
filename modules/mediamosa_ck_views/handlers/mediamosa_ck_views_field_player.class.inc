@@ -91,6 +91,7 @@ class mediamosa_ck_views_field_player extends views_handler_field {
 
     // Empty at start.
     $options = array();
+    $mime_type = '';
 
     // What mediafile to play?
     $mediafile_id_to_play = empty($values->mediafile_id_to_play) ? NULL : $values->mediafile_id_to_play;
@@ -108,7 +109,27 @@ class mediamosa_ck_views_field_player extends views_handler_field {
 
     // Not specified? Then use default transcode profile ID.
     if (empty($mediafile_id_to_play)) {
-      $options['profile_id'] = MediaMosaCkConnectorWrapper::get_default_transcode_profile();
+      $profile_id = MediaMosaCkConnectorWrapper::get_default_transcode_profile();
+
+      // Search if there is a mediafile with this default profile.
+      foreach ($values->mediafiles as $mf_id => $mf) {
+        if ($mf['is_original_file']) {
+          $mediafile_id_original = $mf_id;
+          if (isset($mf['metadata']) && isset($mf['metadata']['mime_type'])) {
+            $mime_type = $mf['metadata']['mime_type'];
+          }
+        }
+        if ($mf['transcode_profile_id'] == $profile_id) {
+          $mediafile_id_to_play = $mf_id;
+          if (isset($mf['metadata']) && isset($mf['metadata']['mime_type'])) {
+            $mime_type = $mf['metadata']['mime_type'];
+          }
+        }
+      }
+      // If no transcode profile available, take the original.
+      if (empty($mediafile_id_to_play) && !empty($mediafile_id_original)) {
+        $mediafile_id_to_play = $mediafile_id_original;
+      }
     }
 
     // Both not empty.
@@ -117,10 +138,13 @@ class mediamosa_ck_views_field_player extends views_handler_field {
       $options['height'] = $this->options['player_height'];
       $options['autostart'] = $this->options['player_autostart'] ? 'TRUE' : 'FALSE';
     }
-
     try {
       $options['fatal'] = TRUE;
       $response = MediaMosaCkConnectorWrapper::get_play_link($values->asset_id, $mediafile_id_to_play, $user_id, $options);
+      $response = theme('mediamosa_ck_views_player', array(
+                    'response' => $response,
+                    'mime_type' => $mime_type)
+      );
     }
     catch (Exception $e) {
       $response = theme('mediamosa_ck_views_player_image',
