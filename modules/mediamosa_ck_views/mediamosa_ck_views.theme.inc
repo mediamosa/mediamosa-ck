@@ -168,10 +168,29 @@ function theme_mediamosa_ck_views_theme_owner($variables) {
 }
 
 /**
- * Display the player image.
+ * Theme's a mediamosa player object.
  *
  * @param array $variables
- *   See theme definition for possible attributes.
+ *   string with a player object from MediaMosa.
+ */
+function theme_mediamosa_ck_views_player($variables) {
+  global $base_url;
+
+  if ($variables['mime_type'] == 'audio/mpeg') {
+    $path = $base_url . '/' . drupal_get_path('module', 'mediamosa_ck') . '/modules/mediamosa_ck_views/images/';
+    $audioimage = $path . 'audio.png';
+    return str_replace('poster=""', 'poster="' . $audioimage . '"', $variables['response']);
+  }
+
+  return $variables['response'];
+}
+
+
+/**
+ * Theme's a player with an error.
+ *
+ * @param array $variables
+ *   array with player object info.
  */
 function theme_mediamosa_ck_views_player_image($variables) {
 

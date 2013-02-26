@@ -168,5 +168,12 @@ function mediamosa_ck_views_theme() {
       ),
       'file' => 'mediamosa_ck_views.theme.inc',
     ),
+    'mediamosa_ck_views_player' => array(
+      'variables' => array(
+        'response' => '',
+        'mime_type' => '',
+      ),
+      'file' => 'mediamosa_ck_views.theme.inc',
+    ),
   );
 }

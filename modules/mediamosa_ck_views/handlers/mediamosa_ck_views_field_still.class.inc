@@ -60,7 +60,10 @@ class mediamosa_ck_views_field_still extends views_handler_field {
     parent::options_form($form, $form_state);
   }
 
-  public function render($values) {
+  /**
+   * Render function.
+   */
+  function render($values) {
     $variables = array(
       'style_name' => $this->options['still_style'],
       // @todo: should be an real path instead of public://.
