@@ -99,7 +99,7 @@ function mediamosa_ck_upload_menu() {
       'file' => 'mediamosa_ck_upload.admin.inc',
     );
     $items['admin/mediamosa/content/upload/list'] = array(
-      'title' => 'Asset browser',
+      'title' => 'Bulk uploader',
       'type' => MENU_DEFAULT_LOCAL_TASK,
       'weight' => mediamosa_settings::UI_TAB_WEIGHT_LIST,
     );

@@ -273,7 +273,7 @@ function _mediamosa_ck_transcode_list_form($form, &$form_state) {
   if ($multi_media) {
     foreach ($multi_media as $media) {
       try {
-        $uri = MediaMosaStreamWrapper::mediamosa_parse_url($media->uri);
+        $uri = mediamosa_ck::fileuri2parts($media->uri);
 
         // Get the MediaFiles.
         $mediafiles = MediaMosaConnectorMediaWrapper::get_asset_mediafiles($uri['asset_id'], array('fatal' => TRUE));

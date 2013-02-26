@@ -43,11 +43,18 @@ function mediamosa_ck_upload_form($form, $form_state) {
  */
 function mediamosa_ck_upload_listing_form($form, $form_state) {
   $form['mediamosa_ck_upload_listing'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Recent uploads'),
+    '#collapsible' => FALSE,
+    '#collapsed' => FALSE,
+  );
+
+  $form['mediamosa_ck_upload_listing']['listing'] = array(
     '#prefix' => '<div id="mediamosa-ck-upload-listing">',
     '#suffix' => '</div>',
     '#markup' => '',
   );
-  $form['mediamosa_ck_upload_listing_refresh'] = array(
+  $form['mediamosa_ck_upload_listing']['mediamosa_ck_upload_listing_refresh'] = array(
     '#type' => 'button',
     '#value' => t('Refresh'),
     '#ajax' => array(

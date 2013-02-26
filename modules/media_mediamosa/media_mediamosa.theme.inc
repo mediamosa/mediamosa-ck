@@ -24,7 +24,7 @@ function theme_media_mediamosa_link($variables) {
   }
 
   // Get parts.
-  $parts = MediaMosaStreamWrapper::mediamosa_parse_url($file_managed['uri']);
+  $parts = mediamosa_ck::fileuri2parts($file_managed['uri']);
 
   // Return link to media.
   return l(check_plain($parts['filename']), 'file/' . $file_managed['fid']);
@@ -50,7 +50,7 @@ function theme_media_mediamosa_video($variables) {
     return;
   }
 
-  $values = MediaMosaStreamWrapper::mediamosa_parse_url($variables['element']['#uri']);
+  $values = mediamosa_ck::fileuri2parts($variables['element']['#uri']);
 
   // Get options if set.
   $options = array();

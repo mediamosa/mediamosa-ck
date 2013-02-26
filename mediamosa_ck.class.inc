@@ -647,8 +647,19 @@ class mediamosa_ck extends mediamosa_sdk {
       return self::get_asset_title($asset->items->item, $default);
     }
 
-    $default = empty($default) ? t('@asset_id <asset has no title>', array('@asset_id' => $asset->asset_id)) : $default;
-    return trim(self::get_asset_value($asset, self::get_metadata_name_title(), $default));
+    $default = trim($default) === '' ? t('@asset_id', array('@asset_id' => $asset->asset_id)) : $default;
+    $title = trim(self::get_asset_value($asset, self::get_metadata_name_title()));
+    if ($title !== '') {
+      return $title;
+    }
+
+    // See if asset is synced to filemanaged.
+    $file = mediamosa_ck::get_filemanaged_from_assets(array($asset->asset_id));
+    if ($file) {
+      return $file[$asset->asset_id]['filename'];
+    }
+
+    return $default;
   }
 
   /**
@@ -693,27 +704,26 @@ class mediamosa_ck extends mediamosa_sdk {
     }
 
     // Might be object that already has it set as [set].[name]
-    if (!empty($asset->{$field})) {
+    if ((string) $asset->{$field} !== '') {
       return (string) $asset->{$field};
     }
 
     // See if field contains set.
-    if (strpos($field, '.') === FALSE) {
-      return $default;
-    }
+    if (strpos($field, '.') !== FALSE) {
+      // Need parts.
+      list($set, $name) = explode('.', $field, 2);
 
-    // Need parts.
-    list($set, $name) = explode('.', $field, 2);
+      // Need metadata info.
+      $metadata_fields = self::get_metadata_fields();
 
-    // Need metadata info.
-    $metadata_fields = self::get_metadata_fields();
+      // Field name is known metadata?
+      if ($asset instanceof SimpleXMLElement && isset($metadata_fields[$set]) && !empty($metadata_fields[$set]['fields'][$name])) {
+        $xpath = $metadata_fields[$set]['xpath'] . '/' . $name;
+        $value = $asset->xpath($xpath);
 
-    // Field name is known metadata?
-    if ($asset instanceof SimpleXMLElement && isset($metadata_fields[$set]) && !empty($metadata_fields[$set]['fields'][$name])) {
-      $xpath = $metadata_fields[$set]['xpath'] . '/' . $name;
-      if ($asset->xpath($xpath)) {
-        $ret_asset = $asset->xpath($xpath);
-        return (string) reset($ret_asset);
+        if ($value) {
+          return (string) reset($value);
+        }
       }
     }
 
@@ -848,6 +858,8 @@ class mediamosa_ck extends mediamosa_sdk {
    * UI, like tables. Idea behind this function is to force all table asset
    * output to have the same data formats for title and dates.
    *
+   * Might be replaced by view in future.
+   *
    * @return array
    *   An associtive array;
    *   asset_id => array(
@@ -877,5 +889,117 @@ class mediamosa_ck extends mediamosa_sdk {
     }
 
     return $assets;
+  }
+
+  /**
+   * Split up the file managed uri into its parts.
+   *
+   * @param string $uri
+   *   The url to split.
+   *
+   * @return array
+   *   An associative array or FALSE when not MediaMosa asset filemanaged uri.
+   *
+   */
+  public static function fileuri2parts($uri) {
+    // Parse the url.
+    $matches = array();
+    if (!preg_match('@^mediamosa://asset/(?P<asset_id>[a-zA-Z0-9]+)/(?P<mediafile_id>[a-zA-Z0-9]+)/(?P<filename>[^/]+)$@i', $uri, $matches)) {
+      return FALSE;
+    }
+
+    // Get the values.
+    return array(
+      'asset_id' => $matches['asset_id'],
+      'mediafile_id' => $matches['mediafile_id'],
+      'filename' => $matches['filename'],
+    );
+  }
+
+  /**
+   * Figure out the fid from an asset.
+   *
+   * @param string $asset_id
+   *   The id of the asset
+   *
+   * @return integer
+   *   The fid in Drupal or FALSE.
+   */
+  static public function get_fid_from_asset($asset_id) {
+    $file = self::get_filemanaged_from_assets($asset_id);
+    return empty($file) ? 0 : $file['fid'];
+  }
+
+  /**
+   * Lookup the filemanaged data for the assets.
+   *
+   * @param array $asset_ids
+   *   The asset ID to lookup.
+   *
+   * @return array
+   *   An associative array where key is asset_id and value the fid.
+   *   $asset_id => array(
+   *     'fid' => $fid,
+   *     'mediafile_id' => $mediafile_id,
+   *     'filename' => $filename,
+   *   );
+   */
+  static public function get_filemanaged_from_assets(array $asset_ids) {
+    // Some cache.
+    $assetids_to_fids = &drupal_static(__FUNCTION__, array());
+
+    $result = array();
+
+    // Look for ones we already have in cache.
+    foreach ($asset_ids as $key => $asset_id) {
+      if (isset($assetids_to_fids[$asset_id])) {
+        $result[$asset_id] = $assetids_to_fids[$asset_id];
+        unset($asset_ids[$key]);
+      }
+    }
+
+    // Now find the rest.
+    while (!empty($asset_ids)) {
+      // Don't lookup more than this in one query.
+      $max = 25;
+
+      // Our query object.
+      $query = db_select('file_managed', 'fm')
+        ->fields('fm', array('fid', 'uri'));
+
+      // Now add conditions.
+      $db_or = db_or();
+      foreach ($asset_ids as $key => $asset_id) {
+        $db_or->condition('uri', 'mediamosa://asset/' . db_like($asset_id) .  '/%', 'LIKE');
+        unset($asset_ids[$key]);
+
+        // We reach max, stop.
+        if (!$max--) {
+          break;
+        }
+      }
+      // Add or condition.
+      $query->condition($db_or);
+
+      // Now collect.
+      foreach ($query->execute() as $file) {
+        $parts = self::fileuri2parts($file->uri);
+        if (!empty($parts)) {
+          $result[$parts['asset_id']] = $assetids_to_fids[$parts['asset_id']] = array(
+            'fid' => $file->fid,
+            'mediafile_id' => $parts['mediafile_id'],
+            'filename' => $parts['filename'],
+          );
+
+          // Keep memory in check.
+          if (count($assetids_to_fids) > 1000) {
+            array_shift($assetids_to_fids);
+          }
+        }
+      }
+    }
+
+    // Done.
+    return $result;
   }
 }

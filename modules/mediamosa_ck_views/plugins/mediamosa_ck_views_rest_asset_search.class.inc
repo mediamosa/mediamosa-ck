@@ -84,11 +84,6 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest {
     foreach ($response->xml->xpath('items/item') as $item) {
       $object = new stdClass();
       $object->asset_id = (string) $item->asset_id;
-
-      // @todo: move to drupal_alter hook or make an option in the view (off by
-      // default).
-//      $object->fid = MediaMediaMosa::get_fid_from_asset((string) $item->asset_id);
-
       $object->granted = MediaMosaCkConnectorWrapper::string2bool($item->granted) ? 'TRUE' : 'FALSE';
       $object->is_owner = mediamosa_ck::session_user_id() == $item->owner_id;
 

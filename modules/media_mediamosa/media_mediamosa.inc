@@ -139,19 +139,6 @@ function _media_mediamosa_file_type_check($fid) {
 }
 
 /**
- * Return media ID for a given asset ID.
- *
- * @deprecated Please use MediaMediaMosa::get_fid_from_asset() instead.
- *
- * @return id
- *   media ID AKA managed file ID, or FALSE if not found.
- */
-function _media_mediamosa_get_media_id($asset_id) {
-  assert(0); // deprecated, see note.
-  return MediaMediaMosa::get_fid_from_asset($asset_id);
-}
-
-/**
  * Get running jobs and create a form item for that information.
  *
  * @param array &$form

@@ -47,7 +47,7 @@ class MediaMediaMosaFileStyles extends FileStyles {
     $object = $this->getObject();
     if ($object->uri) {
       // Get the asset_id and the local path, where the still image may exists.
-      $params = MediaMosaStreamWrapper::mediamosa_parse_url($object->uri);
+      $params = mediamosa_ck::fileuri2parts($object->uri);
 
       if (!$params) {
         return FALSE;
@@ -90,7 +90,7 @@ class MediaMediaMosaFileStyles extends FileStyles {
    * Get Video.
    */
   public function video($effect) {
-    $params = MediaMosaStreamWrapper::mediamosa_parse_url($this->getUri());
+    $params = mediamosa_ck::fileuri2parts($this->getUri());
     $asset_id = $params['asset_id'];
     $mediafile_id = $params['mediafile_id'];
     $mediafile_id_transcoded = $mediafile_id;

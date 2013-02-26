@@ -57,27 +57,14 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
   /**
    * Split up the URL into its parts.
    *
-   * @param string $url
-   *   The url to parse
+   * @param string $uri
+   *   The uri to parse.
    *
    * @return array
    *   Either array filled or FALSE.
    */
-  public static function mediamosa_parse_url($url) {
-    // Parse the url.
-    $matches = array();
-    if (!preg_match('@^mediamosa://asset/([a-zA-Z0-9]+)/([a-zA-Z0-9]+)/([^/]+)$@i', $url, $matches)) {
-      return FALSE;
-    }
-
-    // Get the values.
-    $params = array(
-      'asset_id' => $matches[1],
-      'mediafile_id' => $matches[2],
-      'filename' => $matches[3],
-    );
-
-    return $params;
+  public static function mediamosa_parse_url($uri) {
+    return mediamosa_ck::fileuri2parts($uri);
   }
 
   /**

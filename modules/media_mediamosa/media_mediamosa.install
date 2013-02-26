@@ -159,3 +159,10 @@ function media_mediamosa_update_7000() {
 
   field_cache_clear();
 }
+
+/**
+ * Clear cache as some classes have been moved or added.
+ */
+function media_mediamosa_update_7001() {
+  cache_clear_all();
+}

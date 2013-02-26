@@ -113,7 +113,7 @@ function media_mediamosa_ctools_plugin_api($owner, $api) {
  */
 function media_mediamosa_media_parse($url, $options = array()) {
 
-  $parse_url = MediaMosaStreamWrapper::mediamosa_parse_url($url);
+  $parse_url = mediamosa_ck::fileuri2parts($url);
   if (!empty($parse_url)) {
     return file_stream_wrapper_uri_normalize($url);
   }
@@ -204,7 +204,7 @@ function media_mediamosa_rdf_mapping() {
  *   A file object.
  */
 function media_mediamosa_file_delete($file) {
-  $params = MediaMosaStreamWrapper::mediamosa_parse_url($file->uri);
+  $params = mediamosa_ck::fileuri2parts($file->uri);
     $asset_id = $params['asset_id'];
 
     try {
@@ -416,7 +416,7 @@ function media_mediamosa_media_edit_submit($form, &$form_state) {
 
   foreach ($multi_media as $media) {
     // Now we have Mediamosa URI in $media->uri .
-    $uri = MediaMosaStreamWrapper::mediamosa_parse_url($media->uri);
+    $uri = mediamosa_ck::fileuri2parts($media->uri);
 
     if (!$uri) {
       watchdog('Mediamosa CK', 'Cannot parse Mediamosa URI: @uri. Saving metadata impossible.',
@@ -645,32 +645,6 @@ function _batch_process_mediamosa_to_drupal($limit, &$context) {
   if ($context['sandbox']['progress'] != $context['sandbox']['max']) {
     $context['finished'] = floor($context['sandbox']['progress'] / $context['sandbox']['max']);
   }
-}
-
-/**
- * Implements hook_views_plugins().
- *
- * @return array
- *   View plugins.
- */
-function media_mediamosa_views_plugins() {
-  $plugins = array();
-
-  // Style plugin.
-  $plugins['style']['media_mediamosa_browser'] = array(
-    'title' => t('Media Mediamosa browser'),
-    'help' => t('Displays rows as an HTML list.'),
-    'handler' => 'media_views_plugin_style_media_browser',
-    'theme' => 'media_mediamosa_views_view_media_browser',
-    'base' => array('mediamosa_asset_search'),
-    'uses row plugin' => FALSE,
-    'uses row class' => FALSE,
-    'uses options' => FALSE,
-    'uses fields' => TRUE,
-    'type' => 'normal',
-    'help topic' => 'style-media-browser',
-  );
-  return $plugins;
 }
 
 /**

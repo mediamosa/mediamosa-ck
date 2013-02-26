@@ -26,16 +26,16 @@ class MediaMediaMosaSync {
     // Now loop through the found assets.
     foreach ($assets as $asset) {
       $asset_id = $asset['asset_id'];
-      $media_id = MediaMediaMosa::get_fid_from_asset($asset_id);
+      $fid = mediamosa_ck::get_fid_from_asset($asset_id);
 
       // Not found in our database? Then create it.
-      if (!$media_id) {
+      if (!$fid) {
         MediaMediaMosa::create_media($asset);
         $assets_created++;
       }
       else {
         // Found, update it.
-        MediaMediaMosa::update_media($asset, $media_id);
+        MediaMediaMosa::update_media($asset, $fid);
         $assets_updated++;
       }
     }
@@ -81,7 +81,7 @@ class MediaMediaMosaSync {
 
     $assetids_to_fids = array();
     foreach ($result as $media) {
-      $uri_parts = MediaMosaStreamWrapper::mediamosa_parse_url($media->uri);
+      $uri_parts = mediamosa_ck::fileuri2parts($media->uri);
       $assetids_to_fids[$uri_parts['asset_id']] = $media->fid;
     }
 

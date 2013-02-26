@@ -18,8 +18,8 @@ Mediamosa CK 7.x-2.x-dev
     - Used Drupal Style Guide.
     - Moved Copyrights to seperate txt file.
 - Moved code of function _media_mediamosa_get_media_id() to
-  MediaMediaMosa::get_fid_from_asset(). Function _media_mediamosa_get_media_id()
-  is now deprecated.
+  mediamosa_ck::get_fid_from_asset(). Function _media_mediamosa_get_media_id()
+  has been removed.
 - Fixed: File media save no longer generates a notice when image dimensions are
   empty.
 - Fixed: Added missing permission for roles to allow uploaded files to trigger
@@ -48,6 +48,10 @@ Mediamosa CK 7.x-2.x-dev
 - Functions handle_upload() and handle_upload_still() have their input
   parameters rearranged.
 - Removed dependency of CK transcode module in the CK views module.
+- Moved MediaMediaMosa::get_fid_from_asset() to
+  mediamosa_ck::get_fid_from_asset().
+- The fid (fileID) is no longer set during asset search view.
+
 
 Mediamosa CK 7.x-2.0
 --------------------
