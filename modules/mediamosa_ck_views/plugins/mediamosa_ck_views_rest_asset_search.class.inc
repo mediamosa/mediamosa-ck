@@ -29,7 +29,9 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest {
     if (!empty($params['filters'])) {
       // Add the filters.
       foreach ($params['filters'] as $cql_expression) {
-        $cql[] = $cql_expression;
+        if (trim($cql_expression) !== '') {
+          $cql[] = trim($cql_expression);
+        }
       }
     }
 
