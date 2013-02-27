@@ -11,6 +11,25 @@
 class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest {
 
   /**
+   * Builds the necessary info to execute the query.
+   *
+   * @param view $view
+   *   The view which is executed.
+   */
+  public function build(&$view) {
+    // Call parent.
+    parent::build($view);
+
+//    // Get the filters.
+//    $filters = $view->get_items('filter');
+//
+//    // Loop through the filters.
+//    foreach ($filters as $name => $filter) {
+//      // @todo.
+//    }
+  }
+
+  /**
    * Execute the REST call.
    *
    * @param object $view
@@ -26,6 +45,7 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest {
     $cql = array();
 
     // Add possible filters to CQL search string.
+    // @todo: filters need some preprocessing. see self::build().
     if (!empty($params['filters'])) {
       // Add the filters.
       foreach ($params['filters'] as $cql_expression) {
