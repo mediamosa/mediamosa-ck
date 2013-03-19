@@ -77,7 +77,8 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
    *   Either array filled or FALSE.
    */
   public static function mediamosa_parse_url_from_fid($fid) {
-    $media = reset(media_multi_load($fid));
+    $media = media_multi_load($fid);
+    reset($media);
     if (!$media || !isset($media->uri)) {
       return FALSE;
     }
