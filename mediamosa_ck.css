@@ -42,86 +42,48 @@
 CK-Tabs.
 */
 
-#mediamosa-ck-tabs, .mediamosa-ck-tabs {
+ul.mediamosa-ck-tab, .mediamosa-ck-tabs {
   position: relative!important;
   right: auto!important;
 }
 
-#mediamosa-ck-tabs {
+div.mediamosa-ck-tabs {
   margin-top: 0px;
 }
 
-.mediamosa-ck-tab {
+.mediamosa-ck-tab-content {
   clear: both;
+}
+
+.tao ul.mediamosa-ck-tabs li:first-child {
+  border-radius:5px 0px 0px 0px;
+  -moz-border-radius:5px 0px 0px 0px;
+  -webkit-border-radius:5px 0px 0px 0px;
+}
+
+.tao ul.mediamosa-ck-tabs li:last-child {
+  border-radius:0px 5px 0px 0px;
+  -moz-border-radius:0px 5px 0px 0px;
+  -webkit-border-radius:0px 5px 0px 0px;
 }
 
 /*
-.mediamosa-ck-tabs #mediamosa-ck-tabs {
-  clear: both;
-  height: 20px;
-  overflow: visible;
-  padding-left: 10px;
-  margin-bottom: 10px;
-  border-bottom: 1px solid #d9d9d9;
-}
-
-.mediamosa-ck-tabs #mediamosa-ck-tabs li {
-  float: left;
-  margin-right: 5px;
-}
-
-.mediamosa-ck-tabs #mediamosa-ck-tabs li.active {
-  border-top: 1px solid #d9d9d9;
-  border-left: 1px solid #d9d9d9;
-  border-right: 1px solid #d9d9d9;
-  border-bottom: 1px solid #fff;
-  background: #fff;
-}
-
-.mediamosa-ck-tabs #mediamosa-ck-tabs li a {
-  display: block;
-  color: #000;
-  font-size: 12px;
-  padding: 13px 15px;
-}
-
-.mediamosa-ck-tabs #mediamosa-ck-tabs li.active a {
-  padding: 12px 14px 12px 14px;
-  border-bottom: 1px solid #fff;
-}
-
-.mediamosa-ck-tabs .mediamosa-ck-tab {
-  border-top: 7px solid;
-  border-bottom: 7px solid;
-  border-left: 6px solid;
-  border-right: 6px solid;
-}
-
-.mediamosa-ck-tabs .mediamosa-ck-tab h2 {
-  margin-bottom: 0;
-  padding-left: 27px;
-  color: #8e8e8e;
-  border-bottom: 6px solid;
-  font-size: 18px;
-  font-weight: normal;
-}
-
-.mediamosa-ck-tabs .mediamosa-ck-tab table {
-  width: 100%;
-  border-collapse: separate;
-}
-
-.mediamosa-ck-tabs .mediamosa-ck-tab table tr td {
-  vertical-align: top;
-  padding: 9px;
-  font-size: 12px;
-  border-collapse: collapse;
-  border-top: 1px solid;
-  border-bottom: 1px solid;
-  background: #fff;
-}
-
-.mediamosa-ck-tabs .mediamosa-ck-tab table tr td:first-child {
-  color: #000;
-}
+CK popup
 */
+div.mediamosa-ck-popup {
+  display: block;
+  position: absolute;
+  z-index: 10;
+  width: 100%;
+}
+
+fieldset.mediamosa-ck-popup {
+}
+
+div.mediamosa-ck-icon-close {
+  right: -7px;
+  top: -7px;
+  position: absolute;
+  z-index: inherit;
+  cursor: pointer;
+}

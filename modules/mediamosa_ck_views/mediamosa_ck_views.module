@@ -25,6 +25,11 @@ function mediamosa_ck_views_views_plugins() {
         'help' => t('This view can be used to display one single MediaMosa asset.'),
         'handler' => 'mediamosa_ck_views_rest_asset_get',
       ),
+      'mediamosa_assets_get' => array(
+        'title' => t('MediaMosa Assets'),
+        'help' => t('This view can be used to retrieve one or more specific assets.'),
+        'handler' => 'mediamosa_ck_views_rest_assets_get',
+      ),
       'mediamosa_asset_featured' => array(
         'title' => t('MediaMosa Asset Featured'),
         'help' => t('Query will be run on MediaMosa REST interface and processed back for usage in views.'),
@@ -76,6 +81,9 @@ function mediamosa_ck_views_views_data() {
   // Asset get.
   $data['mediamosa_asset_get'] = mediamosa_ck_views_rest_asset_get::get_views_data('MediaMosa: Asset Detail', 'mediamosa_asset_get');
 
+  // Asset get.
+  $data['mediamosa_ck_views_rest_assets_get'] = mediamosa_ck_views_rest_assets_get::get_views_data('MediaMosa: Specific assets', 'mediamosa_ck_views_rest_assets_get');
+
   // Asset featured.
   $data['mediamosa_asset_featured'] = mediamosa_ck_views_rest_asset_featured::get_views_data('MediaMosa: Asset Featured', 'mediamosa_asset_featured');
 
@@ -102,7 +110,6 @@ function mediamosa_ck_views_views_data() {
 
   return $data;
 }
-
 
 /**
  * Implements hook_theme().

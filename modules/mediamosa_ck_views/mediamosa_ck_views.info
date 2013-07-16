@@ -1,11 +1,11 @@
 name = "MediaMosa CK: Views"
 description = "Create views using MediaMosa REST backend."
 package = "MediaMosa - Construction Kit"
-version = 7.x-2.x-dev
+version = 7.x-3.5
 core = 7.x
 
 dependencies[] = views (>=3.0)
-dependencies[] = mediamosa_ck (>=1.99)
+dependencies[] = mediamosa_ck (>=3.5)
 
 features[ctools][] = "views:views_default:3.0"
 
@@ -34,11 +34,13 @@ files[] = handlers/mediamosa_ck_views_sort.class.inc
 
 ; REST view classes.
 files[] = plugins/mediamosa_ck_views_rest.class.inc
+files[] = plugins/mediamosa_ck_views_rest_asset.class.inc
 files[] = plugins/mediamosa_ck_views_rest_asset_featured.class.inc
 files[] = plugins/mediamosa_ck_views_rest_asset_get.class.inc
 files[] = plugins/mediamosa_ck_views_rest_asset_new.class.inc
 files[] = plugins/mediamosa_ck_views_rest_asset_popular.class.inc
 files[] = plugins/mediamosa_ck_views_rest_asset_search.class.inc
+files[] = plugins/mediamosa_ck_views_rest_assets_get.class.inc
 files[] = plugins/mediamosa_ck_views_rest_assets_in_collection.class.inc
 files[] = plugins/mediamosa_ck_views_rest_collection_asset.class.inc
 files[] = plugins/mediamosa_ck_views_rest_collection_get.class.inc

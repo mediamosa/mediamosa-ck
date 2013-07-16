@@ -1,0 +1,18 @@
+name = "MediaMosa CK: Content Supplier"
+description = The content supplier module is a tool for managing your mediafiles. It allows you to process multiple mediafiles with the same action.
+package = "MediaMosa - Construction Kit"
+version = 7.x-3.5
+core = 7.x
+
+dependencies[] = mediamosa_ck (>=3.5)
+
+files[] = mediamosa_ck_content_supplier.class.inc
+files[] = mediamosa_ck_content_supplier.queue.class.inc
+files[] = mediamosa_ck_content_supplier.queue_plugin.class.inc
+
+; Plugins.
+files[] = plugins/mediamosa_ck_content_supplier.queue_plugin.delete_asset.class.inc
+files[] = plugins/mediamosa_ck_content_supplier.queue_plugin.generate_still.class.inc
+
+stylesheets[all][] = mediamosa_ck_content_supplier.css
+

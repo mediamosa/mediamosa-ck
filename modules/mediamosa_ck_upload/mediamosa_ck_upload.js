@@ -3,7 +3,7 @@
 Drupal.mediamosaCK = Drupal.mediamosaCK || {};
 
 Drupal.mediamosaCK.refreshUploadlist = function() {
-  if ($('#edit-mediamosa-ck-upload-listing-refresh') != 'undefined') {
+  if ($('#edit-mediamosa-ck-upload-listing-refresh') !== undefined) {
     console.log('Refreshing upload listing.');
   //  jQuery($('#edit-mediamosa-ck-upload-listing-refresh')).hide();
     jQuery($('#edit-mediamosa-ck-upload-listing-refresh')).trigger('click');
@@ -76,7 +76,7 @@ Drupal.behaviors.ckuploadform = {
           'target': $form.attr('target')
         };
 
-        if (Drupal.mediamosaCK.getConnectorStatus() != 1) {
+        if (Drupal.mediamosaCK.getConnectorStatus() !== true) {
           alert(Drupal.t('MediaMosa connector is not setup.'));
         }
 
@@ -169,7 +169,7 @@ Drupal.mediamosaCK.compareVersions = function (a, b) {
   // Return the most significant difference, if there is one.
   for (var i=0; i < Math.min(a.length, b.length); i++) {
     var compare = parseInt(a[i]) - parseInt(b[i]);
-    if (compare != 0) {
+    if (compare !== 0) {
       return compare;
     }
   }

@@ -8,7 +8,7 @@
  * View will return the featured assets.
  */
 
-class mediamosa_ck_views_rest_asset_get extends mediamosa_ck_views_rest {
+class mediamosa_ck_views_rest_asset_get extends mediamosa_ck_views_rest_asset {
 
   /**
    * Execute the REST call.
@@ -21,10 +21,7 @@ class mediamosa_ck_views_rest_asset_get extends mediamosa_ck_views_rest {
    *   Options that can be used for overrides on the view params and REST call
    *   related options.
    */
-  protected function do_rest_call($view, $params, array $options = array()) {
-    // Total results.
-    $view->total_rows = 0;
-
+  protected function do_rest_call($view, array $params, array $options = array()) {
     // Get the asset_id.
     $asset_id = empty($view->args) ? '' : $view->args[0];
 
@@ -32,35 +29,47 @@ class mediamosa_ck_views_rest_asset_get extends mediamosa_ck_views_rest {
       return;
     }
 
-    // Specific for playing.
-    $mediafile_id_to_play = empty($view->args[1]) ? '' : $view->args[1];
-
-    // Stills and collections are needed by code.
-    $options['show_stills'] = TRUE;
-    $options['show_collections'] = TRUE;
+    $options += array(
+      'show_stills' => $this->mediamosa_option_show_stills() ? 'TRUE' : 'FALSE',
+      'show_collections' => $this->mediamosa_option_show_collections() ? 'TRUE' : 'FALSE',
+    );
 
     try {
       // Get the asset.
-      $xml = MediaMosaCkConnectorWrapper::get_asset($asset_id, $options);
+      return MediaMosaCkConnectorWrapper::get_asset($asset_id, $options);
     }
     catch (Exception $e) {
       mediamosa_ck::watchdog_error('Unable to retrieve asset from MediaMosa, message: @message.', array('@message' => $e->getMessage()));
-      return;
     }
+  }
 
+  /**
+   * Process the XML and fill the view data.
+   *
+   * @param mediamosa_connector_response $response
+   *   The response object.
+   * @param object $view
+   *   The view object.
+   * @param array $params
+   *   Array of view options and settings.
+   * @param array $options
+   *   Options that can be used for overrides on the view params and REST call
+   *   related options.
+   */
+  protected function process_rest_call(mediamosa_connector_response $response, $view, array $params, array $options = array()) {
     $fields = array(
       'viewed', 'played',
       'videotimestamp', 'videotimestampmodified',
       'owner_id', 'group_id',
     );
 
-    // Now process the xml into an object views can work with.
-    $item = $xml->xpath('items/item');
-    $item = reset($item);
-    if (!empty($item)) {
+    // Specific for playing.
+    $mediafile_id_to_play = empty($view->args[1]) ? '' : $view->args[1];
+
+    foreach ($response->xpath('items/item') as $item) {
       $object = new stdClass();
 
-      // If mediafile_id_to_play is set, the set it in the object.
+      // If mediafile_id_to_play is set, then set it in the object.
       $object->mediafile_id_to_play = $mediafile_id_to_play ? $mediafile_id_to_play : FALSE;
 
       $object->asset_id = (string) $item->asset_id;
@@ -99,14 +108,16 @@ class mediamosa_ck_views_rest_asset_get extends mediamosa_ck_views_rest {
       $object->technical_metadata = array();
 
       // Mediafiles.
+      $original_set = FALSE;
       foreach ($item->xpath('mediafiles/mediafile') as $mediafile) {
         $mediafile = self::xmlobject2array($mediafile);
         $object->mediafiles[(string) $mediafile['mediafile_id']] = $mediafile;
 
         // Find original and copy its technical metadata.
-        if (MediaMosaCkConnectorWrapper::string2bool((string) $mediafile['is_original_file'])) {
+        if (!$original_set && MediaMosaCkConnectorWrapper::string2bool((string) $mediafile['is_original_file'])) {
           $object->technical_metadata = $mediafile['metadata'];
           $object->mediafile_id_original = $mediafile['mediafile_id'];
+          $original_set = TRUE;
         }
       }
 
@@ -124,7 +135,7 @@ class mediamosa_ck_views_rest_asset_get extends mediamosa_ck_views_rest {
     }
 
     // Assign total number of records to get pager.
-    $view->total_rows = (int) $xml->header->item_count_total;
+    $view->total_rows = (int) $response->header->item_count_total;
   }
 
   /**

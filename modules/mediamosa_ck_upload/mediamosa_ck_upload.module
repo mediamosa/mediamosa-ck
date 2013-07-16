@@ -111,7 +111,7 @@ function mediamosa_ck_upload_menu() {
     'description' => 'Add files to MediaMosa.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('mediamosa_ck_upload_file_add_form'),
-    'access callback' => 'media_internet_access',
+    'access arguments' => array(mediamosa_ck::PERMISSION_ADD_MEDIA),
     'type' => MENU_LOCAL_TASK,
   );
 
