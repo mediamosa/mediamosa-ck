@@ -1,0 +1,227 @@
+<?php
+/**
+ * @file
+ * Install, update and uninstall functions for the CK content supplier module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function mediamosa_ck_content_supplier_schema() {
+  // Need classes. These are not autoloaded yet.
+  module_load_include('inc', 'mediamosa_ck_content_supplier', 'mediamosa_ck_content_supplier.class');
+  module_load_include('inc', 'mediamosa_ck_content_supplier', 'mediamosa_ck_content_supplier.queue.class');
+  module_load_include('inc', 'mediamosa_ck_content_supplier', 'mediamosa_ck_content_supplier.queue_plugin.class');
+
+  $schema['mediamosa_ck_cs_selection'] = array(
+    'description' => 'Stores the content supplier user selection of assets.',
+    'fields' => array(
+      'sid'  => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => 'Primary Key: Unique selection ID.',
+      ),
+      'uid' => array(
+        'description' => 'The {users}.uid that owns this selection line.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'bid' => array(
+        'description' => 'The batch group ID. Value 0 is selection of user.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'asset_id' => array(
+        'type' => 'varchar',
+        'length' => mediamosa_sdk::UUID_LENGTH,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'ID of the asset.',
+      ),
+    ),
+    'primary key' => array('sid'),
+    'unique keys' => array(
+      'batch' => array('uid', 'bid', 'asset_id'),
+    ),
+  );
+
+  $schema['mediamosa_ck_cs_batch'] = array(
+    'description' => 'Stores the content supplier user batch.',
+    'fields' => array(
+      'bid'  => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => 'The batch ID.',
+      ),
+      'uid' => array(
+        'description' => 'The {users}.uid that owns this batch.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'created' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Timestamp for when batch was created.',
+      ),
+      'title' => array(
+        'type' => 'varchar',
+        'length' => mediamosa_ck_content_supplier::BATCH_MAX_TITLE_LENGTH,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The title of the batch.',
+      ),
+      'description' => array(
+        'description' => 'The (optional) description of the batch.',
+        'type' => 'text',
+        'not null' => FALSE,
+        'default' => NULL,
+      ),
+    ),
+    'primary key' => array('bid'),
+    'unique keys' => array(
+      'batch' => array('uid', 'bid', 'created'),
+    ),
+  );
+
+  $schema['mediamosa_ck_cs_batch_queue'] = array(
+    'description' => 'Stores the content supplier queue for a batch.',
+    'fields' => array(
+      'qid'  => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => 'The queue ID.',
+      ),
+      'uid' => array(
+        'description' => 'The {users}.uid that owns this batch queue.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'bid' => array(
+        'description' => 'The batch ID.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'weight' => array(
+        'description' => 'The order of batch, lowest will run first.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 999999,
+      ),
+      'created' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Timestamp for when batch was created.',
+      ),
+      'position' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Current position in the queue.',
+      ),
+      'state' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => mediamosa_ck_content_supplier_queue::STATE_WAITING,
+        'description' => 'Current state of the queue.',
+      ),
+      'queue_plugin_id' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The plugin ID.',
+      ),
+      'queue_plugin_title' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The plugin title.',
+      ),
+      'queue_plugin_class' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The plugin class to use during process.',
+      ),
+      'queue_plugin_data' => array(
+        'type' => 'blob',
+        'serialize' => TRUE,
+        'not null' => TRUE,
+        'size' => 'big',
+        'description' => 'Serialized array of data that is passed to the queue process.',
+      ),
+    ),
+    'primary key' => array('qid'),
+    'unique keys' => array(
+      'queue_batch' => array('uid', 'qid', 'bid', 'created'),
+    ),
+  );
+
+  $schema['mediamosa_ck_cs_batch_queue_log'] = array(
+    'description' => 'Table that contains logs for queue(s).',
+    'fields' => array(
+      'lid' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => 'Primary Key: Unique batch queue log event ID.',
+      ),
+      'qid' => array(
+        'description' => 'The queue ID.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'message' => array(
+        'type' => 'text',
+        'not null' => TRUE,
+        'size' => 'big',
+        'description' => 'Text of log message to be passed into the t() function.',
+      ),
+      'variables' => array(
+        'type' => 'blob',
+        'not null' => TRUE,
+        'size' => 'big',
+        'description' => 'Serialized array of variables that match the message string and that is passed into the t() function.',
+      ),
+      'severity' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'size' => 'tiny',
+        'description' => 'The severity level of the event; ranges from 0 (Emergency) to 7 (Debug)',
+      ),
+      'location'  => array(
+        'type' => 'text',
+        'not null' => TRUE,
+        'description' => 'URL of the origin of the event.',
+      ),
+      'referer' => array(
+        'type' => 'text',
+        'not null' => FALSE,
+        'description' => 'URL of referring page.',
+      ),
+      'timestamp' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Unix timestamp of when event occurred.',
+      ),
+    ),
+    'primary key' => array('lid'),
+    'indexes' => array(
+      'qid' => array('qid'),
+    ),
+  );
+
+  return $schema;
+}
