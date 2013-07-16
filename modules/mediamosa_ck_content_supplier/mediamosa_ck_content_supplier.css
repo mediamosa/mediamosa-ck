@@ -1,0 +1,50 @@
+body.page-admin-mediamosa-content-supplier .mediamosa-ck-two-column-left,
+body.page-admin-content-mediamosa-supplier .mediamosa-ck-two-column-left {
+  width: 50%;
+}
+body.page-admin-mediamosa-content-supplier .mediamosa-ck-two-column-right,
+body.page-admin-content-mediamosa-supplier .mediamosa-ck-two-column-right {
+  width: 49.99%;
+}
+
+div.ck-cs-date-fieldset fieldset legend span.fieldset-title {
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 10px;
+  padding: 4px 9px;
+}
+
+div.ck-cs-date-fieldset .fieldset-content {
+  padding-top: 4px!important;
+}
+
+.ck-cs-date-from {
+  float: left;
+  padding-right: 9px;
+}
+
+.ck-cs-date-till {
+}
+
+#mediamosa-ck-cs-popup-left {
+  display: block;
+  position: relative;
+  z-index: 10;
+  width: 50%;
+}
+
+#mediamosa-ck-cs-popup-full {
+  display: block;
+  position: relative;
+  z-index: 10;
+  width: 80%;
+  left: 10%;
+}
+
+#mediamosa-ck-cs-popup-right {
+  display: block;
+  position: relative;
+  z-index: 10;
+  left:50%;
+  width: 50%;
+}
