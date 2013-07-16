@@ -10,11 +10,11 @@
 function mediamosa_ck_permission() {
   return array(
     mediamosa_ck::PERMISSION_ADMIN_CONFIGURATION => array(
-      'title' => t('Change MediaMosa construction kit configuration.'),
+      'title' => t('Change MediaMosa construction kit configuration'),
       'description' => t('Users with this permission can change the MediaMosa Construction Kit configuration.'),
     ),
     mediamosa_ck::PERMISSION_ADD_MEDIA =>  array(
-      'title' => t('Add media to mediamosa.'),
+      'title' => t('Add media to mediamosa'),
       'description' => t('Users with this permission can add media to mediamosa.'),
     ),
   );
@@ -99,7 +99,7 @@ function mediamosa_ck_theme() {
   return array(
     'mediamosa_ck_table' => array(
       'variables' => array(
-        // Table
+        // Table.
         'header' => NULL,
         'rows' => NULL,
         'attributes' => array(),
@@ -107,15 +107,29 @@ function mediamosa_ck_theme() {
         'colgroups' => array(),
         'sticky' => TRUE,
         'empty' => '',
-        // Pager (optional)
+        // Selection box (optional).
+        'selection' => NULL,
+        'selection checkbox class' => 'mm-ck-cs-checkbox',
+        // Make rows dragable.
+        'draggable' => FALSE,
+        // Pager (optional).
         'page' => 0,
         'item_count_total' => 0,
         'item_limit' => 25,
         'element' => 0,
         'quantity' => 10,
+        'pager top' => TRUE,
+        'pager bottom' => TRUE,
+        'pager normal top' => FALSE,
+         // Add normal Drupal theme_pager() at top. Expect usage of
+         // ->extend('Pagerdefault') on used query.
+        'pager normal bottom' => FALSE,
+         // Add normal Drupal theme_pager() at bottom. Expect usage of
+         // ->extend('Pagerdefault') on used query.
+
         // Note (small font, bottom right).
         'note' => NULL,
-        // caption bottom, right.
+        // Caption bottom, right.
         'caption_bottom' => NULL,
         // Title, description (top).
         'title' => NULL,
@@ -153,6 +167,14 @@ function mediamosa_ck_theme() {
     'mediamosa_ck_tabs' => array(
       'variables' => array(
         'tabs' => array(),
+        'tab-overlay' => '',
+      ),
+      'file' => 'mediamosa_ck.theme.inc',
+    ),
+    'mediamosa_ck_popup' => array(
+      'variables' => array(
+        'title' => '',
+        'markup' => '',
       ),
       'file' => 'mediamosa_ck.theme.inc',
     ),

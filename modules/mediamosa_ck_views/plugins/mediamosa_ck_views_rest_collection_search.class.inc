@@ -16,7 +16,7 @@ class mediamosa_ck_views_rest_collection_search extends mediamosa_ck_views_rest 
    * @param array $params
    *   Array of options and settings.
    */
-  public function do_rest_call($view, $params, array $options = array()) {
+  public function do_rest_call($view, array $params, array $options = array()) {
 
     // Empty.
     $cql = array();
@@ -44,11 +44,23 @@ class mediamosa_ck_views_rest_collection_search extends mediamosa_ck_views_rest 
     );
 
     // Do the search.
-    $xml = MediaMosaCkConnectorWrapper::search_collection($options);
-    if (empty($xml)) {
-      return;
-    }
+    return MediaMosaCkConnectorWrapper::search_collection($options);
+  }
 
+  /**
+   * Process the XML and fill the view data.
+   *
+   * @param mediamosa_connector_response $response
+   *   The response object.
+   * @param object $view
+   *   The view object.
+   * @param array $params
+   *   Array of view options and settings.
+   * @param array $options
+   *   Options that can be used for overrides on the view params and REST call
+   *   related options.
+   */
+  protected function process_rest_call(mediamosa_connector_response $response, $view, array $params, array $options = array()) {
     // Get the fields.
     $fields = self::get_fields(self::get_views_data('foo', 'foo'));
 
@@ -56,7 +68,7 @@ class mediamosa_ck_views_rest_collection_search extends mediamosa_ck_views_rest 
     $owners = array();
 
     // Now process the xml into an object views can work with.
-    foreach ($xml->xpath('items/item') as $item) {
+    foreach ($response->xpath('items/item') as $item) {
       $object = new stdClass();
       $object->is_owner = mediamosa_ck::session_user_id() == $item->owner_id;
 
@@ -84,7 +96,7 @@ class mediamosa_ck_views_rest_collection_search extends mediamosa_ck_views_rest 
     mediamosa_ck::precache_users_with_mails($owners);
 
     // Assign total number of records to get pager.
-    $view->total_rows = (int) $xml->header->item_count_total;
+    $view->total_rows = (int) $response->header->item_count_total;
   }
 
   /**

@@ -52,7 +52,10 @@ Mediamosa CK 7.x-2.x-dev
 - The fid (fileID) is no longer set during asset search view.
 - Removed function _media_mediamosa_get_media_id(), use
   mediamosa_ck::get_fid_from_asset() instead.
-
+- The MediaMosa CK view class has split up the do_rest_call() function into
+  do_rest_call() and process_rest_call().
+- When using MediaMosa 3.4 or higher, any asset display that does not have a
+  metadata title, will now use the original filename as title when available.
 
 Mediamosa CK 7.x-2.0
 --------------------

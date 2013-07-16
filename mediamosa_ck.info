@@ -1,12 +1,12 @@
 name = "MediaMosa CK: Core"
 description = "The MediaMosa construction kit enables you to build frontend Drupal websites for MediaMosa."
 package = "MediaMosa - Construction Kit"
-version = 7.x-2.x-dev
+version = 7.x-3.5
 core = 7.x
 
 ; Dependencies (module names)
-dependencies[] = mediamosa_sdk (>=3.0)
-dependencies[] = mediamosa_connector (>=3.1)
+dependencies[] = mediamosa_sdk (>=3.5)
+dependencies[] = mediamosa_connector (>=3.5)
 
 files[] = mediamosa_ck.class.inc
 files[] = mediamosa_ck.connector.wrapper.class.inc

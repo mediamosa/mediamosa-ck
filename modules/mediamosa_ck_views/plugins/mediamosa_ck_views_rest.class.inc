@@ -15,9 +15,32 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
   public $required_fields;
 
   /**
-   * Execute the rest call.
+   * Execute the REST call.
+   *
+   * @param object $view
+   *   The view object.
+   * @param array $params
+   *   Array of view options and settings.
+   * @param array $options
+   *   Options that can be used for overrides on the view params and REST call
+   *   related options.
    */
-  abstract protected function do_rest_call($view, $params, array $options = array());
+  abstract protected function do_rest_call($view, array $params, array $options = array());
+
+  /**
+   * Process the XML and fill the view data.
+   *
+   * @param mediamosa_connector_response $response
+   *   The response object.
+   * @param object $view
+   *   The view object.
+   * @param array $params
+   *   Array of view options and settings.
+   * @param array $options
+   *   Options that can be used for overrides on the view params and REST call
+   *   related options.
+   */
+  abstract protected function process_rest_call(mediamosa_connector_response $response, $view, array $params, array $options = array());
 
   // ---------------------------------------------------------------- Functions.
   /**
@@ -83,6 +106,38 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
   }
 
   /**
+   * Provide a form to edit options for this plugin.
+   */
+  public function options_form(&$form, &$form_state) {
+    // Call parent.
+    parent::options_form($form, $form_state);
+
+    // Checkbox to allow show only public marked assets.
+    $form['mediamosa_ck_view_show_drupal_error_messages'] = array(
+      '#title' => t('Show Drupal error messages.'),
+      '#description' => t('Enable this switch to show errors as Drupal error messages.'),
+      '#type' => 'checkbox',
+      '#default_value' => $this->mediamosa_option_show_drupal_error_messages(),
+    );
+  }
+
+  /**
+   * Returns the value for mediamosa_is_public_list option.
+   *
+   * @return boolean
+   *   The value of mediamosa_is_public_list.
+   */
+  public function mediamosa_option_show_drupal_error_messages() {
+
+    if (isset($this->options['mediamosa_show_drupal_error_messages'])) {
+      return $this->options['mediamosa_show_drupal_error_messages'];
+    }
+
+    // By defaut do not show the drupal error.
+    return FALSE;
+  }
+
+  /**
    * Executes the query.
    *
    * And fills the associated view object with according values.
@@ -117,7 +172,13 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
       }
 
       // Perform request to MediaMosa.
-      $this->do_rest_call($view, $params, $this->options);
+      $response = $this->do_rest_call($view, $params, $this->options);
+
+      // Now process the xml into the view data.
+      $view->total_rows = 0;
+      if ($response && empty($this->errors)) {
+        $this->process_rest_call($response, $view, $params, $this->options);
+      }
 
       // Store the results.
       $this->pager->total_items = $view->total_rows;
@@ -131,10 +192,12 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
       $this->errors[] = $e->getMessage();
     }
 
-    // @todo: unsure if we want to use drupal_set_message here.
     if (!empty($this->errors)) {
-      foreach ($this->errors as $msg) {
-        drupal_set_message($msg, 'error');
+      foreach ($this->errors as $message) {
+        mediamosa_ck::watchdog('Caught error during REST view: @message', array('@message' => $message), WATCHDOG_ERROR);
+        if ($this->mediamosa_option_show_drupal_error_messages()) {
+          drupal_set_message($message, 'error');
+        }
       }
       $view->result = array();
       $view->total_rows = 0;

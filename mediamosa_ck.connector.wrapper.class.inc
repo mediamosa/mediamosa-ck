@@ -87,7 +87,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    *     The mediafile ID of the upload.
    */
   public static function create_upload_ticket(array $options = array()) {
-
+    // Set default settings, when missing.
     $options += array(
       'transcode_inherits_acl' => TRUE,
       'create_still' => mediamosa_ck::setting_mediafile_upload_create_still(),
@@ -101,7 +101,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
 
       // Create the asset.
       $response = mediamosa_ck::request_post_fatal('asset/create', array('user_id' => $user_id));
-      $data_create_mediafile['asset_id'] = (string) $response->xml->items->item->asset_id;
+      $data_create_mediafile['asset_id'] = (string) $response->items->item->asset_id;
 
       // Downloadable setting.
       // Off until the is_empty_asset bug is fixed in MediaMosa.
@@ -115,16 +115,16 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
 
       // Create the mediafile.
       $response = mediamosa_ck::request_post_fatal('mediafile/create', array('data' => $data_create_mediafile, 'user_id' => $user_id));
-      $mediafile_id = (string) $response->xml->items->item->mediafile_id;
+      $mediafile_id = (string) $response->items->item->mediafile_id;
 
       // Create the upload ticket.
       $response = mediamosa_ck::request_post_fatal('mediafile/' . $mediafile_id . '/uploadticket/create', array('user_id' => $user_id));
 
       // Get the Action url from the result.
-      $action = (string) $response->xml->items->item->action;
+      $action = (string) $response->items->item->action;
 
       // Get the Progress id from the result.
-      $progress_id = (int) $response->xml->items->item->progress_id;
+      $progress_id = (int) $response->items->item->progress_id;
 
       // Inherit ACL / Create still.
       if ($options['transcode_inherits_acl'] || $options['create_still'] || !empty($options['transcode'])) {
@@ -165,8 +165,10 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
     }
     catch (Exception $e) {
       mediamosa_ck::watchdog_error('Unable to create upload ticket; !message.', array('!message' => $e->getMessage()));
-      return FALSE;
     }
+
+    // Got here, return FALSE.
+    return FALSE;
   }
 
   /**
@@ -193,7 +195,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
 
     try {
       // Do request.
-      return mediamosa_ck::request_get_fatal('mediafile/' . rawurlencode($mediafile_id) . '/acl', array('data' => $data))->xml;
+      return mediamosa_ck::request_get_fatal('mediafile/' . rawurlencode($mediafile_id) . '/acl', array('data' => $data));
     }
     catch (Exception $e) {
       mediamosa_ck::watchdog_error('Unable to get ACL rules; @message.', array('@message' => $e->getMessage()));
@@ -321,7 +323,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
     $options = self::bool2string($options, array('show_stills'));
 
     // Get the mediafile.
-    return mediamosa_ck::request_get_fatal('mediafile/' . rawurlencode($mediafile_id), $options, FALSE, $cached, $reset)->xml;
+    return mediamosa_ck::request_get_fatal('mediafile/' . rawurlencode($mediafile_id), $options, FALSE, $cached, $reset);
   }
 
   /**
@@ -334,13 +336,15 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    *     TRUE / FALSE to include stills.
    *   - show_collections (Default FALSE).
    *     TRUE / FALSE to include collections.
+   *   - is_app_admin
+   *     Super user (Default FALSE).
    * @param boolean $cached
    *   Cache the result for REST call result.
    * @param boolean $reset
    *   Reset the cache.
    *
-   * @return SimpleXMLElement
-   *   The XML response object.
+   * @return mediamosa_connector_response_asset
+   *   The (XML) response object specificly for asset REST call.
    */
   public static function get_asset($asset_id, array $options = array(), $cached = TRUE, $reset = FALSE) {
     // The options for the REST call.
@@ -356,10 +360,10 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       'acl_group_id' => array(),
       // acl_user_id.
       'acl_user_id' => '',
-    );
 
-    // Convert bool to strings.
-    $options = self::bool2string($options, array('show_stills', 'show_collections'));
+      // Super admin.
+      'is_app_admin' => FALSE,
+    );
 
     // Build ACL for alter.
     $acl = array(
@@ -367,6 +371,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       'acl_domain' => $options['acl_domain'],
       'acl_group_id' => $options['acl_group_id'],
       'acl_user_id' => empty($options['user_id']) ? $options['acl_user_id'] : $options['user_id'],
+      'is_app_admin' => $options['is_app_admin'],
     );
 
     // Allow modules to modify the acl information.
@@ -377,11 +382,83 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
     $options['acl_domain'] = $acl['acl_domain'];
     $options['acl_group_id'] = $acl['acl_group_id'];
     $options['acl_user_id'] = $acl['acl_user_id'];
+    $options['is_app_admin'] = $acl['is_app_admin'];
     unset($options['user_id']);
 
+    // Convert bool to strings.
+    $options = self::bool2string($options, array('is_app_admin', 'show_stills', 'show_collections'));
 
     // Do the REST call.
-    return mediamosa_ck::request_get_fatal('asset/' . rawurlencode($asset_id), array('data' => $options), FALSE, $cached, $reset)->xml;
+    return new mediamosa_connector_response_asset(mediamosa_ck::request_get_fatal('asset/' . rawurlencode($asset_id), array('data' => $options), FALSE, $cached, $reset));
+  }
+
+  /**
+   * Get the requested assets.
+   *
+   * @param array $asset_ids
+   *   The assets to get.
+   * @param array $options
+   *   - 'view_count'
+   *     Specifing 'FALSE' will prevent increasing the view count on the assets.
+   *     (Default FALSE)
+   *   - show_stills (Default TRUE).
+   *     TRUE / FALSE to include stills.
+   *   - show_collections (Default FALSE).
+   *     TRUE / FALSE to include collections.
+   *   - is_app_admin
+   *     Super user (Default FALSE).
+   *
+   * @return SimpleXMLElement
+   *   The XML response object.
+   */
+  public static function get_assets($asset_ids, array $options = array()) {
+    // The options for the REST call.
+    $options += array(
+      'show_stills' => TRUE,
+      'show_collections' => FALSE,
+      'view_count' => TRUE,
+
+      // acl_realm.
+      'acl_realm' => '',
+      // acl_domain.
+      'acl_domain' => '',
+      // acl_group_ids.
+      'acl_group_id' => array(),
+      // acl_user_id.
+      'acl_user_id' => '',
+
+      // Super admin.
+      'is_app_admin' => FALSE,
+    );
+
+    // The assets to retrieve.
+    $options['asset_id'] = $asset_ids;
+
+    // Build ACL for alter.
+    $acl = array(
+      'acl_realm' => $options['acl_realm'],
+      'acl_domain' => $options['acl_domain'],
+      'acl_group_id' => $options['acl_group_id'],
+      'acl_user_id' => empty($options['user_id']) ? $options['acl_user_id'] : $options['user_id'],
+      'is_app_admin' => $options['is_app_admin'],
+    );
+
+    // Allow modules to modify the acl information.
+    drupal_alter('mediamosa_ck_acl', $acl);
+
+    // Copy back.
+    $options['acl_realm'] = $acl['acl_realm'];
+    $options['acl_domain'] = $acl['acl_domain'];
+    $options['acl_group_id'] = $acl['acl_group_id'];
+    $options['acl_user_id'] = $acl['acl_user_id'];
+    $options['is_app_admin'] = $acl['is_app_admin'];
+    unset($options['user_id']);
+
+    // Convert bool to strings.
+    $options = self::bool2string($options, array('view_count', 'show_stills', 'show_collections', 'is_app_admin'));
+
+    // Do the REST call.
+    return mediamosa_ck::request_get_fatal('assets', array('data' => $options));
   }
 
   /**
@@ -550,12 +627,14 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
 
     try {
       // Get the collection.
-      return mediamosa_ck::request_get_fatal('collection/' . rawurlencode($coll_id), array('data' => $options), FALSE, $cached, $reset)->xml;
+      return mediamosa_ck::request_get_fatal('collection/' . rawurlencode($coll_id), array('data' => $options), FALSE, $cached, $reset);
     }
     catch (Exception $e) {
       mediamosa_ck::watchdog_error('Unable to find collection; !message.', array('!message' => $e->getMessage()));
-      return FALSE;
     }
+
+    // Got here, return FALSE.
+    return FALSE;
   }
 
   /**
@@ -564,7 +643,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @todo:
    *   Limit is 200.
    */
-  public static function get_collections_for_options($options = array()) {
+  public static function get_collections_for_options($options = array(), $collections = array()) {
     $options += array(
       'offset' => 0,
       // Get max allowed per rest call:
@@ -572,10 +651,9 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
     );
 
     // Get it.
-    $collections = array();
-    $xml = self::search_collection($options);
-    if ($xml) {
-      foreach ($xml->xpath('items/item') as $collection) {
+    $response = self::search_collection($options);
+    if ($response) {
+      foreach ($response->xpath('items/item') as $collection) {
         $collections[(string) $collection->coll_id] = (string) check_plain($collection->title);
       }
     }
@@ -592,8 +670,8 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    *   Reserved.
    */
   public static function get_asset_owner($asset_id, array $options = array()) {
-    $xml = self::get_asset($asset_id);
-    return empty($xml->items->item->owner_id) ? '' : (string) $xml->items->item->owner_id;
+    $response = self::get_asset($asset_id);
+    return empty($response->items->item->owner_id) ? '' : (string) $response->items->item->owner_id;
   }
 
   /**
@@ -610,6 +688,8 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    *   Set of options for the REST call.
    *   - response
    *     plain, object, metafile, still, download.
+   *   - is_app_admin
+   *     Super user (Default FALSE).
    */
   public static function get_play_link($asset_id, $mediafile_id = '', $user_id = '', array $options = array()) {
 
@@ -629,7 +709,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       // Catch fatal errors?
       'fatal' => FALSE,
 
-      // is_app_admin to bypass user authorisation.
+      // Super admin.
       'is_app_admin' => FALSE,
     );
 
@@ -646,7 +726,9 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
         'acl_realm' => $options['acl_realm'],
         'acl_domain' => $options['acl_domain'],
         'acl_group_id' => $options['acl_group_id'],
+        // Not used by play call.
         'acl_user_id' => $user_id,
+        'is_app_admin' => $options['is_app_admin'],
       );
       // Allow modules to modify the acl information.
       drupal_alter('mediamosa_ck_acl', $acl);
@@ -655,16 +737,18 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       $options['acl_realm'] = $acl['acl_realm'];
       $options['acl_domain'] = $acl['acl_domain'];
       $options['acl_group_id'] = $acl['acl_group_id'];
-
       $options['user_id'] = $user_id;
+      $options['is_app_admin'] = $acl['is_app_admin'];
 
       $options = self::bool2string($options, array('is_app_admin'));
-      // is_app_admin does not work for /play in 3.0.
+
+      // The 'is_app_admin' does not work for /play in 3.0.
       if ($options['is_app_admin'] == 'TRUE') {
         $options['user_id'] = self::get_asset_owner($asset_id);
       }
-      $xml = mediamosa_ck::request_get_fatal('asset/' . rawurlencode($asset_id) . '/play', array('data' => $options))->xml;
-      $play_links[$asset_id][$mediafile_id][$response_type] = empty($xml->items->item->output) ? FALSE : (string) $xml->items->item->output;
+
+      $response = mediamosa_ck::request_get_fatal('asset/' . rawurlencode($asset_id) . '/play', array('data' => $options));
+      $play_links[$asset_id][$mediafile_id][$response_type] = empty($response->items->item->output) ? FALSE : (string) $response->items->item->output;
 
       return $play_links[$asset_id][$mediafile_id][$response_type];
     }
@@ -674,6 +758,8 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
         throw $e;
       }
     }
+
+    // Got here, return FALSE.
     return FALSE;
   }
 
@@ -697,7 +783,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       'user_id' => $user_id,
     );
 
-    return mediamosa_ck::request_get_fatal('asset/' . rawurlencode($asset_id) . '/joblist', array('data' => $data))->xml;
+    return mediamosa_ck::request_get_fatal('asset/' . rawurlencode($asset_id) . '/joblist', array('data' => $data));
   }
 
   /**
@@ -721,7 +807,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       'user_id' => $user_id,
     );
 
-    return mediamosa_ck::request_get_fatal('mediafile/' . rawurlencode($mediafile_id) . '/joblist', array('data' => $data))->xml;
+    return mediamosa_ck::request_get_fatal('mediafile/' . rawurlencode($mediafile_id) . '/joblist', array('data' => $data));
   }
 
   /**
@@ -738,7 +824,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
 
       try {
         // Do request.
-        $transcode_profiles = mediamosa_ck::request_get_fatal_cached('transcode/profile', array('data' => $data))->xml;
+        $transcode_profiles = mediamosa_ck::request_get_fatal_cached('transcode/profile', array('data' => $data));
       }
       catch (Exception $e) {
         mediamosa_ck::watchdog_error('Unable to retrieve the transcode profiles; !message.', array('!message' => $e->getMessage()));
@@ -754,7 +840,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    *
    * When not set, find the MediaMosa default.
    *
-   * @return id.
+   * @return integer.
    *   The transcode profile ID.
    */
   public static function get_default_transcode_profile() {
@@ -796,7 +882,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    *   - refresh_title (default TRUE)
    *     Reload the titles from MediaMosa.
    *
-   * @return id
+   * @return integer
    *   The transcode profile ID.
    */
   public static function get_allowed_transcode_profiles(array $options = array()) {
@@ -908,8 +994,8 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @param array $options
    *   The options for the asset.
    *
-   * @return object
-   *   false if failed.
+   * @return mediamosa_connector_response
+   *   The mediamosa_connector_response object or FALSE when failed.
    */
   public static function update_asset($asset_id, array $options = array()) {
     try {
@@ -938,7 +1024,8 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @param string $options
    *   The options for the mediafile.
    *
-   * @return object
+   * @return mediamosa_connector_response
+   *   The mediamosa_connector_response object or FALSE when failed.
    */
   public static function update_mediafile($mediafile_id, array $options = array()) {
     try {
@@ -966,6 +1053,9 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    *   The asset ID.
    * @param string $user_id
    *   The owner of the mediafile.
+   *
+   * @return mediamosa_connector_response
+   *   The mediamosa_connector_response object or FALSE when failed.
    */
   public static function delete_asset($asset_id, $user_id) {
     // Check the parameters.
@@ -980,7 +1070,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
 
     try {
       // Do request.
-      return mediamosa_ck::request_post_fatal('asset/' . rawurlencode($asset_id) . '/delete', array('data' => $data))->xml;
+      return mediamosa_ck::request_post_fatal('asset/' . rawurlencode($asset_id) . '/delete', array('data' => $data));
     }
     catch (Exception $e) {
       mediamosa_ck::watchdog_error('Unable to delete asset; !message.', array('!message' => $e->getMessage()));
@@ -1027,7 +1117,9 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * Search assets. Uses the /asset REST call.
    *
    * @param array $options
-   *   Array with options for search.
+   *   An associative array;
+   *   - is_app_admin
+   *     Super user (Default FALSE).
    *
    * @return mediamosa_connector_response
    *   The assets contained in a mediamosa_connector_response object.
@@ -1057,6 +1149,9 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       'acl_group_id' => array(),
       // acl_user_id.
       'acl_user_id' => '',
+
+      // Super admin.
+      'is_app_admin' => FALSE,
     );
 
     // CQL search.
@@ -1090,6 +1185,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       'acl_domain' => $data['acl_domain'],
       'acl_group_id' => $data['acl_group_id'],
       'acl_user_id' => $data['acl_user_id'],
+      'is_app_admin' => $data['is_app_admin'],
     );
     // Allow modules to modify the acl information.
     drupal_alter('mediamosa_ck_acl', $acl);
@@ -1099,6 +1195,10 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
     $data['acl_domain'] = $acl['acl_domain'];
     $data['acl_group_id'] = $acl['acl_group_id'];
     $data['acl_user_id'] = $acl['acl_user_id'];
+    $data['is_app_admin'] = $acl['is_app_admin'];
+
+    // Convert bool to string.
+    $data = self::bool2string($data, array('is_app_admin'));
 
     try {
       return mediamosa_ck::request_get_fatal('asset', array('data' => $data));
@@ -1137,6 +1237,9 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
 
       // acl_user_id.
       'acl_user_id' => '',
+
+      // Super admin.
+      'is_app_admin' => FALSE,
     );
 
     // CQL search.
@@ -1152,7 +1255,6 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       'cql' => implode(' ', $cql),
       'limit' => $options['limit'],
       'offset' => $options['offset'],
-      // We don't sync assets that don't have mediafiles.
       'hide_empty_assets' => 'TRUE',
       // Get total count, need pager.
       'calculate_total_count' => 'TRUE',
@@ -1167,6 +1269,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       'acl_domain' => '',
       'acl_group_id' => '',
       'acl_user_id' => empty($data['user_id']) ? $data['acl_user_id'] : $data['user_id'],
+      'is_app_admin' => $options['is_app_admin'],
     );
     // Allow modules to modify the acl information.
     drupal_alter('mediamosa_ck_acl', $acl);
@@ -1175,13 +1278,18 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
     $data['user_id'] = $acl['acl_user_id'];
     unset($data['acl_user_id']);
 
+    // Convert bool to string.
+    $data = self::bool2string($data, array('is_app_admin'));
+
     try {
-      return mediamosa_ck::request_get_fatal('collection', array('data' => $data))->xml;
+      return mediamosa_ck::request_get_fatal('collection', array('data' => $data));
     }
     catch (Exception $e) {
-      mediamosa_ck::watchdog_error('Error search collection, message: !message.', array('!message' => $e->getMessage()), WATCHDOG_ERROR);
-      return FALSE;
+      mediamosa_ck::set_message_exception($e, 'Error search collection');
     }
+
+    // Got here, return FALSE.
+    return FALSE;
   }
 
   /**
@@ -1207,12 +1315,14 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       $response = mediamosa_ck::request_post_fatal('collection/create', array('data' => $options));
 
       // Return the collection ID.
-      return (string) $response->xml->items->item->coll_id;
+      return (string) $response->items->item->coll_id;
     }
     catch (Exception $e) {
       mediamosa_ck::watchdog_error('Unable to create collection; !message.', array('!message' => $e->getMessage()));
-      return FALSE;
     }
+
+    // Got here, return FALSE.
+    return FALSE;
   }
 
   /**
@@ -1238,12 +1348,14 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       $response = mediamosa_ck::request_post_fatal('collection/' . rawurlencode($coll_id), array('data' => $options));
 
       // Return the collection ID.
-      return (string) $response->xml->items->item->coll_id;
+      return (string) $response->items->item->coll_id;
     }
     catch (Exception $e) {
       mediamosa_ck::watchdog_error('Unable to create collection; !message.', array('!message' => $e->getMessage()));
-      return FALSE;
     }
+
+    // Got here, return FALSE.
+    return FALSE;
   }
 
   /**
@@ -1288,10 +1400,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
     $options['cql'] = implode(' ', $cql);
 
     // Do the search.
-    $response = self::search_asset($options);
-
-    // Return the xml.
-    return empty($response) ? FALSE : $response->xml;
+    return self::search_asset($options);
   }
 
   /**
@@ -1320,7 +1429,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
     }
 
     // Is ok?
-    return $response->code == 200 && $response->xml->header->request_result_id == 601;
+    return $response->header->request_result_id == 601;
   }
 
   /**
@@ -1349,7 +1458,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
     }
 
     // Is ok?
-    return $response->code == 200 && $response->xml->header->request_result_id == 601;
+    return $response->header->request_result_id == 601;
   }
 
   /**
@@ -1384,7 +1493,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       return FALSE;
     }
 
-    return $response->code == 200 && $response->xml->header->request_result_id == 601;
+    return $response->header->request_result_id == 601;
   }
 
   /**
@@ -1468,9 +1577,8 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    *   The XML response object.
    */
   public static function get_user($user_id, array $options = array(), $cached = TRUE, $reset = FALSE) {
-
     // Do the REST call.
-    return mediamosa_ck::request_get_fatal('user/' . rawurlencode($user_id), array(), FALSE, $cached, $reset)->xml;
+    return mediamosa_ck::request_get_fatal('user/' . rawurlencode($user_id), array(), FALSE, $cached, $reset);
   }
 
   /**
@@ -1547,12 +1655,13 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
 
     try {
       // Do request.
-      return mediamosa_ck::request_post_fatal('metadata_tag/create', array('data' => $data))->xml;
+      return mediamosa_ck::request_post_fatal('metadata_tag/create', array('data' => $data));
     }
     catch (Exception $e) {
       mediamosa_ck::watchdog_error('Unable to retrieve metadata tags, reason; @message.', array('@message' => $e->getMessage()));
     }
 
+    // Got here, return FALSE.
     return FALSE;
   }
 }

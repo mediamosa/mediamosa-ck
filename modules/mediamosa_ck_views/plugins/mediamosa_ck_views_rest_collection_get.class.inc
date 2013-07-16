@@ -18,7 +18,7 @@ class mediamosa_ck_views_rest_collection_get extends mediamosa_ck_views_rest {
    * @param array $options
    *   Options for REST call.
    */
-  public function do_rest_call($view, $params, array $options = array()) {
+  public function do_rest_call($view, array $params, array $options = array()) {
     // Total results.
     $view->total_rows = 0;
 
@@ -29,16 +29,28 @@ class mediamosa_ck_views_rest_collection_get extends mediamosa_ck_views_rest {
       return;
     }
 
-    $xml = MediaMosaCkConnectorWrapper::get_collection($coll_id, $options);
-    if (!$xml) {
-      return;
-    }
+    return MediaMosaCkConnectorWrapper::get_collection($coll_id, $options);
+  }
 
+  /**
+   * Process the XML and fill the view data.
+   *
+   * @param mediamosa_connector_response $response
+   *   The response object.
+   * @param object $view
+   *   The view object.
+   * @param array $params
+   *   Array of view options and settings.
+   * @param array $options
+   *   Options that can be used for overrides on the view params and REST call
+   *   related options.
+   */
+  protected function process_rest_call(mediamosa_connector_response $response, $view, array $params, array $options = array()) {
     // Get the fields.
     $fields = self::get_fields(self::get_views_data('foo', 'foo'));
 
     // Now process the xml into an object views can work with.
-    foreach ($xml->xpath('items/item') as $item) {
+    foreach ($response->xpath('items/item') as $item) {
       $object = new stdClass();
 
       foreach ($fields as $field) {

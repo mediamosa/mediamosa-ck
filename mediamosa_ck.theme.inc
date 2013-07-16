@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * The theme functions of CK.
+ */
 
 /**
  * Our default CK themed table.
@@ -13,14 +17,30 @@
  *   - 'colgroups'
  *   - 'sticky'
  *   - 'empty'
+ *   - Draggable rows: (reserved)
+ *     - 'draggable' => ID (default is FALSE).
+ *       Provide ID for table where the Dragable code can identify the table as
+ *       dragable. F.e. 'ck-users-list'.
+ *       Do not use pagers when dragable as you can not drag from page to page.
  *   Add selection boxes (checkbox).
- *   - 'selection' => 'checkbox' | NULL
+ *   - 'selection' => array(with selected IDs or empty) | NULL
+ *   - 'selection checkbox class' => 'mm-ck-cs-checkbox' (optional).
  *   Pager (optional)
  *   - 'page' => 0
  *   - 'item_count_total' => 0,
  *   - 'item_limit' => 25,
  *   - 'element' => 0,
  *   - 'quantity' => 10,
+ *   - 'pager top' => TRUE,
+ *     Include pager at top.
+ *   - 'pager bottom' => TRUE,
+ *     Include pager at bottom.
+ *   - 'pager normal top' => FALSE,
+ *     Add normal Drupal theme_pager() at top. Expect usage of
+ *     ->extend('Pagerdefault') on used query.
+ *   - 'pager normal bottom' => FALSE,
+ *     Add normal Drupal theme_pager() at bottom. Expect usage of
+ *     ->extend('Pagerdefault') on used query.
  *   Note (small font, bottom right).
  *   - 'note' => NULL,
  *   // caption bottom, right.
@@ -35,6 +55,26 @@
  *   The result HTML.
  */
 function theme_mediamosa_ck_table($variables) {
+
+  // Add extra selection box.
+  if (isset($variables['selection'])) {
+    array_unshift($variables['header'], array('class' => array('select-all')));
+
+    // Add checkbox to rows.
+    foreach ($variables['rows'] as $id => &$row) {
+      $checkbox = array(
+        $id => array(
+          '#return_value' => $id,
+          '#checked' => !empty($variables['selection'][$id]),
+          '#type' => 'checkbox',
+          '#attributes' => array('class' => array($variables['selection checkbox class'])),
+        ),
+      );
+      $box = drupal_render($checkbox);
+      array_unshift($row, $box);
+    }
+  }
+
   $pager_variables = array();
   foreach (array('page', 'item_count_total', 'item_limit', 'element', 'quantity') as $var) {
     if (isset($variables[$var])) {
@@ -42,8 +82,11 @@ function theme_mediamosa_ck_table($variables) {
     }
   }
 
-  if (!empty($pager_variables['item_count_total'])) {
+  if (!empty($pager_variables['item_count_total']) && $variables['pager top']) {
     $build['pager_top'] = theme('mediamosa_ck_pager', $pager_variables);
+  }
+  elseif (!empty($variables['pager normal top'])) {
+    $build['pager_bottom'] = theme('pager');
   }
 
   if (!empty($variables['title'])) {
@@ -77,15 +120,18 @@ function theme_mediamosa_ck_table($variables) {
     $build['caption_bottom'] = '<div class="mediamosa-ck-table-caption-bottom">' . check_plain($variables['caption_bottom']) . '</div>';
   }
 
-  if (!empty($pager_variables['item_count_total'])) {
+  if (!empty($pager_variables['item_count_total']) && $variables['pager bottom']) {
     $build['pager_bottom'] = theme('mediamosa_ck_pager', $pager_variables);
+  }
+  elseif (!empty($variables['pager normal bottom'])) {
+    $build['pager_bottom'] = theme('pager');
   }
 
   return implode('', $build);
 }
 
 /**
- * Our pager wrapper.
+ * Our pager wrapper (meant for REST call paging).
  *
  * @param array $variables
  *   An associated array.
@@ -94,26 +140,14 @@ function theme_mediamosa_ck_table($variables) {
  *   The result HTML.
  */
 function theme_mediamosa_ck_pager($variables) {
-  global $pager_page_array, $pager_total, $pager_total_items, $pager_limits;
 
-  $page = $variables['page'];
-  $item_count_total = $variables['item_count_total'];
-  $item_limit = $variables['item_limit'];
+  $total = $variables['item_count_total'];
+  $limit = $variables['item_limit'];
   $element = $variables['element'];
-  $quantity = $variables['quantity'];
 
-  $pager_page_array = array($element => $page);
+  pager_default_initialize($total, $limit, $element);
 
-  // Total items.
-  $pager_total_items[$element] = $item_count_total;
-
-  // Number of pagelinks.
-  $pager_total[$element] = ceil($item_count_total / $item_limit);
-
-  // Page limit.
-  $pager_limits[$element] = $item_limit;
-
-  return theme('pager', array('quantity' => $quantity));
+  return theme('pager', array('quantity' => $variables['quantity'], 'element' => $element));
 }
 
 /**
@@ -160,67 +194,91 @@ function theme_mediamosa_ck_three_column_page($variables) {
  *   - 'tabs'
  *     An associative array's;
  *     - 'title'
- *       The (translated) title of the tab.
+ *       The (non-translated) title of the tab. Title is used for creating an
+ *       unique ID / class, do not use t(), will be done during theme code.
+ *     - 'title extra'
+ *       Attached behind the title with '()' around. F.e. 'Food (3)', where '3'
+ *       is provided by 'title extra'.
  *     - 'content'
  *       The content of the tab.
+ *   - 'tab-overlay'
+ *     Name for the tab-overlay, ID will be ck-tab-overlay-[ID]. Can be used to
+ *     load other content into.
  */
 function theme_mediamosa_ck_tabs($variables) {
+  static $id = 1, $x = 1;
+
   $tabs = array();
   $tabs_content = array();
+  $identifiers = array();
 
-  $id = 1;
   foreach ($variables['tabs'] as $tab) {
-    $tab += array('title' => t('no title'), 'content' => t('no data'));
+    $tab += array('title' => t('no-title-' . $id), 'content' => t('no data'));
 
-    $tabs['ck-tab-' . $id] = '<li>' . l($tab['title'], arg(), array('fragment' => 'ck-tab-' . $id, 'attributes' => array('name' => 'ck-tab-' . $id))) . '</li>';
-    $tabs_content['ck-tab-' . $id] = '<div>' . $tab['content'] . '</div>';
+    // Create unique ID for <a> link.
+    $identifier = drupal_html_class($tab['title']);
+    while (isset($identifiers[$identifier])) {
+      $identifier . '-' . $x++;
+    }
+    $identifiers[$identifier] = $identifier;
+
+    $tabs['ck-tab-' . $identifier] = '<li>' . l(t($tab['title']), request_path(), array('fragment' => 'ck-tab-' . $identifier, 'attributes' => array('name' => 'ck-tab-content-' . $identifier, 'id' => 'ck-tab-' . $identifier, 'class' => array('ck-tab-link')))) . '</li>';
+    $tabs_content['ck-tab-content-' . $identifier] = '<div>' . $tab['content'] . '</div>';
     $id++;
   }
 
   $content = array();
   $content[] = '<div class="mediamosa-ck-tabs tabs">';
 
-  $content[] = '<ul id="mediamosa-ck-tabs" class="primary tabs primary-tabs links">';
+  $content[] = '<ul class="mediamosa-ck-tabs primary tabs primary-tabs links">';
   foreach ($tabs as $tab) {
     $content[] = $tab;
   }
   $content[] = '</ul>';
 
-  foreach ($tabs_content as $id => $tab_content) {
-    $content[] = '<div class="mediamosa-ck-tab" id="' . $id . '">' . $tab_content . '</div>';
+  foreach ($tabs_content as $tab_id => $tab_content) {
+    $content[] = '<div id="' . $tab_id . '" class="mediamosa-ck-tab-content">' . $tab_content . '</div>';
+  }
+
+  // Add div for temporary content.
+  if (!empty($variables['tab-overlay'])) {
+    $content[] = '<div id="ck-tab-overlay-' . drupal_html_class($variables['tab-overlay']) . '" class="mediamosa-ck-tab-content"></div>';
   }
 
   $content[] = '</div>';
   return implode('', $content);
 }
 
-/*
-<div class="asset-technical-information">
-  <ul id="asset-tabs">
-    <li>
-      <?php print l('Description', 'asset/detail/' . $fields['asset_id']->raw, array('fragment' => 'tab-metadata-dc', 'attributes' => array('name' => 'tab-metadata-dc'))); ?>
-    </li>
-    <li>
-      <?php print l('More info', 'asset/detail/' . $fields['asset_id']->raw, array('fragment' => 'tab-metadata-qdc', 'attributes' => array('name' => 'tab-metadata-qdc'))); ?>
-    </li>
-    <li>
-      <?php print l('Technical info', 'asset/detail/' . $fields['asset_id']->raw, array('fragment' => 'tab-technical-metadata', 'attributes' => array('name' => 'tab-technical-metadata'))); ?>
-    </li>
-  </ul>
-
-  <div class="tab" id="tab-metadata-dc">
-    <h2>Metadata DC</h2>
-    <?php print $fields['metadata_dc']->content; ?>
-  </div>
-
-  <div class="tab" id="tab-metadata-qdc">
-    <h2>Metadata QDC</h2>
-    <?php print $fields['metadata_qdc']->content; ?>
-  </div>
-
-  <div class="tab" id="tab-technical-metadata">
-    <h2>Technical metadata</h2>
-    <?php print $fields['technical_metadata']->content; ?>
-  </div>
-</div>
+/**
+ * Creates the contents of the popup.
+ *
+ * @param array $variables
+ *   An associative array;
+ *   - 'title'
+ *     The translated title.
+ *   - 'markup'
+ *     The contents of the popup.
+ *
+ * @return string
+ *   The HTML.
  */
+function theme_mediamosa_ck_popup($variables) {
+
+  $form = array();
+
+  $icon_close = theme('image', array('path' => drupal_get_path('module', 'mediamosa_ck') . '/images/close.png'));
+
+  $form['popup'] = array(
+    '#type' => 'fieldset',
+    '#title' => $variables['title'],
+    '#attributes' => array('class' => array('mediamosa-ck-popup')),
+    '#prefix' => '<div class="mediamosa-ck-popup"><div class="mediamosa-ck-icon-close">' . $icon_close . '</div>',
+    '#suffix' => '</div>',
+  );
+
+  // Set the contents of the popup.
+  $form['popup']['contents'] = array('#markup' => $variables['markup']);
+
+  // Render our form.
+  return drupal_render($form);
+}

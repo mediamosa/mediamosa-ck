@@ -37,12 +37,16 @@ class mediamosa_ck extends mediamosa_sdk {
   }
 
   /**
-   * Wrapper function around watchdog_error().
+   * Display an user friendly error.
+   *
+   * In case of responding to an exception, use set_message_exception() instead.
    *
    * This wrapper is indended when in the future if we want to tell the user
    * that something went wrong and log the problem. We might want to make
    * options for the admin in which we log the error, but will not bore the user
    * with the error.
+   *
+   * @see set_message_exception()
    */
   public static function watchdog_error($message, array $variables = array()) {
     // Log it first.
@@ -53,11 +57,61 @@ class mediamosa_ck extends mediamosa_sdk {
   }
 
   /**
+   * Display an readable version of the exception for the user.
+   *
+   * Will also log the exception.
+   *
+   * @param Exception $exception
+   *   The exception that is going to be logged.
+   * @param string $message
+   *   The message that explains when or where the exception occurred.
+   * @param array $variables
+   *   Array of variables to replace in the message.
+   */
+  public static function set_message_exception(Exception $e, $message, array $variables = array()) {
+    // Log it first.
+    self::watchdog_exception($e);
+    $message = t($message, $variables);
+    // Tell user.
+    $variables = array(
+      '!message' => $message,
+      '!message_exception' => $e->getMessage(),
+    );
+    drupal_set_message(strtr('!message: !message_exception', $variables), 'error');
+  }
+
+  /**
    * Wrapper for quicker logging.
    */
   public static function watchdog($message, array $variables = array(), $severity = WATCHDOG_NOTICE, $link = NULL, $type = 'MediaMosa CK') {
     $type = empty($type) ? 'MediaMosa CK' : 'MediaMosa CK - ' . $type;
     watchdog(substr($type, 0, 64), $message, $variables, $severity, $link);
+  }
+
+  /**
+   * Logs an exception.
+   *
+   * This is a wrapper function for watchdog() which automatically decodes an
+   * exception.
+   *
+   * @param Exception $exception
+   *   The exception that is going to be logged.
+   * @param string $message
+   *   The message to store in the log. If empty, a text that contains all useful
+   *   information about the passed-in exception is used.
+   * @param array $variables
+   *   Array of variables to replace in the message on display. Defaults to the
+   *   return value of drupal_decode_exception().
+   * @param string $severity
+   *   The severity of the message, as per RFC 3164.
+   * @param string $link
+   *   A link to associate with the message.
+   * @param string $type
+   *   The category to which this message belongs.
+   */
+  public static function watchdog_exception(Exception $exception, $message = NULL, array $variables = array(), $severity = WATCHDOG_ERROR, $link = NULL, $type = 'MediaMosa CK') {
+    $type = empty($type) ? 'MediaMosa CK' : 'MediaMosa CK - ' . $type;
+    watchdog_exception($type, $exception, $message, $variables, $severity, $link);
   }
 
   /**
@@ -647,10 +701,16 @@ class mediamosa_ck extends mediamosa_sdk {
       return self::get_asset_title($asset->items->item, $default);
     }
 
+
     $default = trim($default) === '' ? t('@asset_id', array('@asset_id' => (string) $asset->asset_id)) : $default;
     $title = trim(self::get_asset_value($asset, self::get_metadata_name_title()));
     if ($title !== '') {
       return $title;
+    }
+
+    // Return filename if we have one.
+    if (isset($asset->mediafile_filename) && !empty($asset->mediafile_filename)) {
+      return $asset->mediafile_filename;
     }
 
     // See if asset is synced to filemanaged.
@@ -852,6 +912,47 @@ class mediamosa_ck extends mediamosa_sdk {
   }
 
   /**
+   * Process the XML response (assets) for UI.
+   *
+   * @param mediamosa_connector_response $response
+   *   The XML response.
+   *
+   * @return array
+   *   An associtive array;
+   *   'assets' => array(
+   *     asset_id => array(
+   *       - 'title'
+   *         The title of the asset.
+   *       - 'videotimestampmodified'
+   *         Last modified date.
+   *     );
+   *   'item_count_total' => #, (number of total items in result)
+   *   );
+   */
+  public static function process_assets_for_ui($response) {
+
+    $processed_assets = array(
+      'assets' => array(),
+      'item_count_total' => 0,
+    );
+
+    // When FALSE, then something went wrong.
+    if ($response !== FALSE) {
+      foreach ($response->get()->xpath('items/item') as $item) {
+        $asset_id = (string) $item->asset_id;
+        $processed_assets['assets'][$asset_id] = array(
+          'title' => mediamosa_ck::get_asset_title($item),
+          'videotimestampmodified' => (string) $item->videotimestampmodified,
+        );
+      }
+
+      $processed_assets['item_count_total'] = $response->get_header_item_count_total();
+    }
+
+    return $processed_assets;
+  }
+
+  /**
    * Search for assets, usage for UI.
    *
    * Does complex searches, except the data returned is processed and used for
@@ -861,31 +962,87 @@ class mediamosa_ck extends mediamosa_sdk {
    * Might be replaced by view in future.
    *
    * @return array
-   *   An associtive array;
-   *   asset_id => array(
-   *     - 'title'
-   *       The title of the asset.
-   *     - 'videotimestampmodified'
-   *       Last modified date.
+   *   An associative array;
+   *   'assets' => array(
+   *     asset_id => array(
+   *       - 'title'
+   *         The title of the asset.
+   *       - 'videotimestampmodified'
+   *         Last modified date.
+   *     );
+   *    ''
    *   );
    */
-  public static function search_asset() {
+  public static function search_asset_for_ui(array $options = array()) {
     // Get the connector.
     $mediamosa_connector = mediamosa_ck::get_connector();
 
+    // Setup default values.
+    $options += array(
+      // Position in result set.
+      'offset' => 0,
+      // Number of items in result set.
+      'limit' => 25,
+      // Cql search query. Do not provide sortBy in query(!), use order_by and
+      // order_direction.
+      'cql' => '',
+      // Order/sort by field.
+      'order_by' => 'videotimestampmodified',
+      // Direction either desc or asc.
+      'order_direction' => 'desc',
+    );
+
     // Do the request.
-    $items = $mediamosa_connector->search_asset();
-    if (!$items) {
+    return self::process_assets_for_ui($mediamosa_connector->search_asset($options));
+  }
+
+  /**
+   * Get specific assets, usage for UI.
+   *
+   * Might be replaced by view in future.
+   *
+   * @return array
+   *   An associtive array (or FALSE when failure);
+   *   'assets' => array(
+   *     [asset_id] => array(
+   *       - 'title'
+   *         The title of the asset.
+   *       - 'videotimestampmodified'
+   *         Last modified date.
+   *     );
+   *   );
+   */
+  public static function get_assets_for_ui(array $asset_ids) {
+    // No asset IDs?
+    if (empty($asset_ids)) {
+      return array();
+    }
+
+    // Get the connector.
+    $mediamosa_connector = mediamosa_ck::get_connector();
+
+    // Setup default values.
+    $options = array(
+      // Order/sort by field.
+      'order_by' => 'videotimestampmodified',
+      // Direction either desc or asc.
+      'order_direction' => 'desc',
+    );
+
+    // Collect them first.
+    $assets = self::process_assets_for_ui($mediamosa_connector->get_assets($asset_ids, $options));
+    if ($assets === FALSE) {
       return FALSE;
     }
 
-    $assets = array();
-    foreach ($items->get()->xpath('items/item') as $item) {
-      $asset_id = (string) $item->asset_id;
-      $assets[$asset_id] = array(
-        'title' => mediamosa_ck::get_asset_title($item),
-        'videotimestampmodified' => (string) $item->videotimestampmodified,
-      );
+    // The call does not garantee its in the same order, lets fix that.
+    foreach ($asset_ids as $asset_id) {
+      // Might not be returned (or found).
+      if (isset($assets['assets'][$asset_id])) {
+        $tmp = $assets['assets'][$asset_id];
+        unset($assets['assets'][$asset_id]);
+        $assets['assets'][$asset_id] = $tmp;
+      }
     }
 
     return $assets;
@@ -1001,5 +1158,49 @@ class mediamosa_ck extends mediamosa_sdk {
 
     // Done.
     return $result;
+  }
+
+  /**
+   * Generates a token based on $value, the user session, and the private key.
+   *
+   * @param $value
+   *   An additional value to base the token on.
+   */
+  public static function get_token($value = '') {
+    return drupal_hmac_base64($value, drupal_get_private_key());
+  }
+
+  /**
+   * Validates a token based on $value, the user session, and the private key.
+   *
+   * @param $token
+   *   The token to be validated.
+   * @param $value
+   *   An additional value to base the token on.
+   *
+   * @return
+   *   True for a valid token, false for an invalid token.
+   */
+  public static function valid_token($token, $value = '') {
+    return $token == self::get_token($value);
+  }
+
+  /**
+   * Trigger the url and do not wait for result.
+   *
+   * The url will be triggered, but function will return without waiting for the
+   * result.
+   *
+   * @param string $url
+   *   The URL to trigger.
+   * @param array $options
+   *   The option array. See drupal_http_request for options.
+   */
+  public static function trigger_http_request($url, array $options = array()) {
+    // We will not wait for the result.
+    $options['timeout'] = 1.0;
+
+    // Do request.
+    drupal_http_request($url, $options);
   }
 }

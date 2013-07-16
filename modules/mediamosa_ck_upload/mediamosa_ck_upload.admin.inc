@@ -9,10 +9,12 @@
  */
 function _mediamosa_ck_upload_page() {
   // Get the upload form.
-  $variables['left'] = drupal_render(drupal_get_form('mediamosa_ck_upload_form'));
+  $form = drupal_get_form('mediamosa_ck_upload_form');
+  $variables['left'] = drupal_render($form);
 
   // Include the upload listing form.
-  $variables['right'] = drupal_render(drupal_get_form('mediamosa_ck_upload_listing_form'));
+  $form = drupal_get_form('mediamosa_ck_upload_listing_form');
+  $variables['right'] = drupal_render($form);
 
   return theme('mediamosa_ck_two_column_page', $variables);
 }
@@ -90,7 +92,7 @@ function mediamosa_ck_upload_listing_form($form, $form_state) {
 function _mediamosa_ck_content_supplier_upload_listing_refresh_ajax($form, $form_state) {
 
   // Search for assets.
-  $assets = mediamosa_ck::search_asset();
+  $assets = mediamosa_ck::search_asset_for_ui();
 
   if ($assets === FALSE) {
     $content = t('Search failed, check MediaMosa connection.');
@@ -105,7 +107,7 @@ function _mediamosa_ck_content_supplier_upload_listing_refresh_ajax($form, $form
       'empty' => t('No assets uploaded.'),
     );
 
-    foreach ($assets as $asset_id => $asset) {
+    foreach ($assets['assets'] as $asset_id => $asset) {
       $variables['rows'][] = array(
         array(
           'data' => $asset['title'],

@@ -8,7 +8,7 @@
  * View is based on the REST call 'asset'.
  */
 
-class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest {
+class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest_asset {
 
   /**
    * Builds the necessary info to execute the query.
@@ -40,7 +40,7 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest {
    *   Options that can be used for overrides on the view params and REST call
    *   related options.
    */
-  protected function do_rest_call($view, $params, array $options = array()) {
+  protected function do_rest_call($view, array $params, array $options = array()) {
     // Empty.
     $cql = array();
 
@@ -55,7 +55,7 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest {
       }
     }
 
-    // Any provided CQL? Add it at last.
+    // Any provided CQL? Add it at the end.
     if (isset($view->args['cql'])) {
       $cql[] = '(' . trim($view->args['cql'], '()') . ')';
     }
@@ -68,6 +68,8 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest {
       'limit' => $params['rows'],
       'hide_empty_assets' => $this->mediamosa_option_hide_empty_assets() ? 'TRUE' : 'FALSE',
       'is_public_list' => $this->mediamosa_option_is_public_list() ? 'TRUE' : 'FALSE',
+      'show_stills' => $this->mediamosa_option_show_stills() ? 'TRUE' : 'FALSE',
+      'show_collections' => $this->mediamosa_option_show_collections() ? 'TRUE' : 'FALSE',
       'cql' => $cql,
       'granted' => $this->mediamosa_option_granted() ? 'TRUE' : 'FALSE',
       'acl_user_id' => array(mediamosa_ck::session_user_id()),
@@ -81,14 +83,23 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest {
     }
 
     // Do the search.
-    $response = MediaMosaCkConnectorWrapper::search_asset($options);
+    return MediaMosaCkConnectorWrapper::search_asset($options);
+  }
 
-    // Something went wrong, then stop the view generation.
-    if (empty($response)) {
-      $view->total_rows = 0;
-      return;
-    }
-
+  /**
+   * Process the XML and fill the view data.
+   *
+   * @param mediamosa_connector_response $response
+   *   The response object.
+   * @param object $view
+   *   The view object.
+   * @param array $params
+   *   Array of view options and settings.
+   * @param array $options
+   *   Options that can be used for overrides on the view params and REST call
+   *   related options.
+   */
+  protected function process_rest_call(mediamosa_connector_response $response, $view, array $params, array $options = array()) {
     // Show query in admin view.
     $view->build_info['query'] = str_replace('&', "\n", $response->header->request_uri);
 
@@ -151,16 +162,6 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest {
   }
 
   /**
-   * Returns the default value for mediamosa_is_public_list option.
-   *
-   * @return boolean
-   *   Returns FALSE by default.
-   */
-  public function mediamosa_option_is_public_list_default() {
-    return FALSE;
-  }
-
-  /**
    * Returns the value for mediamosa_is_public_list option.
    *
    * @return boolean
@@ -173,16 +174,6 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest {
     }
 
     // Return the public list option value.
-    return $this->mediamosa_option_is_public_list_default();
-  }
-
-  /**
-   * Returns the default value for mediamosa_hide_empty_assets option.
-   *
-   * @return boolean
-   *   Returns TRUE by default.
-   */
-  public function mediamosa_option_hide_empty_assets_default() {
     return TRUE;
   }
 
@@ -198,17 +189,7 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest {
       return $this->options['mediamosa_hide_empty_assets'];
     }
 
-    // Return the public list option value.
-    return $this->mediamosa_option_hide_empty_assets_default();
-  }
-
-  /**
-   * Returns the default value for mediamosa_granted option.
-   *
-   * @return boolean
-   *   Returns TRUE by default.
-   */
-  public function mediamosa_option_granted_default() {
+    // Hide by default.
     return TRUE;
   }
 
@@ -225,7 +206,7 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest {
     }
 
     // Return the public list option value.
-    return $this->mediamosa_option_granted_default();
+    return TRUE;
   }
 
   /**
@@ -296,7 +277,8 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest {
   /**
    * Get the views data for this REST call.
    *
-   * @return
+   * @return array
+   *   The views data.
    */
   public static function get_views_data($title, $class) {
     $data = array(
