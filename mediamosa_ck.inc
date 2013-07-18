@@ -44,3 +44,28 @@ function _mediamosa_ck_json_connector_status() {
   // Return '1' for success, '0' for failure.
   drupal_json_output($result);
 }
+
+/**
+ * Download mediafile.
+ */
+function _mediamosa_ck_mediafile_download($asset_id, $mediafile_id) {
+
+  // Take user_id of current watcher.
+  $user_id = mediamosa_ck::session_user_id();
+
+  // Determine admin user.
+  if (user_access('access administration pages')) {
+    $options['is_app_admin'] = TRUE;
+  }
+
+  try {
+    $options['fatal'] = TRUE;
+    $options['response'] = 'download';
+    $response = MediaMosaCkConnectorWrapper::get_play_link($asset_id, $mediafile_id, $user_id, $options);
+  }
+  catch (Exception $e) {
+    drupal_set_message($e->getMessage(), 'warning');
+    drupal_goto(strtr('asset/detail/@asset_id/@mediafile_id', array('@asset_id' => $asset_id, '@mediafile_id' => $mediafile_id)));
+  }
+  drupal_goto($response);
+}
