@@ -123,6 +123,13 @@ function mediamosa_ck_views_theme() {
       ),
       'file' => 'mediamosa_ck_views.theme.inc',
     ),
+    'mediamosa_ck_views_theme_asset_download' => array(
+      'variables' => array(
+        'download' => array(),
+        'asset_path' => 'asset/detail/[asset_id]/[mediafile_id]',
+      ),
+      'file' => 'mediamosa_ck_views.theme.inc',
+    ),
     'mediamosa_ck_views_theme_asset_collections' => array(
       'variables' => array(
         'collections' => array(),

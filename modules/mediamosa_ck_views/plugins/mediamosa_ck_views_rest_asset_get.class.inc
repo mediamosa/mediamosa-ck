@@ -111,7 +111,11 @@ class mediamosa_ck_views_rest_asset_get extends mediamosa_ck_views_rest_asset {
       $original_set = FALSE;
       foreach ($item->xpath('mediafiles/mediafile') as $mediafile) {
         $mediafile = self::xmlobject2array($mediafile);
+
         $object->mediafiles[(string) $mediafile['mediafile_id']] = $mediafile;
+        if ($mediafile['is_downloadable'] == 'TRUE') {
+          $object->download[(string) $mediafile['mediafile_id']] = $mediafile;
+        }
 
         // Find original and copy its technical metadata.
         if (!$original_set && MediaMosaCkConnectorWrapper::string2bool((string) $mediafile['is_original_file'])) {
@@ -183,6 +187,15 @@ class mediamosa_ck_views_rest_asset_get extends mediamosa_ck_views_rest_asset {
       ),
     );
 
+    // Downloads.
+    $data['download'] = array(
+      'title' => t('Download'),
+      'help' => t('Shows a listing of downloadables.'),
+      'field' => array(
+        'handler' => 'mediamosa_ck_views_field_text_download',
+      ),
+    );
+
     // Collections.
     $data['collections'] = array(
       'title' => t('Collections'),
@@ -192,7 +205,7 @@ class mediamosa_ck_views_rest_asset_get extends mediamosa_ck_views_rest_asset {
       ),
     );
 
-    // Collections.
+    // Technical metadata.
     $data['technical_metadata'] = array(
       'title' => t('Technical metadata'),
       'help' => t('Show the technical metadata of the asset.'),
