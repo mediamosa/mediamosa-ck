@@ -93,6 +93,23 @@ class mediamosa_ck_views_field_player extends views_handler_field {
     $options = array();
     $mime_type = '';
 
+    // Possible start/end time from _GET['t'] parameter.
+    if (isset($_GET['t'])) {
+
+      preg_match('/(?P<start_sec>([0-9]*\.?[0-9]*))(?P<comma>\,?)(?P<end_sec>([0-9]*\.?[0-9]*))/', check_plain($_GET['t']), $matches);
+      $endtime = 0;
+      $options['start'] = 0;
+      if (isset($matches['start_sec'])) {
+        $options['start'] = $matches['start_sec'] * 1000;
+      }
+      if (isset($matches['end_sec'])) {
+        $options['duration'] = ($matches['end_sec'] * 1000) - $options['start'];
+        if ($options['duration'] < 0) {
+          unset($options['duration']);
+        }
+      }
+    }
+
     // What mediafile to play?
     $mediafile_id_to_play = empty($values->mediafile_id_to_play) ? NULL : $values->mediafile_id_to_play;
 
