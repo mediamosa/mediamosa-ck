@@ -637,6 +637,14 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
         ),
       ),
 
+      'playback_range' => array(
+        'title' => t('Playback range'),
+        'help' => t('Used in combination with video player, start and endtime of media. example: t=10,20 (specifies that the video should play the range 10 seconds through 20 seconds).'),
+        'field' => array(
+          'handler' => 'mediamosa_ck_views_field_playback_range',
+        ),
+      ),
+
       'mediafile_duration' => array(
         'title' => t('Mediafile duration'),
         'help' => t('The duration of the original mediafile.'),
