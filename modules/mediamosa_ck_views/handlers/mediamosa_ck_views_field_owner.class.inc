@@ -5,6 +5,7 @@
  */
 
 class mediamosa_ck_views_field_owner extends views_handler_field {
+
   public function option_definition() {
     $options = parent::option_definition();
 
@@ -17,7 +18,6 @@ class mediamosa_ck_views_field_owner extends views_handler_field {
     $form['user_empty_name'] = array(
       '#type' => 'textfield',
       '#title' => t('Default user name'),
-      '#description' => t(''),
       '#default_value' => isset($this->options['user_empty_name']) ? $this->options['user_empty_name'] : '',
     );
 

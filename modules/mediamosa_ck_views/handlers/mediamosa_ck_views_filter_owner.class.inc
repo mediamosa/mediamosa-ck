@@ -16,12 +16,16 @@ class mediamosa_ck_views_filter_owner extends mediamosa_ck_views_filter {
    *   Return the converted value.
    */
   public function _convert_value($value) {
+    global $user;
+
+    // First possible token-replace, makes [user:mail] possible.
+    $username = token_replace($value, array('user' => $user));
 
     // Get the user.
-    $user = mediamosa_ck::lookup_user_with_name($value);
+    $lookup_name = mediamosa_ck::lookup_user_with_name($username);
 
     // If user can not be found, then we return the original.
-    return empty($user) ? $value : $user->mail;
+    return !empty($lookup_name) ? $lookup_name : $username;
   }
 
   /**
@@ -37,7 +41,7 @@ class mediamosa_ck_views_filter_owner extends mediamosa_ck_views_filter {
   public function value_form(&$form, &$form_state) {
     $form['value'] = array(
       '#type' => 'textfield',
-      '#title' => t($this->definition['title']),
+      '#title' => $this->definition['title'],
       '#default_value' => $this->value,
       '#autocomplete_path' => 'user/autocomplete',
     );
