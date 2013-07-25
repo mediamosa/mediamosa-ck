@@ -1664,4 +1664,34 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
     // Got here, return FALSE.
     return FALSE;
   }
+
+  /**
+   * Change ownership.
+   *
+   * @param string $owner_id
+   *   The owner of the asset.
+   * @param string $new_owner_id
+   *   The options for the REST call.
+   *
+   * @return bool
+   *   Returns FALSE for failure.
+   */
+  static public function change_ownership($owner_id, $new_owner_id) {
+
+    $data = array(
+      'old_owner_id' => $owner_id,
+      'new_owner_id' => $new_owner_id,
+    );
+    try {
+      // Do request.
+      return mediamosa_ck::request_post_fatal('change_ownership', array('data' => $data));
+    }
+    catch (Exception $e) {
+      mediamosa_ck::watchdog_error('Unable to transfer objects to new owner; @message.', array('@message' => $e->getMessage()));
+    }
+
+    // Got here, return FALSE.
+    return FALSE;
+  }
+
 }
