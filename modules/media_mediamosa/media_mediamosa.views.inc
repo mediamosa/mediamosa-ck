@@ -76,13 +76,9 @@ function template_preprocess_media_mediamosa_views_view_media_browser(&$vars) {
 
       // Add url/preview to the file object.
       media_browser_build_media_item($file);
-
-      $vars['rows'][$index] = $file;
-      $vars['rows'][$index]->preview = $file->preview;
     }
-    else {
-      // Not found as mediafile.
-      unset($vars['rows'][$index]);
+    if (isset($file)) {
+      $vars['rows'][$index]->preview = $file->preview;
     }
   }
 
