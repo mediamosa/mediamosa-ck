@@ -714,7 +714,6 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
     );
 
     try {
-      $options['mediafile_id'] = $mediafile_id;
       $response_type = $options['response'];
 
       if (!empty($play_links[$asset_id][$mediafile_id][$response_type])) {
@@ -746,10 +745,14 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       if ($options['is_app_admin'] == 'TRUE') {
         $options['user_id'] = self::get_asset_owner($asset_id);
       }
-
-      $response = mediamosa_ck::request_get_fatal('asset/' . rawurlencode($asset_id) . '/play', array('data' => $options));
-      $play_links[$asset_id][$mediafile_id][$response_type] = empty($response->items->item->output) ? FALSE : (string) $response->items->item->output;
-
+      $result = mediamosa_ck::request('asset/' . rawurlencode($asset_id) . '/play', array('data' => $options, 'method' => 'GET'));
+      if (((int) $result->xml->header->request_result_id) == mediamosa_sdk::ERRORCODE_NO_MEDIAFILE_FOUND_FOR_PROFILE_ID) {
+        // No profile_id found, lets try the given mediafile_id.
+        $options['mediafile_id'] = $mediafile_id;
+        unset($options['profile_id']);
+        $result = mediamosa_ck::request_get_fatal('asset/' . rawurlencode($asset_id) . '/play', array('data' => $options));
+      }
+      $play_links[$asset_id][$mediafile_id][$response_type] = empty($result->xml->items->item->output) ? FALSE : (string) $result->xml->items->item->output;
       return $play_links[$asset_id][$mediafile_id][$response_type];
     }
     catch (Exception $e) {

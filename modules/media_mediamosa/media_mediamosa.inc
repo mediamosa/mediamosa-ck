@@ -32,8 +32,26 @@ function _media_mediamosa_upload_form($form, &$form_state, $types = NULL) {
  */
 function media_mediamosa_upload_form($form, &$form_state, $types = NULL) {
 
+  $default_transcode_profile = variable_get('media_mediamosa_transcode_profile_default');
+  if (!isset($default_transcode_profile)) {
+    $default_transcode_profile = MediaMosaCkConnectorWrapper::get_default_transcode_profile();
+  }
+
+  $media_mediamosa_transcodes = variable_get('media_mediamosa_transcodes', array());
+  if (!isset($media_mediamosa_transcodes)) {
+    $media_mediamosa_transcodes = array($default_transcode_profile);
+  }
+
+  // Remove not choosen transcodes.
+  $options['transcode'] = array();
+  foreach ($media_mediamosa_transcodes as $key => $value) {
+    if ($value > 0) {
+      $options['transcode'][] = $value;
+    }
+  }
+
   // Try to create upload ticket.
-  $result = MediaMosaCkConnectorWrapper::create_upload_ticket();
+  $result = MediaMosaCkConnectorWrapper::create_upload_ticket($options);
   if (!$result) {
     $form['upload'] = array(
       '#markup' => t('Unable to upload to MediaMosa; @reason', array('@reason' => mediamosa_ck::get_connector_last_error_text())),
