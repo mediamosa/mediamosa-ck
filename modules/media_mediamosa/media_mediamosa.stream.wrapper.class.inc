@@ -17,21 +17,19 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
   /**
    * No getTarget().
    */
-  function getTarget($f) {
+  public function getTarget($f) {
     return FALSE;
   }
 
   /**
    * InterpolateUrl().
    */
-  function interpolateUrl() {
+  public function interpolateUrl() {
     $parameters = $this->get_parameters();
     if (empty($parameters)) {
       return FALSE;
     }
-
-    // @todo: this needs a user id parameter.
-    return MediaMosaCkConnectorWrapper::get_play_link($parameters['asset_id'], $parameters['mediafile_id']);
+    return MediaMosaCkConnectorWrapper::get_play_link($parameters['asset_id'], $parameters['mediafile_id'], mediamosa_ck::session_user_id());
   }
 
   /**
