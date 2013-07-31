@@ -67,6 +67,24 @@ function media_mediamosa_theme() {
 }
 
 /**
+ * Implements hook_file_mimetype_mapping_alter().
+ *
+ * Register missing webm mimetype.
+ */
+function media_mediamosa_file_mimetype_mapping_alter(&$mapping) {
+  $mapping['mimetypes'][] = 'video/webm';
+}
+
+/*
+ * Implements hook_file_default_types_alter().
+ *
+ * Adds the video/webm mimetype to video files.
+ */
+function media_mediamosa_file_default_types_alter(&$types) {
+  $types['video']->mimetypes[] = 'video/webm';
+}
+
+/**
  * Implements hook_stream_wrappers().
  */
 function media_mediamosa_stream_wrappers() {
