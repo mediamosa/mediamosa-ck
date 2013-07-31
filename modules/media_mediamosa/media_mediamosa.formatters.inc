@@ -10,7 +10,7 @@
 function media_mediamosa_file_formatter_info() {
   $formatters['media_mediamosa_video'] = array(
     'label' => t('MediaMosa Video'),
-    'file types' => array('video'),
+    'file types' => array('video', 'audio', 'image', 'undefined', 'document'),
     'default settings' => array(
       // media_mediamosa_variable_get('width'),
       'width' => 480,
@@ -23,11 +23,12 @@ function media_mediamosa_file_formatter_info() {
     'settings callback' => 'media_mediamosa_file_formatter_video_settings',
   );
   $formatters['media_mediamosa_image'] = array(
-    'label' => t('YouTube Preview Image'),
-    'file types' => array('video'),
+    'label' => t('MediaMosa preview Image'),
+    'file types' => array('video', 'audio', 'image', 'undefined', 'document'),
     'default settings' => array(
-      'image_style' => '',
+      'image_style' => 'square_thumbnail',
     ),
+    'weight' => -1,
     'view callback' => 'media_mediamosa_file_formatter_image_view',
     'settings callback' => 'media_mediamosa_file_formatter_image_settings',
   );
@@ -94,6 +95,7 @@ function media_mediamosa_file_formatter_image_view($file, $display, $langcode) {
     $wrapper = file_stream_wrapper_get_instance_by_uri($file->uri);
     $image_style = $display['settings']['image_style'];
     $valid_image_styles = image_style_options(FALSE);
+
     if (empty($image_style) || !isset($valid_image_styles[$image_style])) {
       $element = array(
         '#theme' => 'image',
@@ -128,6 +130,7 @@ function media_mediamosa_file_formatter_image_settings($form, &$form_state, $set
 
 /**
  * Implements hook_file_default_displays().
+ *
  */
 function media_mediamosa_file_default_displays() {
   $default_displays = array();
@@ -151,7 +154,7 @@ function media_mediamosa_file_default_displays() {
       'api_version' => 1,
       'name' => $display_name,
       'status' => 1,
-      'weight' => 1,
+      'weight' => 0,
       'settings' => $settings,
     );
   }
