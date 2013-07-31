@@ -188,3 +188,13 @@ function mediamosa_ck_theme() {
     ),
   );
 }
+
+function mediamosa_ck_file_displays_alter(&$displays, $file, $view_mode) {
+  $displays['media_mediamosa_image'] = array(
+    'status' => 1,
+    //'weight' => -99,
+    'settings' => array(
+      'image_style' => 'square_thumbnail',
+    ),
+  );
+}
