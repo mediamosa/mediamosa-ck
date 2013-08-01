@@ -67,7 +67,7 @@ function mediamosa_ck_content_supplier_menu() {
     'access arguments' => array(mediamosa_ck_content_supplier::PERM_ACCESS_TOOLS_SUPPLIER),
     'file' => 'mediamosa_ck_content_supplier.admin.inc',
   );
-  $items['admin/mediamosa/tools/supplier/batch/queued/%/log'] = array(
+  $items['admin/content/mediamosa/supplier/batch/queued/%/log'] = array(
     'title' => 'Queue batch log',
     'description' => 'View the log of the batch run.',
     'type' => MENU_CALLBACK,
@@ -130,7 +130,6 @@ function mediamosa_ck_content_supplier_menu() {
     'file' => 'mediamosa_ck_content_supplier.admin.inc',
   );
 
-
   if (module_exists('mediamosa_maintenance')) {
     $items['admin/mediamosa/tools/supplier'] = array(
       'title' => 'Content batch',
@@ -151,9 +150,9 @@ function mediamosa_ck_content_supplier_menu() {
     $items['admin/mediamosa/tools/supplier/batch/%/delete']['access callback'] = mediamosa_permission::CALLBACK_USER_ACCESS;
     $items['admin/mediamosa/tools/supplier/batch/%/delete']['access arguments'] = array(mediamosa_permission::ACCESS_TOOLS_SUPPLIER);
 
-    $items['admin/mediamosa/tools/supplier/batch/queued/%/log'] = $items['admin/mediamosa/tools/supplier/batch/queued/%/log'];
+    $items['admin/mediamosa/tools/supplier/batch/queued/%/log'] = $items['admin/content/mediamosa/supplier/batch/queued/%/log'];
     $items['admin/mediamosa/tools/supplier/batch/queued/%/log']['access callback'] = mediamosa_permission::CALLBACK_USER_ACCESS;
-    $items['admin/mediamosa/tools/supplier/batch/queued/%/log']['access arguments'] = array(mediamosa_permission::ACCESS_TOOLS_SUPPLIER);
+    $items['admin/mediamosa/tools/supplier/batch/queued/%/log']['access arguments'] = array(mediamosa_permission::ACCESS_CONTENT_SUPPLIER);
 
     $items['admin/mediamosa/tools/supplier/batch/%/queue'] = $items['admin/content/mediamosa/supplier/batch/%/queue'];
     $items['admin/mediamosa/tools/supplier/batch/%/queue']['access callback'] = mediamosa_permission::CALLBACK_USER_ACCESS;
