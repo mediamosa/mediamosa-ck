@@ -87,12 +87,13 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    *     The mediafile ID of the upload.
    */
   public static function create_upload_ticket(array $options = array()) {
+
     // Set default settings, when missing.
     $options += array(
       'transcode_inherits_acl' => TRUE,
       'create_still' => mediamosa_ck::setting_mediafile_upload_create_still(),
       'is_downloadable' => mediamosa_ck::setting_mediafile_downloadable(),
-      'transcode' => array(),
+      'transcode' => array(mediamosa_connector::variable_get('media_mediamosa_transcode_profile_default')),
     );
 
     try {
