@@ -12,11 +12,8 @@ function media_mediamosa_file_formatter_info() {
     'label' => t('MediaMosa Video'),
     'file types' => array('video', 'audio', 'image', 'undefined', 'document'),
     'default settings' => array(
-      // media_mediamosa_variable_get('width'),
       'width' => 480,
-      // media_mediamosa_variable_get('height'),
       'height' => 360,
-      // media_mediamosa_variable_get('autoplay'),
       'autoplay' => FALSE,
     ),
     'view callback' => 'media_mediamosa_file_formatter_video_view',
@@ -40,26 +37,19 @@ function media_mediamosa_file_formatter_info() {
  */
 function media_mediamosa_file_formatter_video_view($file, $display, $langcode) {
   $scheme = file_uri_scheme($file->uri);
-  // WYSIWYG does not yet support video inside a running editor instance.
+  // WYSIWYG does not (yet) support video inside a running editor instance.
   if ($scheme == 'mediamosa' && empty($file->override['wysiwyg'])) {
     $element = array(
       '#theme' => 'media_mediamosa_video',
       '#uri' => $file->uri,
     );
     foreach (array('width', 'height', 'autoplay') as $setting) {
-      $element['#' . $setting] = isset($file->override[$setting]) ? $file->override[$setting] : $display['settings'][$setting];
+      $element['#' . $setting] = isset($file->override['attributes'][$setting]) ? $file->override['attributes'][$setting] : $display['settings'][$setting];
     }
     return $element;
   }
   elseif ($scheme == 'mediamosa' && !empty($file->override['wysiwyg'])) {
-    $element = array(
-      '#theme' => 'media_formatter_large_icon',
-      '#uri' => $file->uri,
-    );
-    foreach (array('width', 'height', 'autoplay') as $setting) {
-      $element['#' . $setting] = isset($file->override[$setting]) ? $file->override[$setting] : $display['settings'][$setting];
-    }
-    return $element;
+    return media_mediamosa_file_formatter_image_view($file, $display, $langcode);
   }
 }
 
