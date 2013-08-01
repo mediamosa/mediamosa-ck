@@ -31,7 +31,11 @@ class mediamosa_ck_upload {
    * Helper function to add defaults to $element['#upload_validators'].
    */
   public static function get_default_upload_validators() {
-    return array('avi mov mp4 ogg wmv');
+    $default_ext = explode(' ', 'avi mov mp4 mpg m4v ogv wmv 3gp vob divx dv mpeg flv webm srt mp3 m4a ogg wav bmp pdf jpg jpeg gif tiff tif png');
+    if (function_exists('media_variable_get')) {
+      $default_ext += explode(' ', media_variable_get('file_extensions'));
+    }
+    return array(implode(' ', $default_ext));
   }
 
   /**
