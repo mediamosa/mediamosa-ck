@@ -37,18 +37,31 @@ function media_mediamosa_file_formatter_info() {
  */
 function media_mediamosa_file_formatter_video_view($file, $display, $langcode) {
   $scheme = file_uri_scheme($file->uri);
-  // WYSIWYG does not (yet) support video inside a running editor instance.
+
   if ($scheme == 'mediamosa' && empty($file->override['wysiwyg'])) {
     $element = array(
       '#theme' => 'media_mediamosa_video',
       '#uri' => $file->uri,
     );
     foreach (array('width', 'height', 'autoplay') as $setting) {
-      $element['#' . $setting] = isset($file->override['attributes'][$setting]) ? $file->override['attributes'][$setting] : $display['settings'][$setting];
+      if (isset($file->override[$setting])) {
+        // This setting is from wysiwyg.
+        $element['#' . $setting] = $file->override[$setting];
+      }
+      elseif (isset($file->override['attributes'][$setting])) {
+        // Setting from the choosen media display.
+        $element['#' . $setting] = $file->override['attributes'][$setting];
+      }
+      else {
+        // Otherwise the default display.
+        $element['#' . $setting] = $display['settings'][$setting];
+      }
     }
     return $element;
   }
   elseif ($scheme == 'mediamosa' && !empty($file->override['wysiwyg'])) {
+    // WYSIWYG does not (yet) support video inside a running editor instance,
+    // so we display an image.
     return media_mediamosa_file_formatter_image_view($file, $display, $langcode);
   }
 }
