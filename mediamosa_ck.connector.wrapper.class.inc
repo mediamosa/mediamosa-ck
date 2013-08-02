@@ -746,15 +746,57 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       if ($options['is_app_admin'] == 'TRUE') {
         $options['user_id'] = self::get_asset_owner($asset_id);
       }
-      $result = mediamosa_ck::request('asset/' . rawurlencode($asset_id) . '/play', array('data' => $options, 'method' => 'GET'));
-      if (((int) $result->xml->header->request_result_id) == mediamosa_sdk::ERRORCODE_NO_MEDIAFILE_FOUND_FOR_PROFILE_ID) {
-        // No profile_id found, lets try the given mediafile_id.
+
+      // Try to optain best mediafile here.
+      // If mediafile_id is given: try that first.
+      if (isset($mediafile_id) && ($mediafile_id != '')) {
         $options['mediafile_id'] = $mediafile_id;
+        $temp_profile_id = isset($options['profile_id']) ? $options['profile_id'] : '';
         unset($options['profile_id']);
-        $result = mediamosa_ck::request_get_fatal('asset/' . rawurlencode($asset_id) . '/play', array('data' => $options));
+        $result = mediamosa_ck::request('asset/' . rawurlencode($asset_id) . '/play', array('data' => $options, 'method' => 'GET'));
+        if ($result->xml->header->request_result_id == mediamosa_sdk::ERRORCODE_OKAY) {
+          if (!empty($result->xml->items->item->output)) {
+            return $result->xml->items->item->output;
+          }
+        }
+        $options['profile_id'] = $temp_profile_id;
       }
-      $play_links[$asset_id][$mediafile_id][$response_type] = empty($result->xml->items->item->output) ? FALSE : (string) $result->xml->items->item->output;
-      return $play_links[$asset_id][$mediafile_id][$response_type];
+
+      // If no response, try the default transcode profile id.
+      if (!isset($options['profile_id'])) {
+        // Get the default ck transcode profile id.
+        $options['profile_id'] = MediaMosaCkConnectorWrapper::get_default_transcode_profile();
+      }
+      unset($options['mediafile_id']);
+      $result = mediamosa_ck::request('asset/' . rawurlencode($asset_id) . '/play', array('data' => $options, 'method' => 'GET'));
+
+      if ($result->xml->header->request_result_id == mediamosa_sdk::ERRORCODE_OKAY) {
+        if (!empty($result->xml->items->item->output)) {
+          return $result->xml->items->item->output;
+        }
+      }
+
+      // If no transcode profile available, take the original.
+      $options['mediafile_id'] = self::get_asset_mediafile_id_first_original($asset_id);
+      unset($options['profile_id']);
+      $result = mediamosa_ck::request('asset/' . rawurlencode($asset_id) . '/play', array('data' => $options, 'method' => 'GET'));
+      if ($result->xml->header->request_result_id == mediamosa_sdk::ERRORCODE_OKAY) {
+        if (!empty($result->xml->items->item->output)) {
+          return $result->xml->items->item->output;
+        }
+      }
+
+      // If that also fails, show the image of the asset.
+      $options['response'] = 'still';
+      $result = mediamosa_ck::request('asset/' . rawurlencode($asset_id) . '/play', array('data' => $options, 'method' => 'GET'));
+      if ($result->xml->header->request_result_id == mediamosa_sdk::ERRORCODE_OKAY) {
+        if (!empty($result->xml->items->item->output)) {
+          return '<img src="' . $result->xml->items->item->output . '" alt="No media viewer found.">';
+        }
+      }
+
+      // @todo: if that also fails,
+      // show a default image (check if transcode in progress?).
     }
     catch (Exception $e) {
       mediamosa_ck::watchdog('Unable to create play ticket; @message.', array('@message' => $e->getMessage()));

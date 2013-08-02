@@ -209,7 +209,7 @@ function theme_mediamosa_ck_views_theme_owner($variables) {
 function theme_mediamosa_ck_views_player($variables) {
   global $base_url;
 
-  if ($variables['mime_type'] == 'audio/mpeg') {
+  if (strpos($variables['response'], 'type="audio/')) {
     $path = $base_url . '/' . drupal_get_path('module', 'mediamosa_ck') . '/modules/mediamosa_ck_views/images/';
     $audioimage = $path . 'audio.png';
     return str_replace('poster=""', 'poster="' . $audioimage . '"', $variables['response']);
