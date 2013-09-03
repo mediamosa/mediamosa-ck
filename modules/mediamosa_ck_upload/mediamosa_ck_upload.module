@@ -72,33 +72,15 @@ function mediamosa_ck_upload_library() {
  */
 function mediamosa_ck_upload_menu() {
   if (module_exists('mediamosa_maintenance')) {
-    $items['admin/mediamosa/content'] = array(
-      'title' => 'Content',
-      'description' => 'MediaMosa Content tools.',
-      'type' => MENU_LOCAL_TASK,
-      'page callback' => '_mediamosa_maintenance_admin_page',
-      'page arguments' => array('admin/mediamosa/content'),
-      'access callback' => mediamosa_permission::CALLBACK_USER_ACCESS,
-      'access arguments' => array(mediamosa_permission::ACCESS_CONTENT),
-      'position' => 'left',
-      'weight' => -10,
-      'file' => 'mediamosa_maintenance.admin.inc',
-      'file path' => drupal_get_path('module', 'mediamosa_maintenance'),
-    );
-    $items['admin/mediamosa/content/list'] = array(
-      'title' => 'List',
-      'type' => MENU_DEFAULT_LOCAL_TASK,
-    );
-
-    $items['admin/mediamosa/content/upload'] = array(
+    $items['admin/mediamosa/tools/upload'] = array(
       'title' => 'Bulk uploader',
       'description' => 'Upload one or more mediafiles to MediaMosa.',
       'page callback' => '_mediamosa_ck_upload_page',
       'access callback' => mediamosa_permission::CALLBACK_USER_ACCESS,
-      'access arguments' => array(mediamosa_permission::ACCESS_CONTENT_UPLOAD),
+      'access arguments' => array(mediamosa_permission::ACCESS_TOOLS_UPLOAD),
       'file' => 'mediamosa_ck_upload.admin.inc',
     );
-    $items['admin/mediamosa/content/upload/list'] = array(
+    $items['admin/mediamosa/tools/upload/list'] = array(
       'title' => 'Bulk uploader',
       'type' => MENU_DEFAULT_LOCAL_TASK,
       'weight' => mediamosa_settings::UI_TAB_WEIGHT_LIST,

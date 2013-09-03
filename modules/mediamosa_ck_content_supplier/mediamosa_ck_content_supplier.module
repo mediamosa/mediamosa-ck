@@ -9,7 +9,7 @@
  */
 function mediamosa_ck_content_supplier_permission() {
   return array(
-    mediamosa_ck_content_supplier::PERM_ACCESS_CONTENT_SUPPLIER =>  array(
+    mediamosa_ck_content_supplier::PERM_ACCESS_TOOLS_SUPPLIER =>  array(
       'title' => t('Access to the content supplier'),
       'description' => t('Allow users to work with the content supplier.'),
     ),
@@ -51,7 +51,7 @@ function mediamosa_ck_content_supplier_menu() {
     'title' => 'Content supplier',
     'page callback' => '_mediamosa_ck_content_supplier_page',
     'access callback' => '_mediamosa_ck_content_supplier_user_access',
-    'access arguments' => array(mediamosa_ck_content_supplier::PERM_ACCESS_CONTENT_SUPPLIER),
+    'access arguments' => array(mediamosa_ck_content_supplier::PERM_ACCESS_TOOLS_SUPPLIER),
     'type' => MENU_LOCAL_TASK,
     'file' => 'mediamosa_ck_content_supplier.admin.inc',
   );
@@ -64,7 +64,7 @@ function mediamosa_ck_content_supplier_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('mediamosa_ck_content_supplier_batch_delete_confirm', 5),
     'access callback' => '_mediamosa_ck_content_supplier_user_access',
-    'access arguments' => array(mediamosa_ck_content_supplier::PERM_ACCESS_CONTENT_SUPPLIER),
+    'access arguments' => array(mediamosa_ck_content_supplier::PERM_ACCESS_TOOLS_SUPPLIER),
     'file' => 'mediamosa_ck_content_supplier.admin.inc',
   );
   $items['admin/content/mediamosa/supplier/batch/queued/%/log'] = array(
@@ -74,7 +74,7 @@ function mediamosa_ck_content_supplier_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('mediamosa_ck_content_supplier_batch_queued_log_form', 6),
     'access callback' => '_mediamosa_ck_content_supplier_user_access',
-    'access arguments' => array(mediamosa_ck_content_supplier::PERM_ACCESS_CONTENT_SUPPLIER),
+    'access arguments' => array(mediamosa_ck_content_supplier::PERM_ACCESS_TOOLS_SUPPLIER),
     'file' => 'mediamosa_ck_content_supplier.admin.inc',
   );
   $items['admin/content/mediamosa/supplier/batch/%/queue'] = array(
@@ -84,7 +84,7 @@ function mediamosa_ck_content_supplier_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('mediamosa_ck_content_supplier_batch_queue_form', 5),
     'access callback' => '_mediamosa_ck_content_supplier_user_access',
-    'access arguments' => array(mediamosa_ck_content_supplier::PERM_ACCESS_CONTENT_SUPPLIER),
+    'access arguments' => array(mediamosa_ck_content_supplier::PERM_ACCESS_TOOLS_SUPPLIER),
     'file' => 'mediamosa_ck_content_supplier.admin.inc',
   );
 
@@ -94,7 +94,7 @@ function mediamosa_ck_content_supplier_menu() {
     'page callback' => '_mediamosa_ck_json_supplier_selection_state_ajax',
     'page arguments' => array(6, 7),
     'access callback' => '_mediamosa_ck_content_supplier_user_access',
-    'access arguments' => array(mediamosa_ck_content_supplier::PERM_ACCESS_CONTENT_SUPPLIER),
+    'access arguments' => array(mediamosa_ck_content_supplier::PERM_ACCESS_TOOLS_SUPPLIER),
     'type' => MENU_CALLBACK,
     'file' => 'mediamosa_ck_content_supplier.admin.inc',
   );
@@ -103,7 +103,7 @@ function mediamosa_ck_content_supplier_menu() {
     'title' => 'Returns the current selection in HTML.',
     'page callback' => '_mediamosa_ck_content_supplier_batch_selection_ajax',
     'access callback' => '_mediamosa_ck_content_supplier_user_access',
-    'access arguments' => array(mediamosa_ck_content_supplier::PERM_ACCESS_CONTENT_SUPPLIER),
+    'access arguments' => array(mediamosa_ck_content_supplier::PERM_ACCESS_TOOLS_SUPPLIER),
     'type' => MENU_CALLBACK,
     'file' => 'mediamosa_ck_content_supplier.admin.inc',
   );
@@ -131,32 +131,32 @@ function mediamosa_ck_content_supplier_menu() {
   );
 
   if (module_exists('mediamosa_maintenance')) {
-    $items['admin/mediamosa/content/supplier'] = array(
+    $items['admin/mediamosa/tools/supplier'] = array(
       'title' => 'Content batch',
       'description' => 'Process multple assets using batches or easy browse through selection of assets.',
       'page callback' => '_mediamosa_ck_content_supplier_page',
       'access callback' => mediamosa_permission::CALLBACK_USER_ACCESS,
-      'access arguments' => array(mediamosa_permission::ACCESS_CONTENT_SUPPLIER),
+      'access arguments' => array(mediamosa_permission::ACCESS_TOOLS_SUPPLIER),
       'file' => 'mediamosa_ck_content_supplier.admin.inc',
     );
-    $items['admin/mediamosa/content/supplier/list'] = array(
+    $items['admin/mediamosa/tools/supplier/list'] = array(
       'title' => 'Content batch',
       'type' => MENU_DEFAULT_LOCAL_TASK,
       'weight' => mediamosa_settings::UI_TAB_WEIGHT_LIST,
     );
 
     // Copy from admin/content.
-    $items['admin/mediamosa/content/supplier/batch/%/delete'] = $items['admin/content/mediamosa/supplier/batch/%/delete'];
-    $items['admin/mediamosa/content/supplier/batch/%/delete']['access callback'] = mediamosa_permission::CALLBACK_USER_ACCESS;
-    $items['admin/mediamosa/content/supplier/batch/%/delete']['access arguments'] = array(mediamosa_permission::ACCESS_CONTENT_SUPPLIER);
+    $items['admin/mediamosa/tools/supplier/batch/%/delete'] = $items['admin/content/mediamosa/supplier/batch/%/delete'];
+    $items['admin/mediamosa/tools/supplier/batch/%/delete']['access callback'] = mediamosa_permission::CALLBACK_USER_ACCESS;
+    $items['admin/mediamosa/tools/supplier/batch/%/delete']['access arguments'] = array(mediamosa_permission::ACCESS_TOOLS_SUPPLIER);
 
     $items['admin/mediamosa/content/supplier/batch/queued/%/log'] = $items['admin/content/mediamosa/supplier/batch/queued/%/log'];
     $items['admin/mediamosa/content/supplier/batch/queued/%/log']['access callback'] = mediamosa_permission::CALLBACK_USER_ACCESS;
     $items['admin/mediamosa/content/supplier/batch/queued/%/log']['access arguments'] = array(mediamosa_permission::ACCESS_CONTENT_SUPPLIER);
 
-    $items['admin/mediamosa/content/supplier/batch/%/queue'] = $items['admin/content/mediamosa/supplier/batch/%/queue'];
-    $items['admin/mediamosa/content/supplier/batch/%/queue']['access callback'] = mediamosa_permission::CALLBACK_USER_ACCESS;
-    $items['admin/mediamosa/content/supplier/batch/%/queue']['access arguments'] = array(mediamosa_permission::ACCESS_CONTENT_SUPPLIER);
+    $items['admin/mediamosa/tools/supplier/batch/%/queue'] = $items['admin/content/mediamosa/supplier/batch/%/queue'];
+    $items['admin/mediamosa/tools/supplier/batch/%/queue']['access callback'] = mediamosa_permission::CALLBACK_USER_ACCESS;
+    $items['admin/mediamosa/tools/supplier/batch/%/queue']['access arguments'] = array(mediamosa_permission::ACCESS_TOOLS_SUPPLIER);
   }
 
   return $items;
