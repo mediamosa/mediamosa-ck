@@ -17,21 +17,19 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
   /**
    * No getTarget().
    */
-  function getTarget($f) {
+  public function getTarget($f) {
     return FALSE;
   }
 
   /**
    * InterpolateUrl().
    */
-  function interpolateUrl() {
+  public function interpolateUrl() {
     $parameters = $this->get_parameters();
     if (empty($parameters)) {
       return FALSE;
     }
-
-    // @todo: this needs a user id parameter.
-    return MediaMosaCkConnectorWrapper::get_play_link($parameters['asset_id'], $parameters['mediafile_id']);
+    return MediaMosaCkConnectorWrapper::get_play_link($parameters['asset_id'], $parameters['mediafile_id'], mediamosa_ck::session_user_id());
   }
 
   /**
@@ -165,12 +163,12 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
     if (empty($thumb)) {
       // If no thumbnail, but the original is audio, we present an audio image.
       $mime_type = empty($asset->items->item->mediafiles->mediafile->metadata->mime_type) ? '' : $asset->items->item->mediafiles->mediafile->metadata->mime_type;
-      if (substr($mime_type, 0, 6) == 'audio/') {
-        $thumb = DRUPAL_ROOT . '/' . drupal_get_path('module', 'mediamosa_ck') . '/modules/mediamosa_ck_views/images/' . 'audio.jpg';
+      if (drupal_substr($mime_type, 0, 5) == 'audio') {
+        $thumb = DRUPAL_ROOT . '/' . drupal_get_path('module', 'mediamosa_ck') . '/modules/mediamosa_ck_views/images/audio.jpg';
       }
       else {
         // If all failes we present an borken image.
-        $thumb = DRUPAL_ROOT . '/' . drupal_get_path('module', 'mediamosa_ck') . '/modules/mediamosa_ck_views/images/' . 'notfound.jpg';
+        $thumb = DRUPAL_ROOT . '/' . drupal_get_path('module', 'mediamosa_ck') . '/modules/mediamosa_ck_views/images/notfound.jpg';
       }
     }
     return $thumb;

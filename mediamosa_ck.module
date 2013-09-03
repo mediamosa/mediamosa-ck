@@ -35,6 +35,14 @@ function mediamosa_ck_menu() {
     'file' => 'mediamosa_ck.admin.inc',
   );
 
+  $items['asset/detail/%/%/download'] = array(
+    'title' => 'Download',
+    'page callback' => '_mediamosa_ck_mediafile_download',
+    'page arguments' => array(2, 3),
+    'access arguments' => array('access content'),
+    'file' => 'mediamosa_ck.inc',
+  );
+
   $items['mediamosa/ck/json/uploadticket/create'] = array(
     'title' => 'Create the upload ticket for a file',
     'page callback' => '_mediamosa_ck_json_create_upload_ticket',
@@ -177,6 +185,16 @@ function mediamosa_ck_theme() {
         'markup' => '',
       ),
       'file' => 'mediamosa_ck.theme.inc',
+    ),
+  );
+}
+
+function mediamosa_ck_file_displays_alter(&$displays, $file, $view_mode) {
+  $displays['media_mediamosa_image'] = array(
+    'status' => 1,
+    //'weight' => -99,
+    'settings' => array(
+      'image_style' => 'square_thumbnail',
     ),
   );
 }

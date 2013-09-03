@@ -87,12 +87,13 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    *     The mediafile ID of the upload.
    */
   public static function create_upload_ticket(array $options = array()) {
+
     // Set default settings, when missing.
     $options += array(
       'transcode_inherits_acl' => TRUE,
       'create_still' => mediamosa_ck::setting_mediafile_upload_create_still(),
       'is_downloadable' => mediamosa_ck::setting_mediafile_downloadable(),
-      'transcode' => array(),
+      'transcode' => array(mediamosa_connector::variable_get('media_mediamosa_transcode_profile_default')),
     );
 
     try {
@@ -714,7 +715,6 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
     );
 
     try {
-      $options['mediafile_id'] = $mediafile_id;
       $response_type = $options['response'];
 
       if (!empty($play_links[$asset_id][$mediafile_id][$response_type])) {
@@ -747,10 +747,56 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
         $options['user_id'] = self::get_asset_owner($asset_id);
       }
 
-      $response = mediamosa_ck::request_get_fatal('asset/' . rawurlencode($asset_id) . '/play', array('data' => $options));
-      $play_links[$asset_id][$mediafile_id][$response_type] = empty($response->items->item->output) ? FALSE : (string) $response->items->item->output;
+      // Try to optain best mediafile here.
+      // If mediafile_id is given: try that first.
+      if (isset($mediafile_id) && ($mediafile_id != '')) {
+        $options['mediafile_id'] = $mediafile_id;
+        $temp_profile_id = isset($options['profile_id']) ? $options['profile_id'] : '';
+        unset($options['profile_id']);
+        $result = mediamosa_ck::request('asset/' . rawurlencode($asset_id) . '/play', array('data' => $options, 'method' => 'GET'));
+        if ($result->xml->header->request_result_id == mediamosa_sdk::ERRORCODE_OKAY) {
+          if (!empty($result->xml->items->item->output)) {
+            return $result->xml->items->item->output;
+          }
+        }
+        $options['profile_id'] = $temp_profile_id;
+      }
 
-      return $play_links[$asset_id][$mediafile_id][$response_type];
+      // If no response, try the default transcode profile id.
+      if (!isset($options['profile_id'])) {
+        // Get the default ck transcode profile id.
+        $options['profile_id'] = MediaMosaCkConnectorWrapper::get_default_transcode_profile();
+      }
+      unset($options['mediafile_id']);
+      $result = mediamosa_ck::request('asset/' . rawurlencode($asset_id) . '/play', array('data' => $options, 'method' => 'GET'));
+
+      if ($result->xml->header->request_result_id == mediamosa_sdk::ERRORCODE_OKAY) {
+        if (!empty($result->xml->items->item->output)) {
+          return $result->xml->items->item->output;
+        }
+      }
+
+      // If no transcode profile available, take the original.
+      $options['mediafile_id'] = self::get_asset_mediafile_id_first_original($asset_id);
+      unset($options['profile_id']);
+      $result = mediamosa_ck::request('asset/' . rawurlencode($asset_id) . '/play', array('data' => $options, 'method' => 'GET'));
+      if ($result->xml->header->request_result_id == mediamosa_sdk::ERRORCODE_OKAY) {
+        if (!empty($result->xml->items->item->output)) {
+          return $result->xml->items->item->output;
+        }
+      }
+
+      // If that also fails, show the image of the asset.
+      $options['response'] = 'still';
+      $result = mediamosa_ck::request('asset/' . rawurlencode($asset_id) . '/play', array('data' => $options, 'method' => 'GET'));
+      if ($result->xml->header->request_result_id == mediamosa_sdk::ERRORCODE_OKAY) {
+        if (!empty($result->xml->items->item->output)) {
+          return '<img src="' . $result->xml->items->item->output . '" alt="No media viewer found.">';
+        }
+      }
+
+      // @todo: if that also fails,
+      // show a default image (check if transcode in progress?).
     }
     catch (Exception $e) {
       mediamosa_ck::watchdog('Unable to create play ticket; @message.', array('@message' => $e->getMessage()));
@@ -1664,4 +1710,34 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
     // Got here, return FALSE.
     return FALSE;
   }
+
+  /**
+   * Change ownership.
+   *
+   * @param string $owner_id
+   *   The owner of the asset.
+   * @param string $new_owner_id
+   *   The options for the REST call.
+   *
+   * @return bool
+   *   Returns FALSE for failure.
+   */
+  static public function change_ownership($owner_id, $new_owner_id) {
+
+    $data = array(
+      'old_owner_id' => $owner_id,
+      'new_owner_id' => $new_owner_id,
+    );
+    try {
+      // Do request.
+      return mediamosa_ck::request_post_fatal('change_ownership', array('data' => $data));
+    }
+    catch (Exception $e) {
+      mediamosa_ck::watchdog_error('Unable to transfer objects to new owner; @message.', array('@message' => $e->getMessage()));
+    }
+
+    // Got here, return FALSE.
+    return FALSE;
+  }
+
 }

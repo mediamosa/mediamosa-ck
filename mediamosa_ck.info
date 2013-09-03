@@ -1,7 +1,7 @@
 name = "MediaMosa CK: Core"
 description = "The MediaMosa construction kit enables you to build frontend Drupal websites for MediaMosa."
 package = "MediaMosa - Construction Kit"
-version = 7.x-3.5
+version = 7.x-3.5-dev
 core = 7.x
 
 ; Dependencies (module names)

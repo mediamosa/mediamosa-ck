@@ -71,11 +71,7 @@ function theme_media_mediamosa_video($variables) {
 
   // Response.
   $options['response'] = 'object';
-
-  // Not specified? Then use default transcode profile ID.
-  if (empty($mediafile_id_to_play)) {
-    $options['profile_id'] = MediaMosaCkConnectorWrapper::get_default_transcode_profile();
-  }
+  $options['profile_id'] = MediaMosaCkConnectorWrapper::get_default_transcode_profile();
 
   // Both not empty.
   if (!empty($variables['element']['#width']) && !empty($variables['element']['#height'])) {
@@ -92,11 +88,11 @@ function theme_media_mediamosa_video($variables) {
     $response = theme(
       'mediamosa_ck_views_player_image',
       array(
-      'width' => $options['width'],
-      'height' => $options['height'],
-      'error_code' => $e->getCode(),
-      'asset_id' => $values['asset_id'],
-      'mediafile_id' => $mediafile_id_to_play,
+        'width' => $options['width'],
+        'height' => $options['height'],
+        'error_code' => $e->getCode(),
+        'asset_id' => $values['asset_id'],
+        'mediafile_id' => $mediafile_id_to_play,
       )
     );
   }

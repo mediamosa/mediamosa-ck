@@ -41,6 +41,39 @@ function theme_mediamosa_ck_views_theme_asset_mediafiles($variables) {
 }
 
 /**
+ * Show listing of downloads.
+ *
+ * The theme used to generate a listing of downloads in the views using
+ * mediamosa_ck_views_field_text_download.
+ *
+ * @param array $variables
+ *   Data used for the theme.
+ */
+function theme_mediamosa_ck_views_theme_asset_download($variables) {
+  $output = array();
+
+  if (empty($variables['download'])) {
+    return t('No downloads available');
+  }
+
+  foreach ($variables['download'] as $mediafile) {
+
+    $filename = empty($mediafile['filename']) ? t('No filename present') : trim($mediafile['filename']);
+    if (isset($mediafile['metadata']) && (isset($mediafile['metadata']['filesize']))) {
+      $filename .= " (" . format_size($mediafile['metadata']['filesize']) . ")";
+    }
+
+    // Build the link.
+    $path = strtr($variables['asset_path'], array('[asset_id]' => $mediafile['asset_id'], '[mediafile_id]' => $mediafile['mediafile_id']));
+    $output[] = '<li>';
+    $output[] = l($filename, $path . '/download', array('attributes' => array('class' => 'download')));
+    $output[] = '</li>';
+  }
+
+  return empty($output) ? '' : '<ul>' . implode('', $output) . '</ul>';
+}
+
+/**
  * Show list of collections.
  *
  * The theme used to generate a listing of collections in the views using
@@ -176,7 +209,7 @@ function theme_mediamosa_ck_views_theme_owner($variables) {
 function theme_mediamosa_ck_views_player($variables) {
   global $base_url;
 
-  if ($variables['mime_type'] == 'audio/mpeg') {
+  if (strpos($variables['response'], 'type="audio/')) {
     $path = $base_url . '/' . drupal_get_path('module', 'mediamosa_ck') . '/modules/mediamosa_ck_views/images/';
     $audioimage = $path . 'audio.png';
     return str_replace('poster=""', 'poster="' . $audioimage . '"', $variables['response']);

@@ -93,6 +93,23 @@ class mediamosa_ck_views_field_player extends views_handler_field {
     $options = array();
     $mime_type = '';
 
+    // Possible start/end time from _GET['t'] parameter.
+    if (isset($_GET['t'])) {
+
+      preg_match('/(?P<start_sec>([0-9]*\.?[0-9]*))(?P<comma>\,?)(?P<end_sec>([0-9]*\.?[0-9]*))/', check_plain($_GET['t']), $matches);
+      $endtime = 0;
+      $options['start'] = 0;
+      if (isset($matches['start_sec'])) {
+        $options['start'] = $matches['start_sec'] * 1000;
+      }
+      if (isset($matches['end_sec'])) {
+        $options['duration'] = ($matches['end_sec'] * 1000) - $options['start'];
+        if ($options['duration'] < 0) {
+          unset($options['duration']);
+        }
+      }
+    }
+
     // What mediafile to play?
     $mediafile_id_to_play = empty($values->mediafile_id_to_play) ? NULL : $values->mediafile_id_to_play;
 
@@ -107,44 +124,17 @@ class mediamosa_ck_views_field_player extends views_handler_field {
     // Response.
     $options['response'] = $this->options['response'];
 
-    // Not specified? Then use default transcode profile ID.
-    if (empty($mediafile_id_to_play)) {
-      $profile_id = MediaMosaCkConnectorWrapper::get_default_transcode_profile();
-
-      // Search if there is a mediafile with this default profile.
-      foreach ($values->mediafiles as $mf_id => $mf) {
-        if ($mf['is_original_file']) {
-          $mediafile_id_original = $mf_id;
-          if (isset($mf['metadata']) && isset($mf['metadata']['mime_type'])) {
-            $mime_type = $mf['metadata']['mime_type'];
-          }
-        }
-        if ($mf['transcode_profile_id'] == $profile_id) {
-          $mediafile_id_to_play = $mf_id;
-          if (isset($mf['metadata']) && isset($mf['metadata']['mime_type'])) {
-            $mime_type = $mf['metadata']['mime_type'];
-          }
-        }
-      }
-      // If no transcode profile available, take the original.
-      if (empty($mediafile_id_to_play) && !empty($mediafile_id_original)) {
-        $mediafile_id_to_play = $mediafile_id_original;
-      }
-    }
-
     // Both not empty.
     if (!empty($this->options['player_width']) && !empty($this->options['player_height'])) {
       $options['width'] = $this->options['player_width'];
       $options['height'] = $this->options['player_height'];
       $options['autostart'] = $this->options['player_autostart'] ? 'TRUE' : 'FALSE';
     }
+
     try {
       $options['fatal'] = TRUE;
       $response = MediaMosaCkConnectorWrapper::get_play_link($values->asset_id, $mediafile_id_to_play, $user_id, $options);
-      $response = theme('mediamosa_ck_views_player', array(
-                    'response' => $response,
-                    'mime_type' => $mime_type)
-      );
+      $response = theme('mediamosa_ck_views_player', array('response' => $response));
     }
     catch (Exception $e) {
       $response = theme('mediamosa_ck_views_player_image',
