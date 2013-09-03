@@ -124,7 +124,7 @@ function mediamosa_ck_content_supplier_menu() {
     'theme callback' => 'ajax_base_page_theme',
     'delivery callback' => 'ajax_deliver',
     'access callback' => '_mediamosa_ck_content_supplier_user_access',
-    'access arguments' => array(mediamosa_ck_content_supplier::PERM_ACCESS_CONTENT_SUPPLIER),
+    'access arguments' => array(mediamosa_ck_content_supplier::PERM_ACCESS_TOOLS_SUPPLIER),
     'description' => 'Ajax callback for paging.',
     'type' => MENU_CALLBACK,
     'file' => 'mediamosa_ck_content_supplier.admin.inc',
