@@ -1,4 +1,4 @@
-Mediamosa CK 7.x-2.x-dev (build 71)
+Mediamosa CK 7.x-2.x-dev (build 80)
 -----------------------------------
 - Fixed case sensitive problem with parameter, causing fatal error on MediaMosa.
 - Adding field types for mediamosa media browser plugin filters and autocomplete
@@ -56,6 +56,22 @@ Mediamosa CK 7.x-2.x-dev (build 71)
   do_rest_call() and process_rest_call().
 - When using MediaMosa 3.2.4 or higher, any asset display that does not have a
   metadata title, will now use the original filename as title when available.
+- Made get_play_link more 'intelligent'.
+- Allow the wysiwyg editor to override width/height of video object.
+- Start default ck transcode if set, after upload.
+- Added More allowed file types and merged with media allowed filetypes.
+- Fixes wysiwyg viewing of video's.
+- Small changes to the MediaBrowser views.
+- Added webm mimetype.
+- Default transcode for upload and play.
+- Tomed down browser number of items.
+- Fixed warning: needed user_id for playcall.
+- Added change ownership function.
+- Added support for user token in owner field.
+- Added a download block on asset detail page.
+- Added ?t parameter to embed video object.
+- Added proper playing of audiofiles.
+
 
 Mediamosa CK 7.x-2.0
 --------------------

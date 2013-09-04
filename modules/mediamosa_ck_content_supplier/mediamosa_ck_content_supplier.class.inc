@@ -7,7 +7,7 @@
 class mediamosa_ck_content_supplier {
   // ------------------------------------------------------------------- Consts.
   // Permissions.
-  const PERM_ACCESS_CONTENT_SUPPLIER = 'access content supplier';
+  const PERM_ACCESS_TOOLS_SUPPLIER = 'access content supplier';
   const PERM_ADMIN_CONTENT_SUPPLIER = 'administer content supplier';
 
   // Max length title batch.
