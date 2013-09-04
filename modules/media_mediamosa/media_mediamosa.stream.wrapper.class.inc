@@ -22,14 +22,20 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
   }
 
   /**
-   * InterpolateUrl().
+   * Function interpolateUrl().
    */
   public function interpolateUrl() {
+    return '';
+    // @todo: calling get_play_link is way to expensive here, propose to make
+    // a new menu item: media_mediamosa/url/asset_id/mediafile_id, that calls
+    // the get_play_link when needed. return a link to this menu item here.
+    /*
     $parameters = $this->get_parameters();
     if (empty($parameters)) {
       return FALSE;
     }
     return MediaMosaCkConnectorWrapper::get_play_link($parameters['asset_id'], $parameters['mediafile_id'], mediamosa_ck::session_user_id());
+    */
   }
 
   /**
