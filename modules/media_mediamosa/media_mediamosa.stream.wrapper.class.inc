@@ -83,7 +83,8 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
    *   Either array filled or FALSE.
    */
   public static function mediamosa_parse_url_from_fid($fid) {
-    $media = reset(media_multi_load($fid));
+    $media = media_multi_load($fid);
+    $media = reset($media);
     if (!$media || !isset($media->uri)) {
       return FALSE;
     }
@@ -171,8 +172,8 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
     if (empty($thumb)) {
       // If no thumbnail, but the original is audio, we present an audio image.
       $mime_type = empty($asset->items->item->mediafiles->mediafile->metadata->mime_type) ? '' : $asset->items->item->mediafiles->mediafile->metadata->mime_type;
-      if (substr($mime_type, 0, 6) == 'audio/') {
-        $thumb = $base_url . '/' . drupal_get_path('module', 'mediamosa_ck') . '/modules/mediamosa_ck_views/images/' . 'audio.jpg';
+      if (drupal_substr($mime_type, 0, 5) == 'audio') {
+        $thumb = $base_url . '/' . drupal_get_path('module', 'mediamosa_ck') . '/modules/mediamosa_ck_views/images/audio.jpg';
       }
       else {
         // If all failes we present an borken image.
