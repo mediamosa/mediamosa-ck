@@ -14,6 +14,8 @@
  */
 class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
 
+  const MEDIA_MEDIAMOSA_NOT_FOUND_IMAGE = 'notfound.jpg';
+
   /**
    * No getTarget().
    */
@@ -155,6 +157,7 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
    * @see getOriginalThumbnailPath()
    */
   public static function mediamosa_getOriginalThumbnailPath($asset_id) {
+    global $base_url;
 
     try {
       // Get the still url.
@@ -168,12 +171,12 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
     if (empty($thumb)) {
       // If no thumbnail, but the original is audio, we present an audio image.
       $mime_type = empty($asset->items->item->mediafiles->mediafile->metadata->mime_type) ? '' : $asset->items->item->mediafiles->mediafile->metadata->mime_type;
-      if (substr($mime_type, 0, 5) == 'audio') {
-        $thumb = DRUPAL_ROOT . '/' . drupal_get_path('module', 'mediamosa_ck') . '/modules/mediamosa_ck_views/images/' . 'audio.jpg';
+      if (substr($mime_type, 0, 6) == 'audio/') {
+        $thumb = $base_url . '/' . drupal_get_path('module', 'mediamosa_ck') . '/modules/mediamosa_ck_views/images/' . 'audio.jpg';
       }
       else {
         // If all failes we present an borken image.
-        $thumb = DRUPAL_ROOT . '/' . drupal_get_path('module', 'mediamosa_ck') . '/modules/mediamosa_ck_views/images/' . 'notfound.jpg';
+        $thumb = $base_url . '/' . drupal_get_path('module', 'mediamosa_ck') . '/modules/mediamosa_ck_views/images/' . self::MEDIA_MEDIAMOSA_NOT_FOUND_IMAGE;
       }
     }
     return $thumb;
@@ -205,11 +208,24 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
    */
   public static function mediamosa_getLocalThumbnailPath($asset_id) {
     $local_path = 'public://media-mediamosa/' . $asset_id . '.jpg';
-    if (!file_exists($local_path) || time() - filectime($local_path) > MediaMediaMosa::THUMBNAIL_EXPIRE_TIME) {
+
+    if (!file_exists($local_path) ||
+        time() - filectime($local_path) > MediaMediaMosa::THUMBNAIL_EXPIRE_TIME ||
+        filesize($local_path) == 9494 ||
+        is_link(drupal_realpath($local_path)) && (time() - filectime($local_path) > 60)) {
       $original_thumb = self::mediamosa_getOriginalThumbnailPath($asset_id);
       $dirname = drupal_dirname($local_path);
       file_prepare_directory($dirname, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+
+      // Remove existing image styles.
+      image_path_flush($local_path);
+      // Copy the found thumbnail.
       copy($original_thumb, $local_path);
+
+      if (substr($original_thumb, -12) == self::MEDIA_MEDIAMOSA_NOT_FOUND_IMAGE) {
+        // symlink($original_thumb, drupal_realpath($local_path));
+        // drupal_realpath does not seem to work with symlinks, so study needed.
+      }
     }
     return $local_path;
   }
