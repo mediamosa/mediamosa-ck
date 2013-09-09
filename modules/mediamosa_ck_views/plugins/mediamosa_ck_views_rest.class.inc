@@ -348,6 +348,20 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
         ),
       ),
 
+      'owned_id' => array(
+        'title' => t('My assets'),
+        'help' => t('Logged in user ownes the object.'),
+        'field' => array(
+          'handler' => 'mediamosa_ck_views_field_owned',
+        ),
+        'filter' => array(
+          'handler' => 'mediamosa_ck_views_filter_owned',
+        ),
+        'sort' => array(
+          'handler' => 'mediamosa_ck_views_sort',
+        ),
+      ),
+
       'group_id' => array(
         'title' => t('Group'),
         'help' => t('The user group of the object.'),
