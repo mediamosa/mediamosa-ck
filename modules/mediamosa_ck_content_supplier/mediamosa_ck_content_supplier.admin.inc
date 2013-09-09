@@ -701,7 +701,7 @@ function _mediamosa_ck_content_supplier_batch_listing_page() {
     'title' => t('Title'),
     'count' => t('# of assets'),
     'created' => t('Created'),
-    'state' => t('State'),
+    'status' => t('Status'),
     'actions' => t('Actions'),
   );
 
@@ -1045,7 +1045,7 @@ function _mediamosa_ck_content_supplier_queue_listing_page(array $options = arra
     'title' => t('Plugin'),
     'count' => t('# of assets'),
     'created' => t('Created'),
-    'state' => t('State'),
+    'status' => t('Status'),
     'actions' => t('Actions'),
   );
 
@@ -1061,7 +1061,7 @@ function _mediamosa_ck_content_supplier_queue_listing_page(array $options = arra
   $rows = array();
   foreach ($queued_batches as $queued_batch) {
     $actions = array();
-    $actions[] = l(t('log'), request_path() . '/batch/queued/' . $queued_batch['bid'] . '/log', array('query' => array('destination' => drupal_get_destination()), 'attributes' => array('class' => array('cs-link-popup'))));
+    $actions[] = l(t('log'), request_path() . '/batch/queued/' . $queued_batch['qid'] . '/log', array('query' => array('destination' => drupal_get_destination()), 'attributes' => array('class' => array('cs-link-popup'))));
 
     $rows[] = array(
       check_plain(truncate_utf8($queued_batch['title'], 40, TRUE, TRUE)),
