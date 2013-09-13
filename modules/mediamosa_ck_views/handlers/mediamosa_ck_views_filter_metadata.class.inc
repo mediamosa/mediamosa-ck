@@ -11,7 +11,7 @@ class mediamosa_ck_views_filter_metadata extends mediamosa_ck_views_filter {
    */
   public function option_definition() {
     $options = parent::option_definition();
-    $options['metadata_type'] = array('default' => 'title;CHAR');
+    $options['metadata_type'] = array('default' => 'titledesc;CHAR');
     return $options;
   }
 

@@ -20,7 +20,7 @@ class mediamosa_ck_views_filter_collections extends mediamosa_ck_views_filter {
     $form['value'] = array(
       '#type' => 'select',
       '#title' => $this->definition['title'],
-      '#options' => array_merge(array('All' => t('- Any -')), MediaMosaCkConnectorWrapper::get_collections_for_options()),
+      '#options' => array_merge(array('All' => t('- Any -')), MediaMosaCkConnectorWrapper::get_collections_for_options(array(), array(), 40)),
       '#default_value' => $this->value,
     );
   }
