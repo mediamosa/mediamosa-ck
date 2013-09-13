@@ -60,11 +60,13 @@ class mediamosa_ck_content_supplier_queue_plugin_generate_still extends mediamos
    *   Return the data array again to be stored for the next call.
    */
   public function process_asset(mediamosa_connector_response_asset $response, array $data = array()) {
+    $user = user_load($data['uid']);
+
     // Setup default still options.
     $data += array(
       'still_type' => self::STILL_TYPE_NONE,
       'still_per_mediafile' => self::STILL_PER_MEDIAFILE,
-      'still_every_second'=> self::STILL_EVERY_SECOND,
+      'still_every_second' => self::STILL_EVERY_SECOND,
       'start_time' => self::STILL_START_TIME,
       'end_time' => self::STILL_END_TIME,
       'size' => self::STILL_SIZE,
@@ -74,7 +76,7 @@ class mediamosa_ck_content_supplier_queue_plugin_generate_still extends mediamos
     $options = array(
       'still_type' => $data['still_type'],
       'still_per_mediafile' => $data['still_per_mediafile'],
-      'still_every_second'=> $data['still_every_second'],
+      'still_every_second' => $data['still_every_second'],
       'start_time' => $data['start_time'],
       'end_time' => $data['end_time'],
       'size' => $data['size'],
@@ -87,7 +89,7 @@ class mediamosa_ck_content_supplier_queue_plugin_generate_still extends mediamos
 
     // Loop through the mediafile IDs.
     foreach ($mediafiles as $mediafile_id => $mediafile) {
-      MediaMosaCkConnectorWrapper::create_mediafile_still($mediafile_id, (string) $mediafile->owner_id, $options);
+      MediaMosaCkConnectorWrapper::create_mediafile_still($mediafile_id, (string) $user->mail, $options);
     }
 
     return $data;
