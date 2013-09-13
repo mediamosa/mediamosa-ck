@@ -286,7 +286,7 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest_asset
         'group' => t('MediaMosa'),
         'base' => array(
           'field' => 'id',
-          'title' => t($title),
+          'title' => $title,
           'help' => t('Retrieve and search assets in the MediaMosa backend'),
           'query class' => $class,
         ),
@@ -302,7 +302,7 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest_asset
       ),
 
       'metadata' => array(
-        'title' => t('Search metadata'),
+        'title' => t('Search'),
         'help' => t('Search the assets with a pre configured metadata'),
         'filter' => array(
           'handler' => 'mediamosa_ck_views_filter_metadata',
