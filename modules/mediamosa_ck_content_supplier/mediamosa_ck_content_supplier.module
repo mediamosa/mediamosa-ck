@@ -308,5 +308,15 @@ function mediamosa_ck_content_supplier_mediamosa_ck_content_supplier_plugin_info
       'description' => t('Deletes all assets within the batch.'),
       'class' => 'mediamosa_ck_content_supplier_queue_plugin_delete_asset',
     ),
+    'transcode assets' => array(
+      'title' => t('Transcode assets'),
+      'description' => t('Transcode mediafiles.'),
+      'class' => 'mediamosa_ck_content_supplier_queue_plugin_transcode',
+    ),
+    'publish assets' => array(
+      'title' => t('Publish assets'),
+      'description' => t('Publish or unpublish assets.'),
+      'class' => 'mediamosa_ck_content_supplier_queue_plugin_publish',
+    ),
   );
 }
