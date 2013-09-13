@@ -101,14 +101,22 @@ function mediamosa_ck_content_supplier_search_form($form, &$form_state) {
   );
 
   if (!empty($collections)) {
-    $form['filter']['search_collection'] = array(
+    $form['filter']['search_options'] = array(
       '#type' => 'fieldset',
-      '#title' => 'Search within collection',
+      '#title' => 'Search options',
       '#collapsible' => TRUE,
-      '#collapsed' => empty($values['search_collection']),
+      '#collapsed' => FALSE,
     );
 
-    $form['filter']['search_collection']['search_collection'] = array(
+    $form['filter']['search_options']['search_published'] = array(
+      '#type' => 'select',
+      '#title' => t('Published'),
+      '#description' => t('limit published / unpublished assets.'),
+      '#options' => array(1 => 'show published/unpublished', 2 => 'only published'),
+      '#default_value' => 1,
+    );
+
+    $form['filter']['search_options']['search_collection'] = array(
       '#type' => 'select',
       '#title' => t('Collection'),
       '#description' => t('Search within the selected collection.'),
@@ -329,11 +337,13 @@ function _mediamosa_ck_content_supplier_search_page() {
 
   $page = isset($_GET['page']) ? $_GET['page'] : 0;
   $limit = mediamosa_ck_content_supplier::get_setting_max_items_search_result_list();
+  $limit = 10;
   $offset = $page * $limit;
 
   // Setup header.
   $header = array(
     'title' => t('Title'),
+    'isprivate' => t('Published'),
     'videotimestampmodified' => t('Modified'),
   );
 
@@ -357,6 +367,9 @@ function _mediamosa_ck_content_supplier_search_page() {
     $rows[$asset_id] = array(
       array(
         'data' => $asset['title'],
+      ),
+      array(
+        'data' => $asset['isprivate'] == 'TRUE' ? 'no' : 'yes',
       ),
       array(
         'data' => $asset['videotimestampmodified'],
@@ -600,6 +613,7 @@ function _mediamosa_ck_content_supplier_batch_selection_page() {
   // Setup header.
   $header = array(
     'title' => t('Title'),
+    'isprivate' => t('Published'),
     'videotimestampmodified' => t('Modified'),
   );
 
@@ -619,6 +633,7 @@ function _mediamosa_ck_content_supplier_batch_selection_page() {
     foreach ($assets['assets'] as $asset_id => $asset) {
       $options[$asset_id] = array(
         'title' => $asset['title'],
+        'isprivate' => $asset['isprivate'] == 'TRUE' ? 'no' : 'yes',
         'videotimestampmodified' => $asset['videotimestampmodified'],
       );
 
