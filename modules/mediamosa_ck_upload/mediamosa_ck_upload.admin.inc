@@ -9,10 +9,12 @@
  */
 function _mediamosa_ck_upload_page() {
   // Get the upload form.
-  $variables['left'] = drupal_render(drupal_get_form('mediamosa_ck_upload_form'));
+  $upload_form = drupal_get_form('mediamosa_ck_upload_form');
+  $variables['left'] = drupal_render($upload_form);
 
   // Include the upload listing form.
-  $variables['right'] = drupal_render(drupal_get_form('mediamosa_ck_upload_listing_form'));
+  $upload_listing_form = drupal_get_form('mediamosa_ck_upload_listing_form');
+  $variables['right'] = drupal_render($upload_listing_form);
 
   return theme('mediamosa_ck_two_column_page', $variables);
 }
