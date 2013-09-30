@@ -79,7 +79,7 @@ function mediamosa_ck_transcode_permission() {
 }
 
 /**
- * Implements hook_configuration_collect().
+ * Implements hook_mediamosa_ck_configuration_collect().
  *
  * @return array
  *   array with settings form.
@@ -101,7 +101,7 @@ function mediamosa_ck_transcode_mediamosa_ck_configuration_collect() {
 
   $profiles = MediaMosaCkConnectorTranscodeWrapper::get_transcode_profiles();
   if ($profiles && isset($profiles->items->item)) {
-    foreach ($profiles->items->item as $profile_id => $profile) {
+    foreach ($profiles->items->item as $profile) {
       $options[(int) $profile->profile_id] = (string) $profile->profile;
     }
   }
@@ -111,7 +111,7 @@ function mediamosa_ck_transcode_mediamosa_ck_configuration_collect() {
     '#type' => 'select',
     '#options' => $options,
     '#size' => 1,
-    '#default_value' => MediaMosaCkConnectorWrapper::get_default_transcode_profile(),
+    '#default_value' => MediaMosaCkConnectorTranscodeWrapper::get_default_transcode_profile(),
   );
 
   // Remove none.
@@ -124,7 +124,7 @@ function mediamosa_ck_transcode_mediamosa_ck_configuration_collect() {
     '#type' => 'select',
     '#options' => $options,
     '#multiple' => TRUE,
-    '#default_value' => array_keys(MediaMosaCkConnectorWrapper::get_allowed_transcode_profiles()),
+    '#default_value' => array_keys(MediaMosaCkConnectorTranscodeWrapper::get_allowed_transcode_profiles()),
   );
 
   return $form;
