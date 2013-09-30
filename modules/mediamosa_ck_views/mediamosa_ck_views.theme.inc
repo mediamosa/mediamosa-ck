@@ -116,7 +116,7 @@ function theme_mediamosa_ck_views_theme_asset_metadata($variables) {
   foreach ($variables['metadata'] as $name => $value) {
     $name = drupal_ucfirst(str_replace('_', ' ', $name));
 
-    $rows[] = array('name' => t($name), 'value' => (empty($value) ? ' ' : nl2br(check_plain(t($value)))));
+    $rows[] = array('name' => $name, 'value' => (empty($value) ? ' ' : nl2br(check_plain($value))));
   }
 
   return theme('table', array('rows' => $rows));
@@ -139,7 +139,7 @@ function theme_mediamosa_ck_views_theme_asset_technical_metadata($variables) {
   foreach ($variables['technical_metadata'] as $name => $value) {
     $name = drupal_ucfirst(str_replace('_', ' ', $name));
     $rows[] = array(
-      'name' => t($name),
+      'name' => $name,
       'value' => (empty($value) ? ' ' : t($value, array(), array('context' => ''))),
     );
   }
@@ -212,8 +212,10 @@ function theme_mediamosa_ck_views_player($variables) {
   if (strpos($variables['response'], 'type="audio/')) {
     $path = $base_url . '/' . drupal_get_path('module', 'mediamosa_ck') . '/modules/mediamosa_ck_views/images/';
     $audioimage = $path . 'audio.png';
-    return str_replace('poster=""', 'poster="' . $audioimage . '"', $variables['response']);
+    $variables['response'] = str_replace('poster=""', 'poster="' . $audioimage . '"', $variables['response']);
   }
+  // Full screen code for iframes etc., @todo: make 100% possible.
+  $variables['response'] = str_replace('width="942" height="942"', 'width="100%" height=""', $variables['response']);
 
   return $variables['response'];
 }

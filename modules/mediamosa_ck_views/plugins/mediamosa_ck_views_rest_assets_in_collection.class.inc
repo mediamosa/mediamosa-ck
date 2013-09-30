@@ -10,6 +10,9 @@
 
 class mediamosa_ck_views_rest_assets_in_collection extends mediamosa_ck_views_rest_asset_search {
 
+  /**
+   * Do rest call with order by timestamp.
+   */
   protected function do_rest_call($view, array $params, array $options = array()) {
 
     // If not set, use default for order;
