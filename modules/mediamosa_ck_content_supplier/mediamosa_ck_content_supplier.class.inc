@@ -487,7 +487,6 @@ class mediamosa_ck_content_supplier {
                   $value_till = $value . drupal_substr('9999-12-31 23:59:59', drupal_strlen($value));
                 }
 
-
                 $cql[] = '(' . $prop . ' >= "' . $value . '" AND '  . $prop . ' <= "' . $value_till . '")';
                 break;
 
@@ -505,6 +504,13 @@ class mediamosa_ck_content_supplier {
     $cql_glue = ' ' . drupal_strtoupper($values['search_operator']) . ' ';
     if (!empty($values['cql'])) {
       $cql[] = '(' . $values['cql'] . ')';
+    }
+
+    if ($values['search_published'] == 1) {
+      $options['is_public_list'] = 'FALSE';
+    }
+    elseif ($values['search_published'] == 2) {
+      $options['is_public_list'] = 'TRUE';
     }
 
     // Build cql.

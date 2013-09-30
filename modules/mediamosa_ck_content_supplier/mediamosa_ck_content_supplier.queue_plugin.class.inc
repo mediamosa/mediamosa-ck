@@ -205,7 +205,7 @@ abstract class mediamosa_ck_content_supplier_queue_plugin extends mediamosa_ck_c
       return FALSE;
     }
 
-   try {
+    try {
       // Get the asset array.
       $response = MediaMosaCkConnectorWrapper::get_asset($asset_id);
 
@@ -213,6 +213,8 @@ abstract class mediamosa_ck_content_supplier_queue_plugin extends mediamosa_ck_c
         self::watchdog($this->batch_queue['qid'], "Asset REST call returned code @code on asset (ID: @asset_id), messsage: '@message'.", array('@code' => $response->get_header_request_result_id(), '@asset_id' => $asset_id, '@message' => $response->get_header_request_result_description()), WATCHDOG_CRITICAL);
       }
       elseif ($response->get_header_item_count_total()) {
+        // Add user id for use in processing of asset.
+        $this->batch_queue['queue_plugin_data']['uid'] = $this->batch_queue['uid'];
         // Process asset.
         $this->batch_queue['queue_plugin_data'] = $this->process_asset($response, $this->batch_queue['queue_plugin_data']);
       }

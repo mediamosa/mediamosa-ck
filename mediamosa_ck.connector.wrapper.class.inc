@@ -93,7 +93,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       'transcode_inherits_acl' => TRUE,
       'create_still' => mediamosa_ck::setting_mediafile_upload_create_still(),
       'is_downloadable' => mediamosa_ck::setting_mediafile_downloadable(),
-      'transcode' => array(mediamosa_connector::variable_get('media_mediamosa_transcode_profile_default')),
+      'transcode' => array(mediamosa_connector::variable_get('mediamosa_ck_transcode_profile_default')),
     );
 
     try {
@@ -102,7 +102,15 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
 
       // Create the asset.
       $response = mediamosa_ck::request_post_fatal('asset/create', array('user_id' => $user_id));
-      $data_create_mediafile['asset_id'] = (string) $response->items->item->asset_id;
+      $asset_id = (string) $response->items->item->asset_id;
+      $data_create_mediafile['asset_id'] = $asset_id;
+
+      if (isset($options['isprivate'])) {
+        if ($options['isprivate'] == 'TRUE') {
+          // Update the isprivate field of the asset.
+          self::update_asset($asset_id, array('user_id' => $user_id, 'isprivate' => 'TRUE'));
+        }
+      }
 
       // Downloadable setting.
       // Off until the is_empty_asset bug is fixed in MediaMosa.
@@ -644,7 +652,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @todo:
    *   Limit is 200.
    */
-  public static function get_collections_for_options($options = array(), $collections = array()) {
+  public static function get_collections_for_options($options = array(), $collections = array(), $max_length = 100) {
     $options += array(
       'offset' => 0,
       // Get max allowed per rest call:
@@ -655,7 +663,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
     $response = self::search_collection($options);
     if ($response) {
       foreach ($response->xpath('items/item') as $collection) {
-        $collections[(string) $collection->coll_id] = (string) check_plain($collection->title);
+        $collections[(string) $collection->coll_id] = (string) check_plain(substr($collection->title, 0, $max_length));
       }
     }
 
@@ -891,7 +899,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    */
   public static function get_default_transcode_profile() {
 
-    $transcode_profile_default = mediamosa_connector::variable_get('media_mediamosa_transcode_profile_default');
+    $transcode_profile_default = mediamosa_connector::variable_get('mediamosa_ck_transcode_profile_default');
     if (!$transcode_profile_default) {
 
       // Get the profiles.
@@ -938,13 +946,13 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
     );
 
     // Get the allowed transcode profile.
-    $transcode_profiles_allowed = mediamosa_connector::variable_get('media_mediamosa_transcode_profiles_allowed', array());
+    $transcode_profiles_allowed = mediamosa_connector::variable_get('mediamosa_ck_transcode_profiles_allowed', array());
     if (!empty($transcode_profiles_allowed) && !$options['refresh_title']) {
       return $transcode_profiles_allowed;
     }
 
     // Get the profiles.
-    $profiles = MediaMosaCkConnectorTranscodeWrapper::get_transcode_profiles();
+    $profiles = MediaMosaCkConnectorWrapper::get_transcode_profiles();
     if (!$profiles) {
       mediamosa_ck::watchdog_error(t('Unable to retrieve transcode profiles.'));
     }
@@ -957,18 +965,29 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       }
     }
     else {
+      // Mark them so we remove 'removed' transcode profiles.
+      foreach (array_keys($transcode_profiles_allowed) as $key) {
+        $transcode_profiles_allowed[$key] = FALSE;
+      }
+
       // Get the profiles.
       foreach ($profiles->items->item as $profile_id => $profile) {
-        // Reset the title.
-        if (!empty($transcode_profiles_allowed[(int) $profile->profile_id])) {
+        if (isset($transcode_profiles_allowed[(int) $profile->profile_id])) {
           $transcode_profiles_allowed[(int) $profile->profile_id] = t((string) $profile->profile);
+        }
+      }
+
+      // Any with FALSE value is no longer present in mediamosa.
+      foreach (array_keys($transcode_profiles_allowed) as $key) {
+        if ($transcode_profiles_allowed[$key] === FALSE) {
+          unset($transcode_profiles_allowed[$key]);
         }
       }
     }
 
     // Store them for later retrieval.
     if (!empty($transcode_profiles_allowed)) {
-      mediamosa_connector::variable_set('media_mediamosa_transcode_profiles_allowed', $transcode_profiles_allowed);
+      mediamosa_connector::variable_set('mediamosa_ck_transcode_profiles_allowed', $transcode_profiles_allowed);
     }
 
     return $transcode_profiles_allowed;

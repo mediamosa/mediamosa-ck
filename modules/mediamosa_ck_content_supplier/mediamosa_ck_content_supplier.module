@@ -152,7 +152,7 @@ function mediamosa_ck_content_supplier_menu() {
 
     $items['admin/mediamosa/tools/supplier/batch/queued/%/log'] = $items['admin/content/mediamosa/supplier/batch/queued/%/log'];
     $items['admin/mediamosa/tools/supplier/batch/queued/%/log']['access callback'] = mediamosa_permission::CALLBACK_USER_ACCESS;
-    $items['admin/mediamosa/tools/supplier/batch/queued/%/log']['access arguments'] = array(mediamosa_permission::ACCESS_CONTENT_SUPPLIER);
+    $items['admin/mediamosa/tools/supplier/batch/queued/%/log']['access arguments'] = array(mediamosa_permission::ACCESS_TOOLS_SUPPLIER);
 
     $items['admin/mediamosa/tools/supplier/batch/%/queue'] = $items['admin/content/mediamosa/supplier/batch/%/queue'];
     $items['admin/mediamosa/tools/supplier/batch/%/queue']['access callback'] = mediamosa_permission::CALLBACK_USER_ACCESS;
@@ -307,6 +307,16 @@ function mediamosa_ck_content_supplier_mediamosa_ck_content_supplier_plugin_info
       'title' => t('Delete assets'),
       'description' => t('Deletes all assets within the batch.'),
       'class' => 'mediamosa_ck_content_supplier_queue_plugin_delete_asset',
+    ),
+    'transcode assets' => array(
+      'title' => t('Transcode assets'),
+      'description' => t('Transcode mediafiles.'),
+      'class' => 'mediamosa_ck_content_supplier_queue_plugin_transcode',
+    ),
+    'publish assets' => array(
+      'title' => t('Publish assets'),
+      'description' => t('Publish or unpublish assets.'),
+      'class' => 'mediamosa_ck_content_supplier_queue_plugin_publish',
     ),
   );
 }

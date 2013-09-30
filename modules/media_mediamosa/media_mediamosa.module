@@ -46,6 +46,18 @@ function media_mediamosa_menu() {
 }
 
 /**
+ * Implements hook_menu_alter().
+ *
+ * The current implementation of the mediabrowser a user must have create
+ * rights on file_entity. However for only including existing media in content
+ * this makes no sense. Override this with hook_menu_alter.
+ */
+function media_mediamosa_menu_alter(&$items) {
+  unset($items['media/browser']['access callback']);
+  $items['media/browser']['access arguments'] = array('view files');
+}
+
+/**
  * Implements hook_theme().
  */
 function media_mediamosa_theme() {

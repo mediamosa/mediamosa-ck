@@ -1,4 +1,4 @@
-Mediamosa CK 7.x-2.x-dev (build 80)
+Mediamosa CK 7.x-2.x-dev (build 81)
 -----------------------------------
 - Fixed case sensitive problem with parameter, causing fatal error on MediaMosa.
 - Adding field types for mediamosa media browser plugin filters and autocomplete
@@ -71,6 +71,11 @@ Mediamosa CK 7.x-2.x-dev (build 80)
 - Added a download block on asset detail page.
 - Added ?t parameter to embed video object.
 - Added proper playing of audiofiles.
+
+- Added More filter options for MediaBrowser (collection/my assets/global search)
+- Introduced a 'published' field.
+- Added more cs plugins: publish/transcode.
+- Added proper authorisation checking in cs plugins.
 
 
 Mediamosa CK 7.x-2.0
