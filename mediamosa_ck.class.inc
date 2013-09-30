@@ -943,6 +943,7 @@ class mediamosa_ck extends mediamosa_sdk {
         $processed_assets['assets'][$asset_id] = array(
           'title' => mediamosa_ck::get_asset_title($item),
           'videotimestampmodified' => (string) $item->videotimestampmodified,
+          'isprivate' => (string) $item->isprivate,
         );
       }
 

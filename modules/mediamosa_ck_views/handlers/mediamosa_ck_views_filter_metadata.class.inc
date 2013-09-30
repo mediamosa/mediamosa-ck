@@ -11,7 +11,7 @@ class mediamosa_ck_views_filter_metadata extends mediamosa_ck_views_filter {
    */
   public function option_definition() {
     $options = parent::option_definition();
-    $options['metadata_type'] = array('default' => 'title;CHAR');
+    $options['metadata_type'] = array('default' => 'titledesc;CHAR');
     return $options;
   }
 
@@ -20,7 +20,7 @@ class mediamosa_ck_views_filter_metadata extends mediamosa_ck_views_filter {
    */
   public function options_form(&$form, &$form_state) {
     // Get all metadata fields.
-    $options = array();
+    $options = array('titledesc;CHAR' => 'title,description,filename');
     $types = mediamosa_ck::get_metadata_fields();
     foreach ($types as $type) {
       $options[$type['title']] = array();
@@ -47,10 +47,18 @@ class mediamosa_ck_views_filter_metadata extends mediamosa_ck_views_filter {
     if (!empty($this->value)) {
       foreach ($this->value as $value) {
         if (!empty($value['metadata'])) {
+          $value['metadata'] = check_plain($value['metadata']);
           $cql_or = array();
           $metadata_type = isset($this->options['metadata_type']) ? $this->options['metadata_type'] : 'title';
           list($metadata_name, $metadata_format) = explode(';', $metadata_type);
-          $cql_or[] = $metadata_name . '="' . $value['metadata'] . '"';
+          if ($metadata_name == 'titledesc') {
+            $cql_or[] = 'title="' . $value['metadata'] . '"';
+            $cql_or[] = 'description="' . $value['metadata'] . '"';
+            $cql_or[] = 'filename="' . $value['metadata'] . '"';
+          }
+          else {
+            $cql_or[] = $metadata_name . '="' . $value['metadata'] . '"';
+          }
           $this->query->add_filter($this->field, count($cql_or) > 1 ? '(' . implode(' OR ', $cql_or) . ')' : reset($cql_or));
         }
       }

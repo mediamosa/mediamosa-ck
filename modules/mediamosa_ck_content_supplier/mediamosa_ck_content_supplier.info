@@ -13,6 +13,8 @@ files[] = mediamosa_ck_content_supplier.queue_plugin.class.inc
 ; Plugins.
 files[] = plugins/mediamosa_ck_content_supplier.queue_plugin.delete_asset.class.inc
 files[] = plugins/mediamosa_ck_content_supplier.queue_plugin.generate_still.class.inc
+files[] = plugins/mediamosa_ck_content_supplier.queue_plugin.transcode.class.inc
+files[] = plugins/mediamosa_ck_content_supplier.queue_plugin.publish.class.inc
 
 stylesheets[all][] = mediamosa_ck_content_supplier.css
 

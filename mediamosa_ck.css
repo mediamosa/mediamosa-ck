@@ -87,3 +87,15 @@ div.mediamosa-ck-icon-close {
   z-index: inherit;
   cursor: pointer;
 }
+
+div#media-browser-page div.views-widget {
+  min-width: 100px;
+}
+
+.view-mediamosa-asset-search .views-exposed-form .views-exposed-widget {
+  padding: .5em 0 0 0;
+}
+
+.view-mediamosa-asset-search .views-exposed-widget label {
+  margin: 0 5px 0 5px;
+}

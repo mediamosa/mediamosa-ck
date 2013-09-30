@@ -81,7 +81,7 @@ class mediamosa_ck_views_rest_collection_get extends mediamosa_ck_views_rest {
    * Get the views data for this REST call.
    *
    * @return array
-   *  returns the views data.
+   *   returns the views data.
    */
   public static function get_views_data($title, $class) {
     $data = array(
@@ -89,7 +89,7 @@ class mediamosa_ck_views_rest_collection_get extends mediamosa_ck_views_rest {
         'group' => t('MediaMosa'),
         'base' => array(
           'field' => 'id',
-          'title' => t($title),
+          'title' => $title,
           'help' => t('Retrieve a collection using the MediaMosa backend'),
           'query class' => $class,
         ),

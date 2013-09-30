@@ -18,10 +18,10 @@
  *   - 'mediafile_id'
  *     The mediafile ID of the upload.
  */
-function _mediamosa_ck_json_create_upload_ticket() {
+function _mediamosa_ck_json_create_upload_ticket($options = array()) {
 
   // Create upload ticket.
-  $upload_ticket = MediaMosaCkConnectorWrapper::create_upload_ticket();
+  $upload_ticket = MediaMosaCkConnectorWrapper::create_upload_ticket($options);
 
   // Output as JSON.
   drupal_json_output($upload_ticket);

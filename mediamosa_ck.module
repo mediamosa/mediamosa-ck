@@ -46,6 +46,7 @@ function mediamosa_ck_menu() {
   $items['mediamosa/ck/json/uploadticket/create'] = array(
     'title' => 'Create the upload ticket for a file',
     'page callback' => '_mediamosa_ck_json_create_upload_ticket',
+    'page arguments' => array(array('isprivate' => 'TRUE')),
     'access arguments' => array(mediamosa_ck::PERMISSION_ADD_MEDIA),
     'type' => MENU_CALLBACK,
     'file' => 'mediamosa_ck.inc',

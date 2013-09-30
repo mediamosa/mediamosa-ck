@@ -101,6 +101,7 @@ function _mediamosa_ck_content_supplier_upload_listing_refresh_ajax($form, $form
     $variables = array(
       'header' => array(
         t('title'),
+        t('published'),
         t('date'),
       ),
       'rows' => array(),
@@ -111,6 +112,9 @@ function _mediamosa_ck_content_supplier_upload_listing_refresh_ajax($form, $form
       $variables['rows'][] = array(
         array(
           'data' => $asset['title'],
+        ),
+        array(
+          'data' => $asset['isprivate'] == 'TRUE' ? 'no' : 'yes',
         ),
         array(
           'data' => $asset['videotimestampmodified'],
