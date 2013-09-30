@@ -74,7 +74,7 @@ class mediamosa_ck_views_rest_collection_get extends mediamosa_ck_views_rest {
     }
 
     // Assign total number of records to get pager.
-    $view->total_rows = (int) $xml->header->item_count_total;
+    $view->total_rows = (int) $response->header->item_count_total;
   }
 
   /**
