@@ -77,7 +77,7 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
    *   class.
    * @param string $field
    *   The name of the field to add.
-   * @param boolean $required
+   * @param bool $required
    *   TRUE or FALSE, will add the field to required listing as input.
    *
    * @return string
@@ -124,7 +124,7 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
   /**
    * Returns the value for mediamosa_is_public_list option.
    *
-   * @return boolean
+   * @return bool
    *   The value of mediamosa_is_public_list.
    */
   public function mediamosa_option_show_drupal_error_messages() {
@@ -205,22 +205,37 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
     }
   }
 
+  /**
+   * Add filter.
+   */
   public function add_filter($type, $value, $exclude = FALSE) {
     $this->params['filters'][$type] = ($exclude ? '-' : '') . $value;
   }
 
+  /**
+   * Add string filter.
+   */
   public function add_filter_string($string) {
     $this->params['q.alt'][] = $string;
   }
 
+  /**
+   * Add sort.
+   */
   public function add_sort($field, $order) {
     $this->params['sort'][] = $field . ' ' . $order;
   }
 
+  /**
+   * Get parameters.
+   */
   public function get_params() {
     return $this->params;
   }
 
+  /**
+   * Nowhere.
+   */
   public function add_where($group, $field, $value = NULL, $operator = NULL) {
   }
 
@@ -249,7 +264,7 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
     foreach (mediamosa_ck::get_metadata_fields() as $set => $metadata) {
       // Add the whole set as a block.
       $data[$set] = array(
-        'title' => t($metadata['title']),
+        'title' => $metadata['title'],
         'help' => t('Metadata block for set @set_label.', array('@set_label' => $metadata['title'])),
         'field' => array(
           'handler' => 'mediamosa_ck_views_field_text_metadata',
@@ -261,7 +276,7 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
         switch ($type) {
           case 'DATETIME':
             $data[$set . '.' . $name] = array(
-              'title' => t($set . '.' . $name),
+              'title' => $set . '.' . $name,
               'help' => t('Metadata date field in @set_label.', array('@set_label' => $metadata['title'])),
               'field' => array(
                 'handler' => 'mediamosa_ck_views_field_date',
@@ -276,7 +291,7 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
           case 'CHAR':
           default:
             $data[$set . '.' . $name] = array(
-              'title' => t($set . '.' . $name),
+              'title' => $set . '.' . $name,
               'help' => t('Metadata field in @set_label.', array('@set_label' => $metadata['title'])),
               'field' => array(
                 'handler' => 'mediamosa_ck_views_field_text_metadata',
@@ -293,7 +308,7 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
 
           case 'INT':
             $data[$set . '.' . $name] = array(
-              'title' => t($set . '.' . $name),
+              'title' => $set . '.' . $name,
               'help' => t('Metadata field in @set_label.', array('@set_label' => $metadata['title'])),
               'field' => array(
                 'handler' => 'mediamosa_ck_views_field_text',
@@ -396,6 +411,9 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
     );
   }
 
+  /**
+   * Get data fields for collection.
+   */
   public static function get_views_data_collection_common(&$data) {
     $data += array(
       // Fields.
@@ -694,7 +712,7 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
   /**
    * Fixes empty array's.
    */
-  private static function _xmlobject2array_helper(&$array) {
+  protected static function _xmlobject2array_helper(&$array) {
     foreach ($array as $key => &$child_array) {
       if (is_array($child_array)) {
         if (empty($child_array)) {

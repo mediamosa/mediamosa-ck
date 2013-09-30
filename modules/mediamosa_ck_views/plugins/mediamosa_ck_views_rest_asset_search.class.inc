@@ -19,14 +19,6 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest_asset
   public function build(&$view) {
     // Call parent.
     parent::build($view);
-
-//    // Get the filters.
-//    $filters = $view->get_items('filter');
-//
-//    // Loop through the filters.
-//    foreach ($filters as $name => $filter) {
-//      // @todo.
-//    }
   }
 
   /**
@@ -164,7 +156,7 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest_asset
   /**
    * Returns the value for mediamosa_is_public_list option.
    *
-   * @return boolean
+   * @return bool
    *   The value of mediamosa_is_public_list.
    */
   public function mediamosa_option_is_public_list() {
@@ -180,7 +172,7 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest_asset
   /**
    * Returns the value for mediamosa_hide_empty_assets option.
    *
-   * @return boolean
+   * @return bool
    *   The value of mediamosa_is_public_list
    */
   public function mediamosa_option_hide_empty_assets() {

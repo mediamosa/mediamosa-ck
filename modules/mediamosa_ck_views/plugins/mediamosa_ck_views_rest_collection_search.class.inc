@@ -111,7 +111,7 @@ class mediamosa_ck_views_rest_collection_search extends mediamosa_ck_views_rest 
         'group' => t('MediaMosa'),
         'base' => array(
           'field' => 'id',
-          'title' => t($title),
+          'title' => $title,
           'help' => t('Search a collection using the MediaMosa backend'),
           'query class' => $class,
         ),
