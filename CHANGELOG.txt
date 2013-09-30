@@ -71,12 +71,13 @@ Mediamosa CK 7.x-2.x-dev (build 81)
 - Added a download block on asset detail page.
 - Added ?t parameter to embed video object.
 - Added proper playing of audiofiles.
-
 - Added More filter options for MediaBrowser (collection/my assets/global search)
 - Introduced a 'published' field.
 - Added more cs plugins: publish/transcode.
 - Added proper authorisation checking in cs plugins.
-
+- Renabled code for download flag when uploading; empty flag is now set
+  correctly with MediaMosa 3.5.
+- Fixed total count result on collection get view.
 
 Mediamosa CK 7.x-2.0
 --------------------
