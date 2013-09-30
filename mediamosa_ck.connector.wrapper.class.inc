@@ -1758,5 +1758,4 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
     // Got here, return FALSE.
     return FALSE;
   }
-
 }
