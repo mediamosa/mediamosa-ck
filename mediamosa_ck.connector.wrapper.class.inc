@@ -113,8 +113,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       }
 
       // Downloadable setting.
-      // Off until the is_empty_asset bug is fixed in MediaMosa.
-      // $data_create_mediafile['is_downloadable'] = $options['is_downloadable'] ? 'TRUE' : 'FALSE';
+      $data_create_mediafile['is_downloadable'] = $options['is_downloadable'] ? 'TRUE' : 'FALSE';
 
       // Get optional tag.
       $tag = mediamosa_ck::setting_mediafile_tag();
@@ -1458,7 +1457,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
 
     // Always sortby videotimestampmodified.
     if (!empty($options['orderby'])) {
-      $cql[] = 'sortby ' . $options['orderby'] . !empty($options['direction']) ? '/' . $options['direction'] : '';
+      $cql[] = 'sortby ' . $options['orderby'] . (!empty($options['direction']) ? '/' . $options['direction'] : '');
     }
 
     // Rebuild cql.
@@ -1758,5 +1757,4 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
     // Got here, return FALSE.
     return FALSE;
   }
-
 }
