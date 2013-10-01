@@ -1,4 +1,7 @@
-Mediamosa CK 7.x-2.x-dev (build 81)
+Mediamosa CK 7.x-3.x (build xx)
+-------------------------------
+
+Mediamosa CK 7.x-3.5-RC1 (build 85)
 -----------------------------------
 - Fixed case sensitive problem with parameter, causing fatal error on MediaMosa.
 - Adding field types for mediamosa media browser plugin filters and autocomplete
@@ -64,7 +67,7 @@ Mediamosa CK 7.x-2.x-dev (build 81)
 - Small changes to the MediaBrowser views.
 - Added webm mimetype.
 - Default transcode for upload and play.
-- Tomed down browser number of items.
+- Toned down browser number of items.
 - Fixed warning: needed user_id for playcall.
 - Added change ownership function.
 - Added support for user token in owner field.
@@ -78,6 +81,20 @@ Mediamosa CK 7.x-2.x-dev (build 81)
 - Renabled code for download flag when uploading; empty flag is now set
   correctly with MediaMosa 3.5.
 - Fixed total count result on collection get view.
+- Minor change when calling profile list from connector.
+- Added uploadwrapper for allowed transcodes.
+- Themed the filter of the mediaBrowser a bit.
+- Made search label smaller.
+- Added a publish/unpublish plugins to definitions.
+- Added a transcode plugin to the cs.
+- Added a publish/unpublish plugin to cs.
+- Made batchprocessing user aware.
+- Made the popup better visible in some themes.
+- Removed incorrectly added images.
+- Added 'My assets' filter to view.
+- Fixed bug in content supplier batch table.
+- Fixed a possible bug in media module.
+- Fixed undefined constant error.
 
 Mediamosa CK 7.x-2.0
 --------------------

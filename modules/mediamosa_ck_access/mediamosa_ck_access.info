@@ -1,7 +1,7 @@
 name = "MediaMosa CK: Access control"
 description = "This module enables access control for frontend applications."
 package = "MediaMosa - Construction Kit"
-version = 7.x-3.5
+version = 7.x-3.5-RC1
 core = 7.x
 
 dependencies[] = mediamosa_sdk
