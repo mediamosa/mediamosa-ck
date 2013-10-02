@@ -1455,11 +1455,6 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
     // CQL search.
     $cql = empty($options['cql']) ? array() : array($options['cql']);
 
-    // Always sortby videotimestampmodified.
-    if (!empty($options['orderby'])) {
-      $cql[] = 'sortby ' . $options['orderby'] . (!empty($options['direction']) ? '/' . $options['direction'] : '');
-    }
-
     // Rebuild cql.
     $options['cql'] = implode(' ', $cql);
 
