@@ -122,10 +122,10 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
   }
 
   /**
-   * Returns the value for mediamosa_is_public_list option.
+   * Returns the value for mediamosa_show_drupal_error_messages option.
    *
    * @return bool
-   *   The value of mediamosa_is_public_list.
+   *   The value of mediamosa_show_drupal_error_messages.
    */
   public function mediamosa_option_show_drupal_error_messages() {
 
