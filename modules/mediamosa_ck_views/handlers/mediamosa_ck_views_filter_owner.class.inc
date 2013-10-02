@@ -25,7 +25,7 @@ class mediamosa_ck_views_filter_owner extends mediamosa_ck_views_filter {
     $lookup_name = mediamosa_ck::lookup_user_with_name($username);
 
     // If user can not be found, then we return the original.
-    return !empty($lookup_name) ? $lookup_name : $username;
+    return !empty($lookup_name) ? $lookup_name->mail : $username;
   }
 
   /**
