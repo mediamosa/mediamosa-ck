@@ -229,7 +229,7 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest_asset
       '#title' => t('Filter on access.'),
       '#description' => t("By default, all media is included, even when its protected by access. You can use the value of 'granted' variable to see if the user has access to the media. When the value of granted is 'TRUE', then access is allowed. If granted is 'FALSE', then the user has no access to the media. This 'granted' value is used if you want to show the all the media, but use an 'lock' image to indicate that the user has no access. If you turn on the filter, it will only return media on which the user has access on. In that case the value of 'granted' is always 'TRUE'."),
       '#type' => 'checkbox',
-      '#default_value' => !$this->mediamosa_option_granted(),
+      '#default_value' => $this->mediamosa_option_granted(),
     );
   }
 
