@@ -17,7 +17,7 @@ abstract class mediamosa_ck_views_rest_asset extends mediamosa_ck_views_rest {
     parent::options_form($form, $form_state);
 
     // Checkbox to include still information.
-    $form['mediamosa_ck_view_show_stills'] = array(
+    $form['mediamosa_ck_views_show_stills'] = array(
       '#title' => t('Include still information in the view.'),
       '#description' => t('This switch will enable still information to be available. The view response will be a bit faster when off. Switch is enabled by default.'),
       '#type' => 'checkbox',
@@ -25,7 +25,7 @@ abstract class mediamosa_ck_views_rest_asset extends mediamosa_ck_views_rest {
     );
 
     // Checkbox to include the collection information.
-    $form['mediamosa_ck_view_show_collections'] = array(
+    $form['mediamosa_ck_views_show_collections'] = array(
       '#title' => t('Include collection information in the view.'),
       '#description' => t('This switch will enable collection information to be available. The view response will be a bit faster when off. Switch is disabled by default.'),
       '#type' => 'checkbox',
@@ -41,8 +41,8 @@ abstract class mediamosa_ck_views_rest_asset extends mediamosa_ck_views_rest {
    */
   public function mediamosa_option_show_stills() {
 
-    if (isset($this->options['mediamosa_show_stills'])) {
-      return $this->options['mediamosa_show_stills'];
+    if (isset($this->options['mediamosa_ck_views_show_stills'])) {
+      return $this->options['mediamosa_ck_views_show_stills'];
     }
 
     // Return the show stills value,
@@ -57,8 +57,8 @@ abstract class mediamosa_ck_views_rest_asset extends mediamosa_ck_views_rest {
    */
   public function mediamosa_option_show_collections() {
 
-    if (isset($this->options['mediamosa_show_collections'])) {
-      return $this->options['mediamosa_show_collections'];
+    if (isset($this->options['mediamosa_ck_views_show_collections'])) {
+      return $this->options['mediamosa_ck_views_show_collections'];
     }
 
     // Return the show collections info.
