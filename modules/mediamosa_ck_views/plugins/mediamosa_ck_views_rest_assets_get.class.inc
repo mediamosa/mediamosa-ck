@@ -37,7 +37,7 @@ class mediamosa_ck_views_rest_assets_get extends mediamosa_ck_views_rest_asset_g
       $asset_ids = array($asset_ids);
     }
 
-    $options += array(
+    $mm_options = array(
       'offset' => $params['start'],
       'limit' => $params['rows'],
       'show_stills' => $this->mediamosa_option_show_stills() ? 'TRUE' : 'FALSE',
@@ -46,7 +46,7 @@ class mediamosa_ck_views_rest_assets_get extends mediamosa_ck_views_rest_asset_g
 
     try {
       // Get the asset.
-      return MediaMosaCkConnectorWrapper::get_assets($asset_ids, $options);
+      return MediaMosaCkConnectorWrapper::get_assets($asset_ids, $mm_options);
     }
     catch (Exception $e) {
       mediamosa_ck::watchdog_error('Unable to retrieve asset from MediaMosa, message: @message.', array('@message' => $e->getMessage()));

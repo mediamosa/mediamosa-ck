@@ -29,14 +29,14 @@ class mediamosa_ck_views_rest_asset_get extends mediamosa_ck_views_rest_asset {
       return;
     }
 
-    $options += array(
+    $mm_options = array(
       'show_stills' => $this->mediamosa_option_show_stills() ? 'TRUE' : 'FALSE',
       'show_collections' => $this->mediamosa_option_show_collections() ? 'TRUE' : 'FALSE',
     );
 
     try {
       // Get the asset.
-      return MediaMosaCkConnectorWrapper::get_asset($asset_id, $options);
+      return MediaMosaCkConnectorWrapper::get_asset($asset_id, $mm_options);
     }
     catch (Exception $e) {
       mediamosa_ck::watchdog_error('Unable to retrieve asset from MediaMosa, message: @message.', array('@message' => $e->getMessage()));

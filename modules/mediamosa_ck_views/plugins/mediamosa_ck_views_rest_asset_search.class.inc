@@ -55,7 +55,7 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest_asset
     // Glue with AND.
     $cql = implode(' AND ', $cql);
 
-    $options += array(
+    $mm_options = array(
       'offset' => $params['start'],
       'limit' => $params['rows'],
       'hide_empty_assets' => $this->mediamosa_option_hide_empty_assets() ? 'TRUE' : 'FALSE',
@@ -70,12 +70,12 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest_asset
     // Mediamosa only supports one param order, so take the first.
     $orderby = empty($this->orderby) ? FALSE : reset($this->orderby);
     if ($orderby) {
-      $options['order_by'] = $orderby['orderby'];
-      $options['order_direction'] = $orderby['order'] == 'ASC' ? 'asc' : 'desc';
+      $mm_options['order_by'] = $orderby['orderby'];
+      $mm_options['order_direction'] = $orderby['order'] == 'ASC' ? 'asc' : 'desc';
     }
 
     // Do the search.
-    return MediaMosaCkConnectorWrapper::search_asset($options);
+    return MediaMosaCkConnectorWrapper::search_asset($mm_options);
   }
 
   /**
@@ -161,8 +161,8 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest_asset
    */
   public function mediamosa_option_is_public_list() {
 
-    if (isset($this->options['mediamosa_is_public_list'])) {
-      return $this->options['mediamosa_is_public_list'];
+    if (isset($this->options['mediamosa_ck_views_is_public_list'])) {
+      return $this->options['mediamosa_ck_views_is_public_list'];
     }
 
     // Return the public list option value.
@@ -177,8 +177,8 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest_asset
    */
   public function mediamosa_option_hide_empty_assets() {
 
-    if (isset($this->options['mediamosa_hide_empty_assets'])) {
-      return $this->options['mediamosa_hide_empty_assets'];
+    if (isset($this->options['mediamosa_ck_views_hide_empty_assets'])) {
+      return $this->options['mediamosa_ck_views_hide_empty_assets'];
     }
 
     // Hide by default.
@@ -193,8 +193,8 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest_asset
    */
   public function mediamosa_option_granted() {
 
-    if (isset($this->options['mediamosa_granted'])) {
-      return $this->options['mediamosa_granted'];
+    if (isset($this->options['mediamosa_ck_views_granted'])) {
+      return $this->options['mediamosa_ck_views_granted'];
     }
 
     // Return the public list option value.
@@ -209,7 +209,7 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest_asset
     parent::options_form($form, $form_state);
 
     // Checkbox to allow show only public marked assets.
-    $form['mediamosa_is_public_list'] = array(
+    $form['mediamosa_ck_views_is_public_list'] = array(
       '#title' => t('Only show public marked assets.'),
       '#description' => t("Assets marked with the 'is_public' flag will return in the view results when this option is checked. Unchecked will ignore the 'is_public' value on the asset."),
       '#type' => 'checkbox',
@@ -217,7 +217,7 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest_asset
     );
 
     // Checkbox to include empty assets.
-    $form['mediamosa_hide_empty_assets'] = array(
+    $form['mediamosa_ck_views_hide_empty_assets'] = array(
       '#title' => t('Hide assets that have no mediafiles.'),
       '#description' => t("Assets can be created without mediafiles or mediafile without content, therefor are not useful to include in most view results."),
       '#type' => 'checkbox',
@@ -225,7 +225,7 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest_asset
     );
 
     // Checkbox to include empty assets.
-    $form['mediamosa_granted'] = array(
+    $form['mediamosa_ck_views_granted'] = array(
       '#title' => t('Filter on access.'),
       '#description' => t("By default, all media is included, even when its protected by access. You can use the value of 'granted' variable to see if the user has access to the media. When the value of granted is 'TRUE', then access is allowed. If granted is 'FALSE', then the user has no access to the media. This 'granted' value is used if you want to show the all the media, but use an 'lock' image to indicate that the user has no access. If you turn on the filter, it will only return media on which the user has access on. In that case the value of 'granted' is always 'TRUE'."),
       '#type' => 'checkbox',
