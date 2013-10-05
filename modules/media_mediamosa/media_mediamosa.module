@@ -433,33 +433,6 @@ function media_mediamosa_mediamosa_ck_configuration_collect() {
     );
   }
 
-  $form['media_mediamosa_upload'] = array(
-    '#type' => 'fieldset',
-    '#description' => t('Select the transcode after an upload in the Media MediaMosa upload form.'),
-    '#title' => t('Upload settings'),
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
-  );
-
-  $default_transcode_profile = variable_get('media_mediamosa_transcode_profile_default');
-  if (!isset($default_transcode_profile)) {
-    $default_transcode_profile = MediaMosaCkConnectorWrapper::get_default_transcode_profile();
-  }
-  $available_transcode_profiles = variable_get('media_mediamosa_transcode_profiles_allowed');
-
-  $media_mediamosa_transcodes = variable_get('media_mediamosa_transcodes');
-  if (!isset($media_mediamosa_transcodes)) {
-    $media_mediamosa_transcodes = array($default_transcode_profile);
-  }
-
-  $form['media_mediamosa_upload']['media_mediamosa_transcodes'] = array(
-    '#type' => 'checkboxes',
-    '#title' => t('Automatically start transcodes:'),
-    '#options' => $available_transcode_profiles,
-    '#default_value' => $media_mediamosa_transcodes,
-    '#description' => 'Profiles from allowed profiles: ' . l(t('MediaMosa ck configuration'), "admin/config/media/mediamosa_ck/config"),
-  );
-
   return $form;
 }
 

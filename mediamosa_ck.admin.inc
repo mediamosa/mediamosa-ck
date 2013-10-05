@@ -19,7 +19,7 @@ function mediamosa_ck_configuration_form() {
   // Build the settings form and enrich it with our settings collect hook.
   $form = system_settings_form(module_invoke_all('mediamosa_ck_configuration_collect'));
 
-    // Create group.
+  // Create group.
   $form['mediamosa_ck_settings'] = array(
     '#type' => 'vertical_tabs',
   );
@@ -48,6 +48,80 @@ function mediamosa_ck_configuration_form() {
   foreach ($titles as $name) {
     $form[$name]['#weight'] = $weight++;
   }
+
+  // Add Transcodes settings here. This resides here instead of in the
+  // mediamosa_ck_transcode module, as this is an very important setting, and
+  // almost always used. The transcode module containes further transcoding
+  // functions, for advanced use.
+  $form['mediamosa_ck_settings']['transcode_profile'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Transcode profiles',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#description' => t('Setting page on how to use and restrict MediaMosa transcode profiles.'),
+    '#weight' => 11,
+  );
+
+  // Build up the options.
+  $options = array(
+    0 => t('Select default profile'),
+  );
+
+  $profiles = MediaMosaCkConnectorTranscodeWrapper::get_transcode_profiles();
+  if ($profiles && isset($profiles->items->item)) {
+    foreach ($profiles->items->item as $profile) {
+      $options[(int) $profile->profile_id] = (string) $profile->profile;
+    }
+  }
+
+  $form['mediamosa_ck_settings']['transcode_profile']['mediamosa_ck_transcode_profile_default'] = array(
+    '#title' => t('Select your default transcode profile'),
+    '#description' => t('The default transcode profile is used by the player, to determine the most preferred mediafile to view.'),
+    '#type' => 'select',
+    '#options' => $options,
+    '#size' => 1,
+    '#default_value' => MediaMosaCkConnectorTranscodeWrapper::get_default_transcode_profile(),
+  );
+
+  // Remove none for the allowed list.
+  unset($options[0]);
+  $form['mediamosa_ck_settings']['transcode_profile']['mediamosa_ck_transcode_profiles_allowed'] = array(
+    '#title' => t('Select your allowed transcode profiles'),
+    '#description' => t('By default, all transcodes are allowed.'),
+    '#size' => 20,
+    '#type' => 'select',
+    '#options' => $options,
+    '#multiple' => TRUE,
+    '#default_value' => array_keys(MediaMosaCkConnectorTranscodeWrapper::get_allowed_transcode_profiles()),
+  );
+
+  // Start automatically transcodes?
+  $form['mediamosa_ck_settings']['mediamosa_ck_transcodes'] = array(
+    '#type' => 'fieldset',
+    '#description' => t('Select the transcode after any upload to MediaMosa in the application. This setting is used for basic upload and bulk upload.'),
+    '#title' => t('Automatic transcodes'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#weight' => 12,
+  );
+
+  $default_transcode_profile = variable_get('mediamosa_ck_transcode_profile_default');
+  if (!isset($default_transcode_profile)) {
+    $default_transcode_profile = MediaMosaCkConnectorWrapper::get_default_transcode_profile();
+  }
+  $available_transcode_profiles = variable_get('mediamosa_ck_transcode_profiles_allowed');
+
+  $mediamosa_ck_transcodes = variable_get('mediamosa_ck_transcodes_autostart');
+  if (!isset($mediamosa_ck_transcodes)) {
+    $mediamosa_ck_transcodes = array($default_transcode_profile);
+  }
+  $form['mediamosa_ck_settings']['mediamosa_ck_transcodes']['mediamosa_ck_transcodes_autostart'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Automatically start transcodes:'),
+    '#options' => $available_transcode_profiles,
+    '#default_value' => $mediamosa_ck_transcodes,
+    '#description' => 'The list is taken from the defined allowed profiles (see above)',
+  );
 
   return $form;
 }
@@ -78,4 +152,5 @@ function mediamosa_ck_configuration_form_submit($form, &$form_state) {
 
   // Call our (optional) submit hooks.
   module_invoke_all('mediamosa_ck_configuration_collect_submit', $form, $form_state);
+
 }
