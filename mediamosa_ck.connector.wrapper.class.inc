@@ -93,7 +93,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       'transcode_inherits_acl' => TRUE,
       'create_still' => mediamosa_ck::setting_mediafile_upload_create_still(),
       'is_downloadable' => mediamosa_ck::setting_mediafile_downloadable(),
-      'transcode' => array(mediamosa_connector::variable_get('mediamosa_ck_transcode_profile_default')),
+      'transcode' => mediamosa_connector::variable_get('mediamosa_ck_transcodes_autostart'),
     );
 
     try {
@@ -754,21 +754,20 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
         $options['user_id'] = self::get_asset_owner($asset_id);
       }
 
-      // Try to optain best mediafile here.
-      // If mediafile_id is given: try that first.
+      // If mediafile_id is given: only try this one, and throw exception if
+      // needed.
       if (isset($mediafile_id) && ($mediafile_id != '')) {
         $options['mediafile_id'] = $mediafile_id;
         $temp_profile_id = isset($options['profile_id']) ? $options['profile_id'] : '';
         unset($options['profile_id']);
-        $result = mediamosa_ck::request('asset/' . rawurlencode($asset_id) . '/play', array('data' => $options, 'method' => 'GET'));
+        $result = mediamosa_ck::request_get_fatal('asset/' . rawurlencode($asset_id) . '/play', array('data' => $options, 'method' => 'GET'));
         if ($result->xml->header->request_result_id == mediamosa_sdk::ERRORCODE_OKAY) {
           if (!empty($result->xml->items->item->output)) {
             return $result->xml->items->item->output;
           }
         }
-        $options['profile_id'] = $temp_profile_id;
       }
-
+      // Try to optain best mediafile here.
       // If no response, try the default transcode profile id.
       if (!isset($options['profile_id'])) {
         // Get the default ck transcode profile id.
@@ -782,7 +781,9 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
           return $result->xml->items->item->output;
         }
       }
-
+      elseif ($result->xml->header->request_result_id == mediamosa_sdk::ERRORCODE_NOT_AUTHORIZED) {
+        throw new Exception('Not authorized', mediamosa_sdk::ERRORCODE_NOT_AUTHORIZED);
+      }
       // If no transcode profile available, take the original.
       $options['mediafile_id'] = self::get_asset_mediafile_id_first_original($asset_id);
       unset($options['profile_id']);
@@ -791,6 +792,9 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
         if (!empty($result->xml->items->item->output)) {
           return $result->xml->items->item->output;
         }
+      }
+      elseif ($result->xml->header->request_result_id == mediamosa_sdk::ERRORCODE_NOT_AUTHORIZED) {
+        throw new Exception('Not authorized', mediamosa_sdk::ERRORCODE_NOT_AUTHORIZED);
       }
 
       // If that also fails, show the image of the asset.
