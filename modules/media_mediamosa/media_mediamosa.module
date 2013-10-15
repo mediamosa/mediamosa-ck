@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * All hooks are in this file.
@@ -6,7 +7,6 @@
  * @todo: Share the mediamosa_settings::LIMIT_MAX_IDS_ONLY between server and
  *        client.
  */
-
 define('FIELD_PREFIX', 'field_mm_meta_');
 define('FIELD_PREFIX_LENGTH', 14);
 
@@ -86,12 +86,12 @@ function media_mediamosa_theme() {
 function media_mediamosa_file_mimetype_mapping_alter(&$mapping) {
   $mapping['mimetypes'][] = 'video/webm';
 }
-
 /*
  * Implements hook_file_default_types_alter().
  *
  * Adds the video/webm mimetype to video files.
  */
+
 function media_mediamosa_file_default_types_alter(&$types) {
   $types['video']->mimetypes[] = 'video/webm';
 }
@@ -107,12 +107,12 @@ function media_mediamosa_stream_wrappers() {
       'description' => t('Media provided by MediaMosa.'),
       'type' => STREAM_WRAPPERS_READ_VISIBLE,
     ),
-  /*    'mediamosa-thumb' => array(
+    /*    'mediamosa-thumb' => array(
       'name' => t('MediaMosa videos'),
       'class' => 'MediaMosaThumbWrapper',
       'description' => t('Media thumbnail provided by MediaMosa.'),
       'type' => STREAM_WRAPPERS_READ_VISIBLE,
-    ),*/
+      ), */
   );
 }
 
@@ -210,7 +210,7 @@ function media_mediamosa_rdf_mapping() {
       'bundle' => RDF_DEFAULT_BUNDLE,
       'mapping' => array(
         'rdftype' => array('dc:Item'),
-        // The Fields definition will be added here in a loop.
+      // The Fields definition will be added here in a loop.
       ),
     )
   );
@@ -235,18 +235,18 @@ function media_mediamosa_rdf_mapping() {
  */
 function media_mediamosa_file_delete($file) {
   $params = mediamosa_ck::fileuri2parts($file->uri);
-    $asset_id = $params['asset_id'];
+  $asset_id = $params['asset_id'];
 
-    try {
-      $asset = MediaMosaConnectorMediaWrapper::get_asset($asset_id, array('show_stills' => FALSE));
-      $user_id = (string) $asset->items->item->owner_id;
-      MediaMosaConnectorMediaWrapper::delete_asset($asset_id, $user_id);
-    }
-    catch (Exception $e) {
-      // Ignore, at this point we expect that the asset is either gone already
-      // or connection was lost.
-    }
+  try {
+    $asset = MediaMosaConnectorMediaWrapper::get_asset($asset_id, array('show_stills' => FALSE));
+    $user_id = (string) $asset->items->item->owner_id;
+    MediaMosaConnectorMediaWrapper::delete_asset($asset_id, $user_id);
   }
+  catch (Exception $e) {
+    // Ignore, at this point we expect that the asset is either gone already
+    // or connection was lost.
+  }
+}
 
 /**
  * Implements hook_form_FORM_ID_alter().
@@ -316,10 +316,9 @@ function _media_mediamosa_validate_datetime(&$form, &$form_state) {
     if (isset($value)) {
       if (!MediaMediaMosa::check_datestamp($value)) {
         form_set_error(
-          $field_name,
-          t(
-            "Invalid date time value for optional '%name', must be in format of 'YYYY-MM-DD HH-MM-SS' or 'YYYY-MM-DD'.",
-            array('%name' => $form[$field_name][$lang][0]['value']['#title'])
+          $field_name, t(
+            "Invalid date time value for optional '%name', must be in format of 'YYYY-MM-DD HH-MM-SS' or 'YYYY-MM-DD'.", array(
+          '%name' => $form[$field_name][$lang][0]['value']['#title'])
           )
         );
       }
@@ -364,8 +363,9 @@ function media_mediamosa_mediamosa_ck_configuration_collect() {
     $form['media_mediamosa_sync']['media_mediamosa_cron_not_configured'] = array(
       '#type' => 'item',
       '#title' => t(''),
-      '#markup' => t('These parameters can only be configured when you have specified your !link.',
-         array('!link' => l(t('connection to MediaMosa'), 'admin/config/media/mediamosa/connector'))),
+      '#markup' => t('These parameters can only be configured when you have specified your !link.', array(
+        '!link' => l(t('connection to MediaMosa'), 'admin/config/media/mediamosa/connector'))
+      ),
     );
   }
   else {
@@ -476,8 +476,7 @@ function media_mediamosa_media_edit_submit($form, &$form_state) {
     $uri = mediamosa_ck::fileuri2parts($media->uri);
 
     if (!$uri) {
-      watchdog('Mediamosa CK', 'Cannot parse Mediamosa URI: @uri. Saving metadata impossible.',
-        array('@uri' => $media->uri), WATCHDOG_WARNING);
+      watchdog('Mediamosa CK', 'Cannot parse Mediamosa URI: @uri. Saving metadata impossible.', array('@uri' => $media->uri), WATCHDOG_WARNING);
       return;
     }
 
@@ -586,12 +585,16 @@ function _media_mediamosa_sync_batch_finished($success, $results, $operations) {
     $items = array();
 
     if (isset($results['deleted'])) {
-      $items[] = t('Removed @count abandoned media of the @scanned media found in website.', array('@count' => $results['deleted'], '@scanned' => $results['processed_total']));
+      $items[] = t('Removed @count abandoned media of the @scanned media found in website.', array(
+        '@count' => $results['deleted'], '@scanned' => $results['processed_total'])
+      );
     }
 
     if (isset($results['synced'])) {
-      $items[] = t('Syncronized @count media with MediaMosa, created @count_created new Media and updated @count_updated Media.', array(
-                   '@count' => $results['synced'], '@count_created' => $results['synced_created'], '@count_updated' => $results['synced_updated']));
+      $items[] = t('Syncronized @count media with MediaMosa, created @count_created new Media, updated @count_updated Media and skipped @count_ignored assets.', array(
+        '@count' => $results['synced'], '@count_created' => $results['synced_created'],
+        '@count_updated' => $results['synced_updated'], '@count_ignored' => $results['synced_ignored'])
+      );
 
       // We are synced, set cron to last modified date (if any).
       $videotimestampmodified = MediaMosaConnectorMediaWrapper::get_highest_videotimestamp_modified();
@@ -611,7 +614,7 @@ function _media_mediamosa_sync_batch_finished($success, $results, $operations) {
     // $operations contains the operations that remained unprocessed.
     $error_operation = reset($operations);
     $message[] = t('An error occurred while processing %error_operation with arguments: @arguments', array(
-                   '%error_operation' => $error_operation[0], '@arguments' => print_r($error_operation[1], TRUE))
+      '%error_operation' => $error_operation[0], '@arguments' => print_r($error_operation[1], TRUE))
     );
   }
 
@@ -651,7 +654,9 @@ function _batch_process_drupal_to_mediamosa($limit, &$context) {
   }
 
   // Update our progress information.
-  $context['message'] = t('Syncronizing: Looking for abandoned media, at @progress of @max.', array('@progress' => $context['sandbox']['progress'], '@max' => $context['sandbox']['max']));
+  $context['message'] = t('Syncronizing: Looking for abandoned media, at @progress of @max.', array(
+    '@progress' => $context['sandbox']['progress'], '@max' => $context['sandbox']['max'])
+  );
 
   // Inform the batch engine that we are (not) finished,
   // and provide an estimation of the completion level we reached.
@@ -673,6 +678,7 @@ function _batch_process_mediamosa_to_drupal($limit, &$context) {
     $context['results']['synced'] = 0;
     $context['results']['synced_created'] = 0;
     $context['results']['synced_updated'] = 0;
+    $context['results']['synced_ignored'] = 0;
   }
 
   // Next offset.
@@ -688,6 +694,7 @@ function _batch_process_mediamosa_to_drupal($limit, &$context) {
   $context['results']['synced'] += $result['processed_total'];
   $context['results']['synced_created'] += $result['assets_created'];
   $context['results']['synced_updated'] += $result['assets_updated'];
+  $context['results']['synced_ignored'] += $result['assets_ignored'];
 
   $context['sandbox']['progress'] += $limit;
   if ($context['sandbox']['progress'] > $context['sandbox']['max']) {
@@ -695,7 +702,9 @@ function _batch_process_mediamosa_to_drupal($limit, &$context) {
   }
 
   // Update our progress information.
-  $context['message'] = t('Syncronizing: MediaMosa asset syncronizing to Drupal media, at @progress of @max.', array('@progress' => $context['sandbox']['progress'], '@max' => $context['sandbox']['max']));
+  $context['message'] = t('Syncronizing: MediaMosa asset syncronizing to Drupal media, at @progress of @max.', array(
+    '@progress' => $context['sandbox']['progress'], '@max' => $context['sandbox']['max'])
+  );
 
   // Inform the batch engine that we are (not) finished,
   // and provide an estimation of the completion level we reached.
@@ -710,7 +719,7 @@ function _batch_process_mediamosa_to_drupal($limit, &$context) {
  * Play tickets from mediamosa inserted in a wysiwyg can not be cached.
  * This has performance access issues.
  */
-function media_mediamosa_entity_info_alter(&$entity_info){
+function media_mediamosa_entity_info_alter(&$entity_info) {
   // FIXME: Needs review.
   //$entity_info['node']['field cache'] = FALSE;
 }

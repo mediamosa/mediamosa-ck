@@ -30,8 +30,9 @@ class MediaMediaMosaSync {
 
       // Not found in our database? Then create it.
       if (!$fid) {
-        MediaMediaMosa::create_media($asset);
-        $assets_created++;
+        if (MediaMediaMosa::create_media($asset)) {
+          $assets_created++;
+        }
       }
       else {
         // Found, update it.
@@ -46,6 +47,7 @@ class MediaMediaMosaSync {
       'processed_total' => count($assets),
       'assets_created' => $assets_created,
       'assets_updated' => $assets_updated,
+      'assets_ignored' => count($assets) - $assets_created - $assets_updated,
     );
   }
 
@@ -239,8 +241,9 @@ class MediaMediaMosaSync {
 
         // Not found in our database? Then create it.
         if (!$media_id) {
-          MediaMediaMosa::create_media($asset);
-          $assets_created++;
+          if (MediaMediaMosa::create_media($asset)) {
+            $assets_created++;
+          }
         }
         else {
           // Found, update it.

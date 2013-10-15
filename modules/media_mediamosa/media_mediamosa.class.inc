@@ -71,38 +71,33 @@ class MediaMediaMosa {
     try {
       $mediafiles = MediaMosaConnectorMediaWrapper::get_asset_mediafiles($asset['asset_id']);
 
-      $mediafile = FALSE;
       foreach ($mediafiles as $mediafile) {
-        if ($mediafile['is_original_file'] == 'TRUE') {
-          break;
+        if ($mediafile['is_original_file'] === 'TRUE' && !empty($mediafile['filename'])) {
+          // Build the scheme uri (mediamosa://asset/[id]/[id]/[filename]).
+          $uri = strtr('mediamosa://asset/@asset_id/@mediafile_id/@filename', array(
+              '@asset_id' => $mediafile['asset_id'],
+              '@mediafile_id' => $mediafile['mediafile_id'],
+              '@filename' => str_replace('/', '', $mediafile['filename']),
+            )
+          );
+
+          // Save it using uri.
+          $file = file_uri_to_object($uri);
+          file_save($file);
+
+          MediaMediaMosa::watchdog('Created media object @media_id to reflect URI @uri.', array('@uri' => $uri, '@media_id' => $file->fid), WATCHDOG_DEBUG);
+
+          // Call update right now to populate Dublin Core and technical metadata.
+          MediaMediaMosa::update_media($asset, $file->fid);
+          return $file->fid;
         }
-      }
-
-      if ($mediafile && $mediafile['is_original_file'] == 'TRUE') {
-        // Build the scheme uri (mediamosa://asset/[id]/[id]/[filename]).
-        $uri = strtr('mediamosa://asset/@asset_id/@mediafile_id/@filename', array(
-            '@asset_id' => $mediafile['asset_id'],
-            '@mediafile_id' => $mediafile['mediafile_id'],
-            '@filename' => str_replace('/', '', $mediafile['filename']),
-          )
-        );
-
-        // Save it using uri.
-        $file = file_uri_to_object($uri);
-        file_save($file);
       }
     }
     catch (Exception $e) {
       MediaMediaMosa::watchdog('MediaMediaMosa::create_media(): cannot create file for URI @uri: @error.', array('@uri' => $uri, '@error' => $e->getMessage()), WATCHDOG_ERROR);
-      return FALSE;
     }
 
-    MediaMediaMosa::watchdog('Created media object @media_id to reflect URI @uri.', array('@uri' => $uri, '@media_id' => $file->fid), WATCHDOG_DEBUG);
-
-    // Call update right now to populate Dublin Core and technical metadata.
-    MediaMediaMosa::update_media($asset, $file->fid);
-
-    return $file->fid;
+    return FALSE;
   }
 
   /**

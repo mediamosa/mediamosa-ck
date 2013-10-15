@@ -71,6 +71,7 @@ function template_preprocess_media_mediamosa_views_view_media_browser(&$vars) {
 
   // Render the preview for each file.
   foreach ($vars['rows'] as $index => $row) {
+    $file = null;
     if (isset($fids[$row->asset_id])) {
       $file = $files[$fids[$row->asset_id]];
 
@@ -79,6 +80,11 @@ function template_preprocess_media_mediamosa_views_view_media_browser(&$vars) {
     }
     if (isset($file)) {
       $vars['rows'][$index]->preview = $file->preview;
+      $vars['rows'][$index]->fid = $fids[$row->asset_id];
+    }
+    else {
+      // Not found.
+      unset($vars['rows'][$index]);
     }
   }
 
