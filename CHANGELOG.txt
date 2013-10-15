@@ -6,7 +6,7 @@ Mediamosa CK 7.x-3.5-RC1-DEV (build xx)
 - Fixed typo in comments.
 - Fixed: Search filter retured object instead of mail address of user.
 - Fixed: Double order by in CQL cause bug in collection delete.
-
+- Fixed and improved the Drupal <-> MediaMosa sync code.
 
 Mediamosa CK 7.x-3.5-RC1 (build 85)
 -----------------------------------
