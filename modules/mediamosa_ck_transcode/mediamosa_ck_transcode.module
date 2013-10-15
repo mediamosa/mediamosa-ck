@@ -79,58 +79,6 @@ function mediamosa_ck_transcode_permission() {
 }
 
 /**
- * Implements hook_mediamosa_ck_configuration_collect().
- *
- * @return array
- *   array with settings form.
- */
-function mediamosa_ck_transcode_mediamosa_ck_configuration_collect() {
-
-  $form['transcode_profile'] = array(
-    '#type' => 'fieldset',
-    '#title' => 'Transcode profile parameter',
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
-    '#description' => t('Select the default transcode profile(s) that is used by default with all uploads. The multi options are the allowed transcode profiles that can be used for transcoding.'),
-  );
-
-  // Build up the options.
-  $options = array(
-    0 => t('Select default profile'),
-  );
-
-  $profiles = MediaMosaCkConnectorTranscodeWrapper::get_transcode_profiles();
-  if ($profiles && isset($profiles->items->item)) {
-    foreach ($profiles->items->item as $profile) {
-      $options[(int) $profile->profile_id] = (string) $profile->profile;
-    }
-  }
-
-  $form['transcode_profile']['media_mediamosa_transcode_profile_default'] = array(
-    '#title' => t('Select your default transcode profile'),
-    '#type' => 'select',
-    '#options' => $options,
-    '#size' => 1,
-    '#default_value' => MediaMosaCkConnectorTranscodeWrapper::get_default_transcode_profile(),
-  );
-
-  // Remove none.
-  unset($options[0]);
-
-  $form['transcode_profile']['media_mediamosa_transcode_profiles_allowed'] = array(
-    '#title' => t('Select your allowed transcode profiles'),
-    '#description' => t('By default, all transcodes are allowed.'),
-    '#size' => 20,
-    '#type' => 'select',
-    '#options' => $options,
-    '#multiple' => TRUE,
-    '#default_value' => array_keys(MediaMosaCkConnectorTranscodeWrapper::get_allowed_transcode_profiles()),
-  );
-
-  return $form;
-}
-
-/**
  * Show the transcodes + form.
  *
  * @param array $form

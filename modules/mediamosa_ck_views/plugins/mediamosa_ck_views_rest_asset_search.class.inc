@@ -35,6 +35,9 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest_asset
   protected function do_rest_call($view, array $params, array $options = array()) {
     // Empty.
     $cql = array();
+    if (isset($options['cql'])) {
+      $cql[] = $options['cql'];
+    }
 
     // Add possible filters to CQL search string.
     // @todo: filters need some preprocessing. see self::build().

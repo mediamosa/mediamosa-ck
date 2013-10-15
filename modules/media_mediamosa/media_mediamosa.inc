@@ -32,12 +32,12 @@ function _media_mediamosa_upload_form($form, &$form_state, $types = NULL) {
  */
 function media_mediamosa_upload_form($form, &$form_state, $types = NULL) {
 
-  $default_transcode_profile = variable_get('media_mediamosa_transcode_profile_default');
+  $default_transcode_profile = variable_get('mediamosa_ck_transcode_profile_default');
   if (!isset($default_transcode_profile)) {
     $default_transcode_profile = MediaMosaCkConnectorWrapper::get_default_transcode_profile();
   }
 
-  $media_mediamosa_transcodes = variable_get('media_mediamosa_transcodes', array());
+  $media_mediamosa_transcodes = variable_get('mediamosa_ck_transcodes_autostart', array());
   if (!isset($media_mediamosa_transcodes)) {
     $media_mediamosa_transcodes = array($default_transcode_profile);
   }
