@@ -1,0 +1,132 @@
+<?php
+/**
+ * @file
+ * The CK Bagit archive tools.
+ *
+ * The CK Bagit module handles the bagit archive format for import and export.
+ */
+
+/**
+ * Implements hook_libraries_info()
+ */
+function mediamosa_ck_bagit_libraries_info() {
+  return array(
+    'bagitphp' => array(
+      'title' => 'BagIt PHP',
+      'path' => 'lib',
+      'vendor url' => 'http://travis-ci.org/scholarslab/BagItPHP',
+      'download url' => 'http://travis-ci.org/scholarslab/BagItPHP',
+      'version callback' => '_mediamosa_ck_bagit_php_version',
+      'files' => array(
+        'php' => array(
+          'bagit.php',
+        ),
+      ),
+    ),
+  );
+}
+
+function _mediamosa_ck_bagit_php_version() {
+  return '0.2.1';
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function mediamosa_ck_bagit_form_mediamosa_ck_content_supplier_asset_view_form_alter(&$form, &$form_state) {
+
+  // Get asset ID.
+  //$asset_id = $form_state['build_info']['args'][0];
+
+  $form['asset-tool-bagit'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Bagit',
+    '#group' => 'asset',
+  );
+
+  $form['asset-tool-bagit']['upload-bagit-file'] = array(
+    '#type' => 'file',
+    '#title' => t('Bagit file'),
+    '#description' => t('Upload a bagit info text file, allowed extensions: txt'),
+  );
+
+  $form['asset-tool-bagit']['upload-bagit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Upload'),
+    '#ajax' => array(
+      'callback' => 'mediamosa_ck_content_supplier_asset_view_form_js',
+      'wrapper' => 'mediamosa-ck-cs-popup-full',
+      'method' => 'replace',
+      'effect' => 'fade',
+    ),
+  );
+
+  $form['#validate'][] = 'mediamosa_ck_bagit_mediamosa_ck_content_supplier_asset_view_form_validate';
+  $form['#submit'][] = 'mediamosa_ck_bagit_mediamosa_ck_content_supplier_asset_view_form_submit';
+}
+
+/**
+ * Form wrapper for plugin form.
+ *
+ * @param array $form
+ *   The form array.
+ * @param array $form_state
+ *   An associative array containing the current state of the form.
+ *
+ * @return string
+ *   The HTML.
+ */
+function mediamosa_ck_content_supplier_asset_view_form_js($form, &$form_state) {
+  // Need bid.
+  $asset_id = $asset_id = $form_state['build_info']['args'][0];
+
+  // Return the rendered form.
+  $form = drupal_build_form('mediamosa_ck_content_supplier_asset_view_form', $form_state, $asset_id);
+
+
+}
+
+/**
+ * Implements hook_validate().
+ */
+function mediamosa_ck_bagit_mediamosa_ck_content_supplier_asset_view_form_validate($form, &$form_state) {
+  $file = file_save_upload('upload-bagit-file', array(
+    'file_validate_extensions' => array('txt'),
+  ));
+  // If the file passed validation:
+  if ($file) {
+    // Save the file for use in the submit handler.
+    $form_state['storage']['bagit-file'] = $file;
+  }
+  else {
+    form_set_error('file', t('No file was uploaded or with an invalid extension..'));
+  }
+}
+
+/**
+ * Implements hook_submit().
+ */
+function mediamosa_ck_bagit_mediamosa_ck_content_supplier_asset_view_form_submit($form, &$form_state) {
+
+  $asset_id = $form_state['build_info']['args'][0];
+  $values = $form_state['values'];
+
+  $bagitlib = libraries_detect('bagitphp');
+  if ($bagitlib && !empty($bagitlib['installed'])) {
+    libraries_load('bagitphp');
+  }
+  else {
+    drupal_set_message('No bagit library detected.', 'error');
+    return;
+  }
+
+  switch ($values['op']) {
+    case t('Upload'):
+      $file = $form_state['storage']['bagit-file'];
+      $lines = readLines($file->uri, 'UTF-8');
+      $bag_info_data = BagIt_parseBagInfo($lines);
+
+      mediamosa_ck_bagit::commit_bag_info_data($asset_id, $bag_info_data);
+      break;
+  }
+}
