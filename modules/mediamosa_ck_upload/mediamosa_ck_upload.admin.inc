@@ -108,7 +108,7 @@ function _mediamosa_ck_content_supplier_upload_listing_refresh_ajax($form, $form
       'empty' => t('No assets uploaded.'),
     );
 
-    foreach ($assets['assets'] as $asset_id => $asset) {
+    foreach ($assets['assets'] as $asset) {
       $variables['rows'][] = array(
         array(
           'data' => $asset['title'],

@@ -535,8 +535,8 @@ class mediamosa_ck extends mediamosa_sdk {
    * yet have a REST call that will return the metadata fields in MediaMosa.
    */
   public static function get_metadata_fields() {
-    // The properties to create.
-    static $properties = array(
+    // The metadata fields.
+    static $metadata_fields = array(
       'dc' => array(
         'title' => 'Dublin Core',
         'xpath' => 'dublin_core',
@@ -585,7 +585,72 @@ class mediamosa_ck extends mediamosa_sdk {
       ),
     );
 
-    return $properties;
+    return $metadata_fields;
+  }
+
+  /**
+   * Returns the metadata for display usage.
+   *
+   * @param object $asset
+   *   The asset response object.
+   */
+  public static function get_metadata_asset($asset, array $options = array()) {
+
+    $options += array(
+      'datetime' => array(),
+    );
+
+    $options['datetime'] += array(
+      'type' => 'medium',
+      'format' => '',
+      // Time is stored as GMT.
+      'timezone' => 'GMT',
+      'langcode' => NULL,
+     );
+
+    $metadata = array();
+    foreach (static::get_metadata_fields() as $context => $set) {
+      if (isset($asset->{$set['xpath']})) {
+        $metadata[$context] = array(
+          'title' => $set['title'],
+          'data' => array(),
+        );
+        foreach ($set['fields'] as $field => $type) {
+          $metadata[$context]['data'][$field] = array('label' => static::get_metadata_label($field));
+          if (isset($asset->{$set['xpath']}->{$field})) {
+            foreach ($asset->{$set['xpath']}->{$field} as $value) {
+              switch ($type) {
+                case 'CHAR':
+                  $value = (string) $value;
+                  if ($value !== '') {
+                    $metadata[$context]['data'][$field]['label'] = static::get_metadata_label($field);
+                    $metadata[$context]['data'][$field]['contents'][] = (string) $value;
+                  }
+                  break;
+
+                case 'DATETIME':
+                  $value = (string) $value;
+                  if ($value !== '') {
+                    $metadata[$context]['data'][$field]['label'] = static::get_metadata_label($field);
+                    $metadata[$context]['data'][$field]['contents'][] = mediamosa_sdk::datestamp2date($value, $options['datetime']['type'], $options['datetime']['format'], $options['datetime']['timezone'], $options['datetime']['langcode']);
+                  }
+                  break;
+
+                case 'INT':
+                  $value = (string) $value;
+                  if ($value !== '') {
+                    $metadata[$context]['data'][$field]['label'] = static::get_metadata_label($field);
+                    $metadata[$context]['data'][$field]['contents'][] = (int) $value;
+                  }
+                  break;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return $metadata;
   }
 
   /**
@@ -710,7 +775,7 @@ class mediamosa_ck extends mediamosa_sdk {
 
     // Return filename if we have one.
     if (isset($asset->mediafile_filename) && !empty($asset->mediafile_filename)) {
-      return $asset->mediafile_filename;
+      return (string) $asset->mediafile_filename;
     }
 
     // See if asset is synced to filemanaged.

@@ -53,3 +53,15 @@ div.ck-cs-date-fieldset .fieldset-content {
   border: 1px solid black;
   background-color: white;
 }
+
+.mediamosa-ck-cs-name {
+  font-weight: bold;
+  width:200px;
+}
+
+.mediamosa-ck-cs-value {
+}
+
+div.mediamosa-ck-popup fieldset.mediamosa-ck-popup {
+  margin: 0px;
+}

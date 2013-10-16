@@ -264,21 +264,18 @@ function theme_mediamosa_ck_tabs($variables) {
  */
 function theme_mediamosa_ck_popup($variables) {
 
-  $form = array();
-
   $icon_close = theme('image', array('path' => drupal_get_path('module', 'mediamosa_ck') . '/images/close.png'));
 
-  $form['popup'] = array(
-    '#type' => 'fieldset',
+  $frameset['element'] = array(
     '#title' => $variables['title'],
     '#attributes' => array('class' => array('mediamosa-ck-popup')),
-    '#prefix' => '<div class="mediamosa-ck-popup"><div class="mediamosa-ck-icon-close">' . $icon_close . '</div>',
-    '#suffix' => '</div>',
+    '#value' => $variables['markup'],
   );
 
-  // Set the contents of the popup.
-  $form['popup']['contents'] = array('#markup' => $variables['markup']);
+  $popup = array();
+  $popup[] = '<div class="mediamosa-ck-popup"><div class="mediamosa-ck-icon-close">' . $icon_close . '</div>';
+  $popup[] = theme('fieldset', $frameset);
+  $popup[] = '</div>';
 
-  // Render our form.
-  return drupal_render($form);
+  return implode('', $popup);
 }

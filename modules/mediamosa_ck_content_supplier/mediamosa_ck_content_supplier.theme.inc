@@ -32,3 +32,13 @@ function theme_mediamosa_ck_cs_log($variables) {
 
   return drupal_render($form);
 }
+
+/**
+ * Shows an name-value-pair combination.
+ */
+function theme_mediamosa_ck_cs_name_value_pair($variables) {
+
+  $value = $variables['default_value'];
+  $value = $variables['check_plain'] ? check_plain($value) : check_plain($value);
+  return '<div class="mediamosa-ck-cs-name">' . check_plain($variables['title']) . '</div><div class="mediamosa-ck-cs-value">' . $value . '</div>';
+}

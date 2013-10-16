@@ -14,7 +14,7 @@ class mediamosa_ck_content_supplier {
   const BATCH_MAX_TITLE_LENGTH = 128;
   const BATCH_MAX_DESCRIPTION_LENGTH = 1000;
 
-  const DEFAULT_MAX_ITEMS = 25;
+  const DEFAULT_MAX_ITEMS = 15;
   // ---------------------------------------------------------------- Functions.
   /**
    * Get the setting for max items in the selection list.
@@ -63,7 +63,7 @@ class mediamosa_ck_content_supplier {
    *   The max items.
    */
   public static function get_setting_max_items_log_list() {
-    return variable_get('mediamosa_ck_max_items_log_list', 25);
+    return variable_get('mediamosa_ck_max_items_log_list', self::DEFAULT_MAX_ITEMS);
   }
 
   /**
@@ -454,6 +454,7 @@ class mediamosa_ck_content_supplier {
       'search_operator' => 'and',
       'cql' => '',
       'search_collection' => 0,
+      'search_published' => NULL,
     );
 
     if (!empty($_SESSION['mediamosa_ck_cs']['search']['search_metadata'])) {

@@ -75,7 +75,7 @@ Drupal.behaviors.contentsupplier = {
       }
 
       popup.load($(this).attr('href'),'ajax=1',function() {
-        popup.html($(this).find('form'));
+        popup.html($(this).find('div.mediamosa-ck-popup'));
       });
     });
   }

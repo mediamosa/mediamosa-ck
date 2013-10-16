@@ -152,5 +152,4 @@ function mediamosa_ck_configuration_form_submit($form, &$form_state) {
 
   // Call our (optional) submit hooks.
   module_invoke_all('mediamosa_ck_configuration_collect_submit', $form, $form_state);
-
 }

@@ -35,6 +35,7 @@ function mediamosa_ck_upload_library() {
 
               'max_file_size' => mediamosa_ck_upload::get_max_file_size() . 'mb',
               'chunk_size' => mediamosa_ck_upload::get_max_file_size() . 'mb',
+              'multiple_queues' => TRUE,
 
               'unique_names' => TRUE,
               'flash_swf_url' => file_create_url($library_path . '/js/plupload.flash.swf'),

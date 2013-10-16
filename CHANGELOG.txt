@@ -1,5 +1,5 @@
-Mediamosa CK 7.x-3.5-RC1-DEV (build xx)
----------------------------------------
+Mediamosa CK 7.x-3.5-RC2 (build xx)
+-----------------------------------
 - Fixed an awkward setting flip on 'granted'.
 - Fixed query settings for mediamosa_ck views.
 - Added support for boolean views fields.
@@ -11,7 +11,9 @@ Mediamosa CK 7.x-3.5-RC1-DEV (build xx)
 - Fix collection detail page.
 - Improved quality of player images.
 - Rearranged transcode settings.
-
+- Plupload widget will now allowed multiple upload sessions.
+- Fixed wrong message when PHP upload file / POST setting was set to 0
+  (unlimited).
 
 Mediamosa CK 7.x-3.5-RC1 (build 85)
 -----------------------------------

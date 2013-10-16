@@ -56,6 +56,17 @@ function mediamosa_ck_content_supplier_menu() {
     'file' => 'mediamosa_ck_content_supplier.admin.inc',
   );
 
+  $items['admin/content/mediamosa/supplier/asset/%'] = array(
+    'title' => 'Asset view',
+    'description' => 'View the asset.',
+    'type' => MENU_CALLBACK,
+    'page callback' => '_mediamosa_ck_content_supplier_search_item_view_page',
+    'page arguments' => array(5),
+    'access callback' => '_mediamosa_ck_content_supplier_user_access',
+    'access arguments' => array(mediamosa_ck_content_supplier::PERM_ACCESS_TOOLS_SUPPLIER),
+    'file' => 'mediamosa_ck_content_supplier.admin.inc',
+  );
+
   // Delete batch.
   $items['admin/content/mediamosa/supplier/batch/%/delete'] = array(
     'title' => 'Delete',
@@ -146,6 +157,10 @@ function mediamosa_ck_content_supplier_menu() {
     );
 
     // Copy from admin/content.
+    $items['admin/mediamosa/tools/supplier/asset/%'] = $items['admin/content/mediamosa/supplier/asset/%'];
+    $items['admin/mediamosa/tools/supplier/asset/%']['access callback'] = mediamosa_permission::CALLBACK_USER_ACCESS;
+    $items['admin/mediamosa/tools/supplier/asset/%']['access arguments'] = array(mediamosa_permission::ACCESS_TOOLS_SUPPLIER);
+
     $items['admin/mediamosa/tools/supplier/batch/%/delete'] = $items['admin/content/mediamosa/supplier/batch/%/delete'];
     $items['admin/mediamosa/tools/supplier/batch/%/delete']['access callback'] = mediamosa_permission::CALLBACK_USER_ACCESS;
     $items['admin/mediamosa/tools/supplier/batch/%/delete']['access arguments'] = array(mediamosa_permission::ACCESS_TOOLS_SUPPLIER);
@@ -194,6 +209,15 @@ function mediamosa_ck_content_supplier_theme() {
         'description' => NULL,
         // Summary.
         'summary' => NULL,
+      ),
+      'file' => 'mediamosa_ck_content_supplier.theme.inc',
+    ),
+    'mediamosa_ck_cs_name_value_pair' => array(
+      'variables' => array(
+        'default_value' => NULL,
+        'title' => NULL,
+        // Use check_plain on value.
+        'check_plain' => TRUE,
       ),
       'file' => 'mediamosa_ck_content_supplier.theme.inc',
     ),

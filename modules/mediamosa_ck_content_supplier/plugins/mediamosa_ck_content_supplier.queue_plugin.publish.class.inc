@@ -62,9 +62,6 @@ class mediamosa_ck_content_supplier_queue_plugin_publish extends mediamosa_ck_co
    *   The transcode settings form.
    */
   public static function publish_form($form, &$form_state) {
-    // Get possible values.
-    $values = empty($form_state['values']) ? array() : $form_state['values'];
-
     $form['publish'] = array(
       '#type' => 'radios',
       '#title' => t('Do you want to publish or unpublish the selected assets?'),

@@ -337,7 +337,6 @@ function _mediamosa_ck_content_supplier_search_page() {
 
   $page = isset($_GET['page']) ? $_GET['page'] : 0;
   $limit = mediamosa_ck_content_supplier::get_setting_max_items_search_result_list();
-  $limit = 10;
   $offset = $page * $limit;
 
   // Setup header.
@@ -345,6 +344,7 @@ function _mediamosa_ck_content_supplier_search_page() {
     'title' => t('Title'),
     'isprivate' => t('Published'),
     'videotimestampmodified' => t('Modified'),
+    t('Actions'),
   );
 
   $options = array(
@@ -364,6 +364,9 @@ function _mediamosa_ck_content_supplier_search_page() {
 
   $rows = array();
   foreach ($assets['assets'] as $asset_id => $asset) {
+    $actions = array();
+    $actions[] = l(t('view'), request_path() . '/asset/' . $asset_id, array('query' => drupal_get_destination(), 'attributes' => array('class' => array('cs-link-popup'))));
+
     $rows[$asset_id] = array(
       array(
         'data' => $asset['title'],
@@ -373,6 +376,9 @@ function _mediamosa_ck_content_supplier_search_page() {
       ),
       array(
         'data' => $asset['videotimestampmodified'],
+      ),
+      array(
+        'data' => empty($actions) ? '-' : implode(', ', $actions),
       ),
     );
   }
@@ -565,7 +571,7 @@ function mediamosa_ck_content_supplier_batch_create_form($form, $form_state) {
 function mediamosa_ck_content_supplier_batch_create_form_validate($form, $form_state) {
   // Get number of selected assets.
   if (!mediamosa_ck_content_supplier::get_batch_asset_count()) {
-    form_set_error('', t('You must select some assets first before you can create assets.'));
+    form_set_error('', t('You must select some assets first before you can create a batch.'));
   }
 }
 
@@ -1168,4 +1174,111 @@ function _mediamosa_ck_cs_ajax_paging() {
 
   $commands[] = ajax_command_replace('#' . $wrapper, $content);
   return array('#type' => 'ajax', '#commands' => $commands);
+}
+
+/**
+ * Form wrapper for batch selection.
+ *
+ * @param integer $asset_id
+ *   The asset ID.
+ *
+ * @return string
+ *   The HTML.
+ */
+function _mediamosa_ck_content_supplier_search_item_view_page($asset_id) {
+  $form = drupal_get_form('mediamosa_ck_content_supplier_asset_view_form', $asset_id);
+  return theme('mediamosa_ck_popup', array('markup' => drupal_render($form)));
+}
+
+/**
+ * Show the log of a batch run.
+ *
+ * @param array $form
+ *   The form array.
+ * @param array $form_state
+ *   An associative array containing the current state of the form.
+ * @param integer $asset_id
+ *   The asset ID.
+ *
+ * @return string
+ *   The HTML.
+ */
+function mediamosa_ck_content_supplier_asset_view_form($form, &$form_state, $asset_id = null) {
+
+  if (empty($asset_id)) {
+    $asset_id = $form_state['build_info']['args'][0];
+  }
+
+  $form = array();
+  $form['asset'] = array(
+    '#prefix' => '<div id="mediamosa-ck-content-supplier-asset-view">',
+    '#suffix' => '</div>',
+    '#type' => 'vertical_tabs',
+  );
+  $form['asset']['asset_id'] = array(
+    '#value' => $asset_id,
+  );
+
+  try {
+    $response = MediaMosaCkConnectorWrapper::get_asset($asset_id);
+  }
+  catch(Exception $e) {
+    mediamosa_ck::set_message_exception($e, t('Unable to get asset.'));
+    return '';
+  }
+
+  $asset = $response->get_asset();
+  $title = mediamosa_ck::get_asset_title($asset, t('No title available.'));
+
+  $metadata = mediamosa_ck::get_metadata_asset($asset, array());
+
+  $form['asset-info'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'info',
+  );
+
+  foreach ($metadata as $set => $data) {
+    $form['asset-metadata-' . $set] = array(
+      '#type' => 'fieldset',
+      '#title' => $data['title'],
+      '#collapsed' => TRUE,
+    );
+    foreach ($data['data'] as $name => $contents) {
+      $markup = array();
+      if (!empty($contents['contents'])) {
+        foreach ($contents['contents'] as $content) {
+          $markup[] = check_plain($content);
+        }
+      }
+      $form['asset-metadata-' . $set][$name] = array(
+        '#theme' => 'mediamosa_ck_cs_name_value_pair',
+        '#title' => $contents['label'],
+        '#default_value' => implode('<br \>', $markup),
+      );
+    }
+  }
+
+  $form['asset-info']['title'] = array(
+    '#markup' => $title,
+  );
+
+  foreach ($form as $name => $item) {
+    if (empty($item['#type']) || $item['#type'] != 'fieldset') {
+      continue;
+    }
+
+    // Make sure the fieldset is collapsed.
+    $form[$name]['#collapsed'] = TRUE;
+
+    // Add group type to fieldset.
+    $form[$name]['#group'] = 'asset';
+  }
+
+  return $form;
+}
+
+/**
+ * Implements hook_submit().
+ */
+function mediamosa_ck_content_supplier_asset_view_form_submit($form, &$form_state) {
 }
