@@ -39,7 +39,7 @@ class mediamosa_ck_content_supplier_queue_plugin_transcode extends mediamosa_ck_
    *   Return the data array again to be stored for the next call.
    */
   public function process_asset(mediamosa_connector_response_asset $response, array $data = array()) {
-    $user = user_load($data['uid']);
+    $user_id = $this->get_session_id();
 
     // Find original mediafiles, loop them.
     $mediafiles = $response->get_original_mediafiles();
@@ -47,7 +47,7 @@ class mediamosa_ck_content_supplier_queue_plugin_transcode extends mediamosa_ck_
       // And start the choosen transcodes.
       foreach ($data['media_mediamosa_transcodes'] as $transcode_profile) {
         if ($transcode_profile > 0) {
-          MediaMosaCkConnectorWrapper::create_transcode($mediafile_id, array('profile_id' => $transcode_profile, 'user_id' => $user->mail));
+          MediaMosaCkConnectorWrapper::create_transcode($mediafile_id, array('profile_id' => $transcode_profile, 'user_id' => $user_id));
         }
       }
     }
@@ -67,9 +67,6 @@ class mediamosa_ck_content_supplier_queue_plugin_transcode extends mediamosa_ck_
    *   The transcode settings form.
    */
   public static function transcode_form($form, &$form_state) {
-    // Get possible values.
-    $values = empty($form_state['values']) ? array() : $form_state['values'];
-
     // This batch will start the choosen transcode job(s) on the original
     // mediafiles of the assets in the batch.
     $available_transcode_profiles = variable_get('mediamosa_ck_transcode_profiles_allowed');

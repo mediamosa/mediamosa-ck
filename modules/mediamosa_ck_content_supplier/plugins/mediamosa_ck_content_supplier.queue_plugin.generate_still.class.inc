@@ -60,7 +60,7 @@ class mediamosa_ck_content_supplier_queue_plugin_generate_still extends mediamos
    *   Return the data array again to be stored for the next call.
    */
   public function process_asset(mediamosa_connector_response_asset $response, array $data = array()) {
-    $user = user_load($data['uid']);
+    $user_id = $this->get_session_id();
 
     // Setup default still options.
     $data += array(
@@ -89,7 +89,7 @@ class mediamosa_ck_content_supplier_queue_plugin_generate_still extends mediamos
 
     // Loop through the mediafile IDs.
     foreach ($mediafiles as $mediafile_id => $mediafile) {
-      MediaMosaCkConnectorWrapper::create_mediafile_still($mediafile_id, (string) $user->mail, $options);
+      MediaMosaCkConnectorWrapper::create_mediafile_still($mediafile_id, $user_id, $options);
     }
 
     return $data;
@@ -134,7 +134,6 @@ class mediamosa_ck_content_supplier_queue_plugin_generate_still extends mediamos
       ),
     );
 
-     // All
     $form['still']['size'] = array(
       '#title' => t('Size of still (in pixels, WidthxHeight)'),
       '#type' => 'textfield',
@@ -143,7 +142,6 @@ class mediamosa_ck_content_supplier_queue_plugin_generate_still extends mediamos
       '#required' => TRUE,
     );
 
-     // All
     $form['still']['h_padding'] = array(
       '#title' => t('Horizontal padding (in pixels)'),
       '#type' => 'textfield',
@@ -152,7 +150,6 @@ class mediamosa_ck_content_supplier_queue_plugin_generate_still extends mediamos
       '#required' => TRUE,
     );
 
-     // All
     $form['still']['v_padding'] = array(
       '#title' => t('Vertical padding (in pixels)'),
       '#type' => 'textfield',
@@ -162,7 +159,6 @@ class mediamosa_ck_content_supplier_queue_plugin_generate_still extends mediamos
     );
 
     if ($still_type == self::STILL_TYPE_NORMAL) {
-      // NORMAL.
       $form['still']['still_per_mediafile'] = array(
         '#title' => t('# of stills per mediafile'),
         '#type' => 'textfield',
@@ -172,7 +168,6 @@ class mediamosa_ck_content_supplier_queue_plugin_generate_still extends mediamos
     }
 
     if ($still_type == self::STILL_TYPE_SECOND) {
-      // SECOND.
       $form['still']['still_every_second'] = array(
         '#title' => t('One still every # of seconds'),
         '#type' => 'textfield',
@@ -182,7 +177,6 @@ class mediamosa_ck_content_supplier_queue_plugin_generate_still extends mediamos
     }
 
     if ($still_type == self::STILL_TYPE_NORMAL || $still_type == self::STILL_TYPE_SECOND) {
-      // NORMAL / SECOND.
       $form['still']['start_time'] = array(
         '#title' => t('Start time in seconds'),
         '#type' => 'textfield',
@@ -190,7 +184,6 @@ class mediamosa_ck_content_supplier_queue_plugin_generate_still extends mediamos
         '#default_value' => variable_get('mediamosa_ck_cs_still_start_time', self::STILL_START_TIME),
       );
 
-      // NORMAL / SECOND.
       $form['still']['end_time'] = array(
         '#title' => t('End time in seconds'),
         '#type' => 'textfield',

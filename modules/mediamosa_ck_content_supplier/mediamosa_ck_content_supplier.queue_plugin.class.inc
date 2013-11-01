@@ -121,6 +121,20 @@ abstract class mediamosa_ck_content_supplier_queue_plugin extends mediamosa_ck_c
   }
 
   /**
+   * Return the session ID to user for owner ID.
+   *
+   * Can not use mediamosa_ck::session_user_id(), as it returns the wrong user,
+   * use the owner of the batch.
+   *
+   * @return string
+   *  The session ID.
+   */
+  public function get_session_id() {
+    $user = user_load($this->batch_queue['uid']);
+    return $user->mail;
+  }
+
+  /**
    * Process one run.
    */
   public function process() {

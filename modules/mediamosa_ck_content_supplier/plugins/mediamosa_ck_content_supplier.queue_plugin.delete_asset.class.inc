@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Generate still plugin.
+ * Delete assets in queue plugin.
  */
 
 class mediamosa_ck_content_supplier_queue_plugin_delete_asset extends mediamosa_ck_content_supplier_queue_plugin {
@@ -60,13 +60,13 @@ class mediamosa_ck_content_supplier_queue_plugin_delete_asset extends mediamosa_
    *   Return the data array again to be stored for the next call.
    */
   public function process_asset(mediamosa_connector_response_asset $response, array $data = array()) {
-    $user = user_load($data['uid']);
+    $user_id = $this->get_session_id();
 
     // Get the asset ID.
     $asset_id = $response->get_asset_id();
 
     // Delete asset.
-    MediaMosaCkConnectorWrapper::delete_asset($asset_id, $user->mail);
+    MediaMosaCkConnectorWrapper::delete_asset($asset_id, $user_id);
 
     return $data;
   }

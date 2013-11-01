@@ -39,10 +39,10 @@ class mediamosa_ck_content_supplier_queue_plugin_publish extends mediamosa_ck_co
    *   Return the data array again to be stored for the next call.
    */
   public function process_asset(mediamosa_connector_response_asset $response, array $data = array()) {
-    $user = user_load($data['uid']);
+    $user_id = $this->get_session_id();
     $options = array(
       'isprivate' => $data['publish'] == 1 ? 'FALSE' : 'TRUE',
-      'user_id' => $user->mail,
+      'user_id' => $user_id,
     );
 
     MediaMosaCkConnectorWrapper::update_asset($response->get_asset_id(), $options);

@@ -342,5 +342,15 @@ function mediamosa_ck_content_supplier_mediamosa_ck_content_supplier_plugin_info
       'description' => t('Publish or unpublish assets.'),
       'class' => 'mediamosa_ck_content_supplier_queue_plugin_publish',
     ),
+    'Put assets in collection(s)' => array(
+      'title' => t('Put assets in collection(s)'),
+      'description' => t('Put queued assets into collections.'),
+      'class' => 'mediamosa_ck_content_supplier_queue_plugin_collection_addto',
+    ),
+    'Remove assets from collection(s)' => array(
+      'title' => t('Remove assets from collection(s)'),
+      'description' => t('Remove queued assets from collections.'),
+      'class' => 'mediamosa_ck_content_supplier_queue_plugin_collection_removefrom',
+    ),
   );
 }
