@@ -1,14 +1,14 @@
 <?php
 /**
  * @file
- * Content supplier.
+ * Media Management.
  */
 
-class mediamosa_ck_content_supplier {
+class mediamosa_ck_media_management {
   // ------------------------------------------------------------------- Consts.
   // Permissions.
-  const PERM_ACCESS_TOOLS_SUPPLIER = 'access content supplier';
-  const PERM_ADMIN_CONTENT_SUPPLIER = 'administer content supplier';
+  const PERM_ACCESS_TOOLS_MEDIAMANAGEMENT = 'access media management';
+  const PERM_ADMIN_MEDIA_MANAGEMENT = 'administer media management';
 
   // Max length title batch.
   const BATCH_MAX_TITLE_LENGTH = 128;
@@ -79,7 +79,7 @@ class mediamosa_ck_content_supplier {
   public static function set_selection_state($uid, $asset_id, $state) {
     // Set state.
     if ($state) {
-      db_merge('mediamosa_ck_cs_selection')
+      db_merge('mediamosa_ck_mm_selection')
         ->key(array(
           'uid' => $uid,
           'bid' => 0,
@@ -93,7 +93,7 @@ class mediamosa_ck_content_supplier {
         ->execute();
     }
     else {
-      db_delete('mediamosa_ck_cs_selection')
+      db_delete('mediamosa_ck_mm_selection')
         ->condition('uid', $uid)
         ->condition('bid', 0)
         ->condition('asset_id', $asset_id)
@@ -117,7 +117,7 @@ class mediamosa_ck_content_supplier {
       return array();
     }
 
-    return db_select('mediamosa_ck_cs_selection', 's')
+    return db_select('mediamosa_ck_mm_selection', 's')
       ->fields('s', array('asset_id'))
       ->condition('uid', $uid)
       ->condition('bid', 0)
@@ -140,7 +140,7 @@ class mediamosa_ck_content_supplier {
   public static function get_batch_asset_count($bid = 0) {
     global $user;
 
-    return db_select('mediamosa_ck_cs_selection', 's')
+    return db_select('mediamosa_ck_mm_selection', 's')
       ->condition('uid', $user->uid)
       ->condition('bid', $bid)
       ->countQuery()
@@ -167,7 +167,7 @@ class mediamosa_ck_content_supplier {
    *
    */
   public static function get_batch_asset_ids($uid, $bid, $offset = 0, $limit = 25, $orderby = 'DESC') {
-    return db_select('mediamosa_ck_cs_selection', 's')
+    return db_select('mediamosa_ck_mm_selection', 's')
       ->fields('s', array('asset_id'))
       ->condition('uid', $uid)
       ->condition('bid', $bid)
@@ -231,7 +231,7 @@ class mediamosa_ck_content_supplier {
    */
   public static function delete_batch_selection($bid) {
     // Delete the selection.
-    db_delete('mediamosa_ck_cs_selection')
+    db_delete('mediamosa_ck_mm_selection')
       ->condition('bid', $bid)
       ->execute();
   }
@@ -256,7 +256,7 @@ class mediamosa_ck_content_supplier {
 
     $transaction = db_transaction();
     try {
-      $bid = db_insert('mediamosa_ck_cs_batch')
+      $bid = db_insert('mediamosa_ck_mm_batch')
         ->fields(array(
           'uid' => $user->uid,
           'created' => REQUEST_TIME,
@@ -266,7 +266,7 @@ class mediamosa_ck_content_supplier {
         ->execute();
 
       // Move the current selection into the new batch.
-      db_update('mediamosa_ck_cs_selection')
+      db_update('mediamosa_ck_mm_selection')
         ->fields(array(
           'bid' => $bid,
         ))
@@ -299,8 +299,8 @@ class mediamosa_ck_content_supplier {
       'limit' => self::get_setting_max_items_batch_list(),
     );
 
-    $query = db_select('mediamosa_ck_cs_batch', 'b');
-    $query->join('mediamosa_ck_cs_selection', 's', 's.bid = b.bid');
+    $query = db_select('mediamosa_ck_mm_batch', 'b');
+    $query->join('mediamosa_ck_mm_selection', 's', 's.bid = b.bid');
     $query->addExpression('COUNT(s.bid)', 'total');
     return $query
       ->fields('b')
@@ -323,8 +323,8 @@ class mediamosa_ck_content_supplier {
    *   otherwise.
    */
   public static function get_batch($bid) {
-    $query = db_select('mediamosa_ck_cs_batch', 'b');
-    $query->join('mediamosa_ck_cs_selection', 's', 's.bid = b.bid');
+    $query = db_select('mediamosa_ck_mm_batch', 'b');
+    $query->join('mediamosa_ck_mm_selection', 's', 's.bid = b.bid');
     $query->addExpression('COUNT(s.bid)', 'total');
     return $query
       ->fields('b')
@@ -347,12 +347,12 @@ class mediamosa_ck_content_supplier {
    *   Returns TRUE when batch can be deleted.
    */
   public static function can_delete_batch($bid) {
-    return db_select('mediamosa_ck_cs_batch_queue', 'bq')
+    return db_select('mediamosa_ck_mm_batch_queue', 'bq')
       ->condition('bid', $bid)
       ->condition(
         db_and()
-          ->condition('state', mediamosa_ck_content_supplier_queue::STATE_RUNNING_START, '>=')
-          ->condition('state', mediamosa_ck_content_supplier_queue::STATE_RUNNING_END, '<=')
+          ->condition('state', mediamosa_ck_media_management_queue::STATE_RUNNING_START, '>=')
+          ->condition('state', mediamosa_ck_media_management_queue::STATE_RUNNING_END, '<=')
       )
       ->countQuery()
       ->execute()
@@ -376,21 +376,21 @@ class mediamosa_ck_content_supplier {
 
     $transaction = db_transaction();
     try {
-      db_delete('mediamosa_ck_cs_batch_queue_log')
-        ->condition('qid', db_select('mediamosa_ck_cs_batch_queue', 'q')->fields('q', array('qid')), 'IN')
+      db_delete('mediamosa_ck_mm_batch_queue_log')
+        ->condition('qid', db_select('mediamosa_ck_mm_batch_queue', 'q')->fields('q', array('qid')), 'IN')
         ->execute();
 
-      db_delete('mediamosa_ck_cs_batch_queue')
+      db_delete('mediamosa_ck_mm_batch_queue')
         ->condition('bid', $bid)
         ->execute();
 
       // Delete the selection.
-      db_delete('mediamosa_ck_cs_selection')
+      db_delete('mediamosa_ck_mm_selection')
         ->condition('bid', $bid)
         ->execute();
 
       // Delete the batch.
-      db_delete('mediamosa_ck_cs_batch')
+      db_delete('mediamosa_ck_mm_batch')
         ->condition('bid', $bid)
         ->execute();
     }
@@ -408,10 +408,10 @@ class mediamosa_ck_content_supplier {
    */
   public static function get_plugin_infos() {
     // Get all batch infos.
-    $plugins_infos = module_invoke_all('mediamosa_ck_content_supplier_plugin_info');
+    $plugins_infos = module_invoke_all('mediamosa_ck_media_management_plugin_info');
 
     // Allow other modules to alter the info.
-    drupal_alter('mediamosa_ck_content_supplier_plugin_info', $plugins_infos);
+    drupal_alter('mediamosa_ck_media_management_plugin_info', $plugins_infos);
 
     // Done.
     return $plugins_infos;
@@ -447,7 +447,7 @@ class mediamosa_ck_content_supplier {
     $cql = array();
 
     // Get the session values.
-    $values = empty($_SESSION['mediamosa_ck_cs']['search']['values']) ? array() : $_SESSION['mediamosa_ck_cs']['search']['values'];
+    $values = empty($_SESSION['mediamosa_ck_mm']['search']['values']) ? array() : $_SESSION['mediamosa_ck_mm']['search']['values'];
 
     // Add defaults.
     $values += array(
@@ -457,15 +457,15 @@ class mediamosa_ck_content_supplier {
       'search_published' => NULL,
     );
 
-    if (!empty($_SESSION['mediamosa_ck_cs']['search']['search_metadata'])) {
+    if (!empty($_SESSION['mediamosa_ck_mm']['search']['search_metadata'])) {
       // Get metadata def.
       $metadata_definition = mediamosa_ck::get_metadata_fields();
 
-      if (!is_array($_SESSION['mediamosa_ck_cs']['search']['search_metadata'])) {
-        $_SESSION['mediamosa_ck_cs']['search']['search_metadata'] = array($_SESSION['mediamosa_ck_cs']['search']['search_metadata']);
+      if (!is_array($_SESSION['mediamosa_ck_mm']['search']['search_metadata'])) {
+        $_SESSION['mediamosa_ck_mm']['search']['search_metadata'] = array($_SESSION['mediamosa_ck_mm']['search']['search_metadata']);
       }
 
-      foreach ($_SESSION['mediamosa_ck_cs']['search']['search_metadata'] as $prop => $items) {
+      foreach ($_SESSION['mediamosa_ck_mm']['search']['search_metadata'] as $prop => $items) {
         // Prop is [set].[name]
         list($set, $name) = explode('.', $prop);
         foreach (array_keys($items) as $key_item) {

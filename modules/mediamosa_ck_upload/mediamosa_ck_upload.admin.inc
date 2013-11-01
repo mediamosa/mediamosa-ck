@@ -60,7 +60,7 @@ function mediamosa_ck_upload_listing_form($form, $form_state) {
     '#type' => 'button',
     '#value' => t('Refresh'),
     '#ajax' => array(
-      'callback' => '_mediamosa_ck_content_supplier_upload_listing_refresh_ajax',
+      'callback' => '_mediamosa_ck_media_management_upload_listing_refresh_ajax',
       'wrapper' => 'mediamosa-ck-upload-listing',
       'method' => 'replace',
       'effect' => 'fade',
@@ -89,7 +89,7 @@ function mediamosa_ck_upload_listing_form($form, $form_state) {
  * @return string
  *   The HTML to copy into wrapper.
  */
-function _mediamosa_ck_content_supplier_upload_listing_refresh_ajax($form, $form_state) {
+function _mediamosa_ck_media_management_upload_listing_refresh_ajax($form, $form_state) {
 
   // Search for assets.
   $assets = mediamosa_ck::search_asset_for_ui();

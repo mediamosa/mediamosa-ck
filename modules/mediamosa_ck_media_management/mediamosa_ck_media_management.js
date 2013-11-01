@@ -1,35 +1,35 @@
 (function($) {
 
-Drupal.behaviors.contentsupplier = {
+Drupal.behaviors.MediaManagement = {
   attach: function (context, settings) {
 
     // Ajax pager fixes. Hard coded for now.
-    $('#mediamosa-ck-content-supplier-search-result-wrapper').find('ul.pager > li > a').once(function (id, link) {
-      Drupal.mediamosaCK.CS.attachPagerLinkAjax(link, 'mediamosa-ck-content-supplier-search-result-wrapper');
+    $('#mediamosa-ck-media-management-search-result-wrapper').find('ul.pager > li > a').once(function (id, link) {
+      Drupal.mediamosaCK.MM.attachPagerLinkAjax(link, 'mediamosa-ck-media-management-search-result-wrapper');
     });
 
-    $('#mediamosa-ck-content-supplier-batch-selection-wrapper').find('ul.pager > li > a').once(function (id, link) {
-      Drupal.mediamosaCK.CS.attachPagerLinkAjax(link, 'mediamosa-ck-content-supplier-batch-selection-wrapper');
+    $('#mediamosa-ck-media-management-batch-selection-wrapper').find('ul.pager > li > a').once(function (id, link) {
+      Drupal.mediamosaCK.MM.attachPagerLinkAjax(link, 'mediamosa-ck-media-management-batch-selection-wrapper');
     });
 
-    $('#mediamosa-ck-content-supplier-queue-listing-wrapper').find('ul.pager > li > a').once(function (id, link) {
-      Drupal.mediamosaCK.CS.attachPagerLinkAjax(link, 'mediamosa-ck-content-supplier-queue-listing-wrapper');
+    $('#mediamosa-ck-media-management-queue-listing-wrapper').find('ul.pager > li > a').once(function (id, link) {
+      Drupal.mediamosaCK.MM.attachPagerLinkAjax(link, 'mediamosa-ck-media-management-queue-listing-wrapper');
     });
 
-    $('#mediamosa-ck-content-supplier-queue-done-listing-wrapper').find('ul.pager > li > a').once(function (id, link) {
-      Drupal.mediamosaCK.CS.attachPagerLinkAjax(link, 'mediamosa-ck-content-supplier-queue-done-listing-wrapper');
+    $('#mediamosa-ck-media-management-queue-done-listing-wrapper').find('ul.pager > li > a').once(function (id, link) {
+      Drupal.mediamosaCK.MM.attachPagerLinkAjax(link, 'mediamosa-ck-media-management-queue-done-listing-wrapper');
     });
 
-    $('#mediamosa-ck-content-supplier-queue-done-listing-wrapper').find('ul.pager > li > a').once(function (id, link) {
-      Drupal.mediamosaCK.CS.attachPagerLinkAjax(link, 'mediamosa-ck-content-supplier-queue-done-listing-wrapper');
+    $('#mediamosa-ck-media-management-queue-done-listing-wrapper').find('ul.pager > li > a').once(function (id, link) {
+      Drupal.mediamosaCK.MM.attachPagerLinkAjax(link, 'mediamosa-ck-media-management-queue-done-listing-wrapper');
     });
 
-    $('#mediamosa-ck-content-supplier-log-wrapper').find('ul.pager > li > a').once(function (id, link) {
-      Drupal.mediamosaCK.CS.attachPagerLinkAjax(link, 'mediamosa-ck-content-supplier-log-wrapper');
+    $('#mediamosa-ck-media-management-log-wrapper').find('ul.pager > li > a').once(function (id, link) {
+      Drupal.mediamosaCK.MM.attachPagerLinkAjax(link, 'mediamosa-ck-media-management-log-wrapper');
     });
 
     // Click on search.
-    $('#edit-mediamosa-ck-content-supplier-search').click(function (e) {
+    $('#edit-mediamosa-ck-media-management-search').click(function (e) {
       e.preventDefault();
 
       // Unhide tab.
@@ -38,14 +38,14 @@ Drupal.behaviors.contentsupplier = {
     });
 
     // Select the inner-most table in case of nested tables.
-    //$('th.select-all').closest('table').once('table-select-content-supplier', Drupal.tableSelectContentSupplier);
+    //$('th.select-all').closest('table').once('table-select-media-management', Drupal.tableSelectMediaManagement);
 
     $('.mm-ck-cs-checkbox-search').click(function (e) {
-      Drupal.mediamosaCK.CS.updateContentSupplier(e.target.value, e.target.checked, true);
+      Drupal.mediamosaCK.MM.updateMediaManagement(e.target.value, e.target.checked, true);
     });
 
     $('.mm-ck-cs-checkbox').click(function (e) {
-      Drupal.mediamosaCK.CS.updateContentSupplier(e.target.value, e.target.checked, false);
+      Drupal.mediamosaCK.MM.updateMediaManagement(e.target.value, e.target.checked, false);
     });
 
     // Anchor links in 'Batches' tab opens hidden tab for delete, queueing forms
@@ -82,7 +82,7 @@ Drupal.behaviors.contentsupplier = {
 };
 
 Drupal.mediamosaCK = Drupal.mediamosaCK || {};
-Drupal.mediamosaCK.CS = Drupal.mediamosaCK.CS || {};
+Drupal.mediamosaCK.MM = Drupal.mediamosaCK.MM || {};
 
 /**
  * Set or clear the selection status.
@@ -97,16 +97,16 @@ Drupal.mediamosaCK.CS = Drupal.mediamosaCK.CS || {};
  * @return boolean
  *   The result either true (success) or false (failure).
  */
-Drupal.mediamosaCK.CS.updateContentSupplier = function(id, state, refresh) {
+Drupal.mediamosaCK.MM.updateMediaManagement = function(id, state, refresh) {
   var result = false;
   $.ajax({
     type: 'GET',
-    url: Drupal.settings.basePath + 'mediamosa/ck/json/supplier/selection/state/' + encodeURIComponent(id) + '/' + encodeURIComponent(state),
+    url: Drupal.settings.basePath + 'mediamosa/ck/json/mediamanagement/selection/state/' + encodeURIComponent(id) + '/' + encodeURIComponent(state),
     dataType: 'json',
     success: function (status) {
       if (refresh) {
         // Refresh.
-        jQuery($('#edit-mediamosa-ck-content-supplier-batch-selection-refresh')).trigger('click');
+        jQuery($('#edit-mediamosa-ck-media-management-batch-selection-refresh')).trigger('click');
 
         // Show content selection tab contents.
         $('#ck-tab-content-selection').show();
@@ -121,14 +121,14 @@ Drupal.mediamosaCK.CS.updateContentSupplier = function(id, state, refresh) {
       result = true;
     },
     error: function (xmlhttp) {
-      alert(Drupal.ajaxError(xmlhttp, 'mediamosa/ck/json/supplier/selection/state'));
+      alert(Drupal.ajaxError(xmlhttp, 'mediamosa/ck/json/mediamanagement/selection/state'));
     }
   });
 
   return result;
 };
 
-//Drupal.tableSelectContentSupplier = function() {
+//Drupal.tableSelectMediaManagement = function() {
 //  var table = $(this);
 ////  $('th.select-all input:checkbox:enabled', table).click(function (e) {
 ////    console.log(e);
@@ -136,7 +136,7 @@ Drupal.mediamosaCK.CS.updateContentSupplier = function(id, state, refresh) {
 //
 //  // When clicked on checkbox, call ajax to store selection.
 //  $('.mm-ck-cs-checkbox-selection').click(function (e) {
-//    Drupal.mediamosaCK.updateContentSupplier(e.target.value, e.target.checked, TRUE);
+//    Drupal.mediamosaCK.updateMediaManagement(e.target.value, e.target.checked, TRUE);
 ////    // Either add or remove the selected class based on the state of the check all checkbox.
 ////    $(this).closest('tr').toggleClass('selected', this.checked);
 ////
@@ -164,7 +164,7 @@ Drupal.mediamosaCK.CS.updateContentSupplier = function(id, state, refresh) {
  * @param wrapper
  *   The wrapper to load in.
  */
-Drupal.mediamosaCK.CS.attachPagerLinkAjax = function(link, wrapper) {
+Drupal.mediamosaCK.MM.attachPagerLinkAjax = function(link, wrapper) {
   var href = $(link).attr('href');
   var pos = href.indexOf('?');
   var path = (pos !== -1 ? href.substring(0, pos) : href);

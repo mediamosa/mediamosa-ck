@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * API documentation MediaMosa CK content supplier.
+ * API documentation MediaMosa CK media management.
  */
 
 /**
@@ -25,15 +25,15 @@
  *   - 'description'
  *     The tranlated description of the batch.
  *   - 'class'
- *     Extend on class 'mediamosa_ck_content_supplier_queue' and use abstract
+ *     Extend on class 'mediamosa_ck_media_management_queue' and use abstract
  *     functions.
  */
-function hook_mediamosa_ck_content_supplier_plugin_info() {
+function hook_mediamosa_ck_media_management_plugin_info() {
   return array(
     'generate still' => array(
       'title' => t('Generate still'),
       'description' => t('Allows to generate still on the selection of the batch.'),
-      'class' => 'mediamosa_ck_content_supplier_queue_generate_still',
+      'class' => 'mediamosa_ck_media_management_queue_generate_still',
     ),
   );
 }
@@ -46,9 +46,9 @@ function hook_mediamosa_ck_content_supplier_plugin_info() {
  * @return array
  *   The altered batch info.
  */
-function hook_mediamosa_ck_content_supplier_plugin_info_alter($batch_info) {
+function hook_mediamosa_ck_media_management_plugin_info_alter($batch_info) {
   if (isset($batch_info['generate still'])) {
-    $batch_info['generate still']['settings_form'] = 'mediamosa_ck_cs_callback_generate_still_form_ext';
+    $batch_info['generate still']['settings_form'] = 'mediamosa_ck_mm_callback_generate_still_form_ext';
   }
 
   return $batch_info;

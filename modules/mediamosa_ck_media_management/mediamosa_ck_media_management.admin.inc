@@ -1,13 +1,13 @@
 <?php
 /**
  * @file
- * Admin page callbacks for the MediaMosa CK content supplier module.
+ * Admin page callbacks for the MediaMosa CK media management module.
  */
 
 /**
- * Show the content supplier page.
+ * Show the media management page.
  */
-function _mediamosa_ck_content_supplier_page() {
+function _mediamosa_ck_media_management_page() {
 
   $page = array();
   $page[] = '<div id="mediamosa-ck-cs-popup-left"></div>';
@@ -15,10 +15,10 @@ function _mediamosa_ck_content_supplier_page() {
   $page[] = '<div id="mediamosa-ck-cs-popup-right"></div>';
 
   // Add the search form.
-  $variables['left'] = _mediamosa_ck_content_supplier_search_panel();
+  $variables['left'] = _mediamosa_ck_media_management_search_panel();
 
   // Upload contents.
-  $variables['right'] = _mediamosa_ck_content_supplier_batch_panel();
+  $variables['right'] = _mediamosa_ck_media_management_batch_panel();
 
   $page[] = theme('mediamosa_ck_two_column_page', $variables);
 
@@ -32,21 +32,21 @@ function _mediamosa_ck_content_supplier_page() {
  * @return string
  *   The search panel in HTML.
  */
-function _mediamosa_ck_content_supplier_search_panel() {
+function _mediamosa_ck_media_management_search_panel() {
 
   // Get the asset selection form.
-  $search_form = drupal_get_form('mediamosa_ck_content_supplier_search_form');
-  $content_supplier_search_form = drupal_render($search_form);
+  $search_form = drupal_get_form('mediamosa_ck_media_management_search_form');
+  $media_management_search_form = drupal_render($search_form);
 
   $variables = array(
     'tabs' => array(
       array(
         'title' => 'Search',
-        'content' => $content_supplier_search_form,
+        'content' => $media_management_search_form,
       ),
       array(
         'title' => 'Search result',
-        'content' => _mediamosa_ck_content_supplier_search_wrapper(),
+        'content' => _mediamosa_ck_media_management_search_wrapper(),
       ),
     ),
     'tab-overlay' => 'search',
@@ -67,10 +67,10 @@ function _mediamosa_ck_content_supplier_search_panel() {
  * @return array
  *   The search form.
  */
-function mediamosa_ck_content_supplier_search_form($form, &$form_state) {
+function mediamosa_ck_media_management_search_form($form, &$form_state) {
 
   $form['filter'] = array(
-    '#prefix' => '<div id="mediamosa-ck-content-supplier-search-wrapper">',
+    '#prefix' => '<div id="mediamosa-ck-media-management-search-wrapper">',
     '#suffix' => '</div>',
     '#type' => 'fieldset',
     '#title' => 'Search filter',
@@ -83,7 +83,7 @@ function mediamosa_ck_content_supplier_search_form($form, &$form_state) {
   $metadata_options = mediamosa_ck::get_metadata_fields_options();
 
   // Get the values.
-  $values = empty($_SESSION['mediamosa_ck_cs']['search']['values']) ? array() : $_SESSION['mediamosa_ck_cs']['search']['values'];
+  $values = empty($_SESSION['mediamosa_ck_mm']['search']['values']) ? array() : $_SESSION['mediamosa_ck_mm']['search']['values'];
 
   // Set default.
   $values += array(
@@ -147,14 +147,14 @@ function mediamosa_ck_content_supplier_search_form($form, &$form_state) {
     '#type' => 'fieldset',
     '#title' => 'Metadata search',
     '#collapsible' => TRUE,
-    '#collapsed' => FALSE, //empty($_SESSION['mediamosa_ck_cs'][$values['type']]['search_metadata']),
+    '#collapsed' => FALSE, //empty($_SESSION['mediamosa_ck_mm'][$values['type']]['search_metadata']),
   );
 
   // Get metadata def.
   $metadata_definition = mediamosa_ck::get_metadata_fields();
 
-  if (!empty($_SESSION['mediamosa_ck_cs']['search']['search_metadata'])) {
-    foreach ($_SESSION['mediamosa_ck_cs']['search']['search_metadata'] as $prop => $items) {
+  if (!empty($_SESSION['mediamosa_ck_mm']['search']['search_metadata'])) {
+    foreach ($_SESSION['mediamosa_ck_mm']['search']['search_metadata'] as $prop => $items) {
       // Prop is [set].[name]
       list($set, $name) = explode('.', $prop);
       $title = mediamosa_ck::get_metadata_label($prop) . ' (' . t($metadata_definition[$set]['title']) . ')';
@@ -222,27 +222,27 @@ function mediamosa_ck_content_supplier_search_form($form, &$form_state) {
     '#type' => 'submit',
     '#value' => t('Add search item'),
     '#ajax' => array(
-      'callback' => '_mediamosa_ck_content_supplier_search_ajax',
-      'wrapper' => 'mediamosa-ck-content-supplier-search-wrapper',
+      'callback' => '_mediamosa_ck_media_management_search_ajax',
+      'wrapper' => 'mediamosa-ck-media-management-search-wrapper',
       'method' => 'replace',
       'event' => 'click',
       'progress' => array('message' => ''),
     ),
   );
 
-  $form['filter']['mediamosa_ck_content_supplier_search'] = array(
+  $form['filter']['mediamosa_ck_media_management_search'] = array(
     '#type' => 'submit',
     '#value' => t('Search'),
     '#ajax' => array(
-      'callback' => '_mediamosa_ck_content_supplier_search_ajax',
-      'wrapper' => 'mediamosa-ck-content-supplier-search-result-wrapper',
+      'callback' => '_mediamosa_ck_media_management_search_ajax',
+      'wrapper' => 'mediamosa-ck-media-management-search-result-wrapper',
       'method' => 'replace',
       'event' => 'click',
       'progress' => array('message' => ''),
     ),
     '#attached' => array(
       'js' => array(
-        drupal_get_path('module', 'mediamosa_ck_content_supplier') . '/mediamosa_ck_content_supplier.js',
+        drupal_get_path('module', 'mediamosa_ck_media_management') . '/mediamosa_ck_media_management.js',
       ),
     ),
   );
@@ -251,8 +251,8 @@ function mediamosa_ck_content_supplier_search_form($form, &$form_state) {
     '#type' => 'button',
     '#value' => t('Reset'),
     '#ajax' => array(
-      'callback' => '_mediamosa_ck_content_supplier_search_ajax',
-      'wrapper' => 'mediamosa-ck-content-supplier-search-wrapper',
+      'callback' => '_mediamosa_ck_media_management_search_ajax',
+      'wrapper' => 'mediamosa-ck-media-management-search-wrapper',
       'method' => 'replace',
       'event' => 'click',
       'progress' => array('message' => ''),
@@ -265,49 +265,49 @@ function mediamosa_ck_content_supplier_search_form($form, &$form_state) {
 /**
  * Implements hook_validate().
  */
-function mediamosa_ck_content_supplier_search_form_validate($form, $form_state) {
+function mediamosa_ck_media_management_search_form_validate($form, $form_state) {
 }
 
 /**
  * Implements hook_submit().
  */
-function mediamosa_ck_content_supplier_search_form_submit($form, &$form_state) {
+function mediamosa_ck_media_management_search_form_submit($form, &$form_state) {
 }
 
 /**
  * Ajax callback for search form.
  */
-function _mediamosa_ck_content_supplier_search_ajax($form, &$form_state) {
+function _mediamosa_ck_media_management_search_ajax($form, &$form_state) {
   // Process the button click.
   $op = $form_state['values']['op'];
 
   switch ($op) {
     case t('Search'):
       // Need to store possible changes.
-      $_SESSION['mediamosa_ck_cs']['search']['values'] = $form_state['input'];
+      $_SESSION['mediamosa_ck_mm']['search']['values'] = $form_state['input'];
 
       $commands = array();
-      $commands[] = ajax_command_html(NULL, _mediamosa_ck_content_supplier_search_page());
+      $commands[] = ajax_command_html(NULL, _mediamosa_ck_media_management_search_page());
       return array('#type' => 'ajax', '#commands' => $commands);
 
     case t('Reset'):
-      unset($_SESSION['mediamosa_ck_cs']['search']);
+      unset($_SESSION['mediamosa_ck_mm']['search']);
       break;
 
     case t('Add search item'):
       // Need to store possible changes.
-      $_SESSION['mediamosa_ck_cs']['search']['values'] = $form_state['input'];
+      $_SESSION['mediamosa_ck_mm']['search']['values'] = $form_state['input'];
 
       // Adding new item.
-      $_SESSION['mediamosa_ck_cs']['search']['search_metadata'][$form_state['values']['search_metadata_prop']][] = array();
+      $_SESSION['mediamosa_ck_mm']['search']['search_metadata'][$form_state['values']['search_metadata_prop']][] = array();
       break;
   }
 
   // Get our search form.
-  $form = drupal_rebuild_form('mediamosa_ck_content_supplier_search_form', $form_state);
+  $form = drupal_rebuild_form('mediamosa_ck_media_management_search_form', $form_state);
 
   // This ID must not be changed for js, else start submit wlll.
-  $form['filter']['mediamosa_ck_content_supplier_search']['#id'] = 'edit-mediamosa-ck-content-supplier-search';
+  $form['filter']['mediamosa_ck_media_management_search']['#id'] = 'edit-mediamosa-ck-media-management-search';
 
   $commands = array();
   $commands[] = ajax_command_html(NULL, drupal_render($form['filter']));
@@ -321,8 +321,8 @@ function _mediamosa_ck_content_supplier_search_ajax($form, &$form_state) {
  * @return string
  *   The search result table.
  */
-function _mediamosa_ck_content_supplier_search_wrapper() {
-  return '<div id="mediamosa-ck-content-supplier-search-result-wrapper">' . _mediamosa_ck_content_supplier_search_page() . '</div>';
+function _mediamosa_ck_media_management_search_wrapper() {
+  return '<div id="mediamosa-ck-media-management-search-result-wrapper">' . _mediamosa_ck_media_management_search_page() . '</div>';
 }
 
 /**
@@ -331,12 +331,12 @@ function _mediamosa_ck_content_supplier_search_wrapper() {
  * @return string
  *   The search result table.
  */
-function _mediamosa_ck_content_supplier_search_page() {
+function _mediamosa_ck_media_management_search_page() {
 
   global $user;
 
   $page = isset($_GET['page']) ? $_GET['page'] : 0;
-  $limit = mediamosa_ck_content_supplier::get_setting_max_items_search_result_list();
+  $limit = mediamosa_ck_media_management::get_setting_max_items_search_result_list();
   $offset = $page * $limit;
 
   // Setup header.
@@ -353,12 +353,12 @@ function _mediamosa_ck_content_supplier_search_page() {
   );
 
   // Search for assets.
-  $assets = mediamosa_ck_content_supplier::search_assets($options);
+  $assets = mediamosa_ck_media_management::search_assets($options);
   $item_count_total = $assets['item_count_total'];
 
   // Get default checks.
   $default_value = array();
-  foreach (mediamosa_ck_content_supplier::get_selection_state($user->uid, array_keys($assets['assets'])) as $asset_id) {
+  foreach (mediamosa_ck_media_management::get_selection_state($user->uid, array_keys($assets['assets'])) as $asset_id) {
     $default_value[$asset_id] = 1;
   }
 
@@ -389,7 +389,7 @@ function _mediamosa_ck_content_supplier_search_page() {
       'header' => $header,
       'rows' => $rows,
       'empty' => t('There are no assets found.'),
-      'attributes' => array('class' => array('mediamosa-ck-content-supplier-search-result')),
+      'attributes' => array('class' => array('mediamosa-ck-media-management-search-result')),
       'item_count_total' => $item_count_total,
       'item_limit' => $limit,
       'page' => $page,
@@ -409,9 +409,9 @@ function _mediamosa_ck_content_supplier_search_page() {
  * @param string $state
  *   Either 'true' or 'false'. State of the checkbox.
  */
-function _mediamosa_ck_json_supplier_selection_state_ajax($id, $state) {
+function _mediamosa_ck_json_mediamanagement_selection_state_ajax($id, $state) {
   global $user;
-  mediamosa_ck_content_supplier::set_selection_state($user->uid, $id, drupal_strtolower($state) == 'true');
+  mediamosa_ck_media_management::set_selection_state($user->uid, $id, drupal_strtolower($state) == 'true');
   drupal_exit();
 }
 
@@ -422,30 +422,30 @@ function _mediamosa_ck_json_supplier_selection_state_ajax($id, $state) {
  * @return string
  *   The batch panel in HTML.
  */
-function _mediamosa_ck_content_supplier_batch_panel() {
+function _mediamosa_ck_media_management_batch_panel() {
   $variables = array(
     'tabs' => array(
       array(
         'title' => 'Selection',
-        'content' => _mediamosa_ck_content_supplier_batch_selection_form_page(),
+        'content' => _mediamosa_ck_media_management_batch_selection_form_page(),
       ),
       array(
         'title' => 'Create batch',
-        'content' => _mediamosa_ck_content_supplier_batch_create_form_page(),
+        'content' => _mediamosa_ck_media_management_batch_create_form_page(),
       ),
       array(
         'title' => 'Batches',
-        'content' => _mediamosa_ck_content_supplier_batch_listing_page(),
+        'content' => _mediamosa_ck_media_management_batch_listing_page(),
       ),
     ),
     'tab-overlay' => 'batch',
   );
 
   // If there batches in the queue, we include the queue listing.
-  if (mediamosa_ck_content_supplier_queue::count_queued_batches()) {
+  if (mediamosa_ck_media_management_queue::count_queued_batches()) {
     $variables['tabs'][] = array(
       'title' => t('Queue'),
-      'content' => _mediamosa_ck_content_supplier_batch_panel_queue_page(),
+      'content' => _mediamosa_ck_media_management_batch_panel_queue_page(),
     );
   }
 
@@ -458,9 +458,9 @@ function _mediamosa_ck_content_supplier_batch_panel() {
  * @return string
  *   The batch selection content.
  */
-function _mediamosa_ck_content_supplier_batch_selection_form_page() {
+function _mediamosa_ck_media_management_batch_selection_form_page() {
   // Get the batch selection form.
-  $batch_selection_form = drupal_get_form('mediamosa_ck_content_supplier_batch_selection_form');
+  $batch_selection_form = drupal_get_form('mediamosa_ck_media_management_batch_selection_form');
   return drupal_render($batch_selection_form);
 }
 
@@ -470,9 +470,9 @@ function _mediamosa_ck_content_supplier_batch_selection_form_page() {
  * @return string
  *   The batch creation form.
  */
-function _mediamosa_ck_content_supplier_batch_create_form_page() {
+function _mediamosa_ck_media_management_batch_create_form_page() {
   // Get the batch selection form.
-  $batch_create_form = drupal_get_form('mediamosa_ck_content_supplier_batch_create_form');
+  $batch_create_form = drupal_get_form('mediamosa_ck_media_management_batch_create_form');
   return drupal_render($batch_create_form);
 }
 
@@ -482,8 +482,8 @@ function _mediamosa_ck_content_supplier_batch_create_form_page() {
  * @return string
  *   The queue listing content.
  */
-function _mediamosa_ck_content_supplier_batch_panel_queue_page() {
-  $queued = drupal_get_form('mediamosa_ck_content_supplier_batch_panel_queue_form');
+function _mediamosa_ck_media_management_batch_panel_queue_page() {
+  $queued = drupal_get_form('mediamosa_ck_media_management_batch_panel_queue_form');
   return drupal_render($queued);
 }
 
@@ -493,7 +493,7 @@ function _mediamosa_ck_content_supplier_batch_panel_queue_page() {
  * @return array
  *   The queue form.
  */
-function mediamosa_ck_content_supplier_batch_panel_queue_form() {
+function mediamosa_ck_media_management_batch_panel_queue_form() {
   $form['queued'] = array(
     '#type' => 'fieldset',
     '#title' => t('Queued batches'),
@@ -504,11 +504,11 @@ function mediamosa_ck_content_supplier_batch_panel_queue_form() {
     '#tabs' => array(
       array(
         'title' => 'Queued',
-        'content' => _mediamosa_ck_content_supplier_queue_listing_wrapper(),
+        'content' => _mediamosa_ck_media_management_queue_listing_wrapper(),
       ),
       array(
         'title' => 'Done',
-        'content' => _mediamosa_ck_content_supplier_queue_done_listing_wrapper(),
+        'content' => _mediamosa_ck_media_management_queue_done_listing_wrapper(),
       ),
     ),
     '#tab-overlay' => 'queue',
@@ -520,11 +520,11 @@ function mediamosa_ck_content_supplier_batch_panel_queue_form() {
 /**
  * Returns the html for the plugin form.
  */
-function _mediamosa_ck_content_supplier_batch_queue_form_ajax() {
+function _mediamosa_ck_media_management_batch_queue_form_ajax() {
   $form = array();
   $form_state = array();
   $form_state['build_info']['args'] = func_get_args();
-  print drupal_render(mediamosa_ck_content_supplier_batch_queue_form($form, $form_state));
+  print drupal_render(mediamosa_ck_media_management_batch_queue_form($form, $form_state));
   drupal_exit();
 }
 
@@ -539,7 +539,7 @@ function _mediamosa_ck_content_supplier_batch_queue_form_ajax() {
  * @return array
  *   The form.
  */
-function mediamosa_ck_content_supplier_batch_create_form($form, $form_state) {
+function mediamosa_ck_media_management_batch_create_form($form, $form_state) {
 
   $form['batch'] = array(
     '#type' => 'fieldset',
@@ -557,7 +557,7 @@ function mediamosa_ck_content_supplier_batch_create_form($form, $form_state) {
     '#title' => t('Short description'),
     '#default_value' => '',
     '#rows' => 4,
-    '#maxlength' => mediamosa_ck_content_supplier::BATCH_MAX_DESCRIPTION_LENGTH,
+    '#maxlength' => mediamosa_ck_media_management::BATCH_MAX_DESCRIPTION_LENGTH,
     '#description' => t('Short description about the batch contents.'),
   );
   $form['batch']['submit'] = array('#type' => 'submit', '#value' => t('Create batch'));
@@ -568,9 +568,9 @@ function mediamosa_ck_content_supplier_batch_create_form($form, $form_state) {
 /**
  * Implements hook_validate().
  */
-function mediamosa_ck_content_supplier_batch_create_form_validate($form, $form_state) {
+function mediamosa_ck_media_management_batch_create_form_validate($form, $form_state) {
   // Get number of selected assets.
-  if (!mediamosa_ck_content_supplier::get_batch_asset_count()) {
+  if (!mediamosa_ck_media_management::get_batch_asset_count()) {
     form_set_error('', t('You must select some assets first before you can create a batch.'));
   }
 }
@@ -578,13 +578,13 @@ function mediamosa_ck_content_supplier_batch_create_form_validate($form, $form_s
 /**
  * Implements hook_submit().
  */
-function mediamosa_ck_content_supplier_batch_create_form_submit($form, $form_state) {
+function mediamosa_ck_media_management_batch_create_form_submit($form, $form_state) {
 
   // Get the values.
   $values = $form_state['values'];
 
   if ($values['op'] == t('Create batch')) {
-    mediamosa_ck_content_supplier::create_batch_from_selection($values['title'], $values['description']);
+    mediamosa_ck_media_management::create_batch_from_selection($values['title'], $values['description']);
 
     // Done.
     drupal_set_message(t('Batch %title created', array('%title' => $values['title'])));
@@ -605,8 +605,8 @@ function mediamosa_ck_content_supplier_batch_create_form_submit($form, $form_sta
  * @return string
  *   The HTML.
  */
-function _mediamosa_ck_content_supplier_batch_selection_wrapper($form, $form_state) {
-  return '<div id="mediamosa-ck-content-supplier-batch-selection-wrapper">' . _mediamosa_ck_content_supplier_batch_selection_page() . '</div>';
+function _mediamosa_ck_media_management_batch_selection_wrapper($form, $form_state) {
+  return '<div id="mediamosa-ck-media-management-batch-selection-wrapper">' . _mediamosa_ck_media_management_batch_selection_page() . '</div>';
 }
 
 /**
@@ -615,7 +615,7 @@ function _mediamosa_ck_content_supplier_batch_selection_wrapper($form, $form_sta
  * @return string
  *   The HTML.
  */
-function _mediamosa_ck_content_supplier_batch_selection_page() {
+function _mediamosa_ck_media_management_batch_selection_page() {
   // Setup header.
   $header = array(
     'title' => t('Title'),
@@ -624,14 +624,14 @@ function _mediamosa_ck_content_supplier_batch_selection_page() {
   );
 
   $page = isset($_GET['page']) ? $_GET['page'] : 0;
-  $limit = mediamosa_ck_content_supplier::get_setting_max_items_process_selection_list();
+  $limit = mediamosa_ck_media_management::get_setting_max_items_process_selection_list();
   $offset = $page * $limit;
   $options = array(
     'offset' => $offset,
     'limit' => $limit,
   );
-  $assets = mediamosa_ck_content_supplier::get_selection_assets($options);
-  $item_count_total = mediamosa_ck_content_supplier::get_batch_asset_count();
+  $assets = mediamosa_ck_media_management::get_selection_assets($options);
+  $item_count_total = mediamosa_ck_media_management::get_batch_asset_count();
 
   $options = array();
   $default_value = array();
@@ -650,7 +650,7 @@ function _mediamosa_ck_content_supplier_batch_selection_page() {
 
   return theme('mediamosa_ck_table',
     array(
-      'attributes' => array('class' => array('mediamosa-ck-content-supplier-batch-selection')),
+      'attributes' => array('class' => array('mediamosa-ck-media-management-batch-selection')),
       'header' => $header,
       'rows' => $options,
       'empty' => t('There are no assets selected.'),
@@ -674,19 +674,19 @@ function _mediamosa_ck_content_supplier_batch_selection_page() {
  * @return array
  *   Form array to render.
  */
-function mediamosa_ck_content_supplier_batch_selection_form($form, &$form_state) {
+function mediamosa_ck_media_management_batch_selection_form($form, &$form_state) {
 
-  $form['mediamosa_ck_content_supplier']['mediamosa_ck_content_supplier_batch_selection'] = array(
-    '#prefix' => '<div id="mediamosa-ck-content-supplier-batch-selection-wrapper">',
+  $form['mediamosa_ck_media_management']['mediamosa_ck_media_management_batch_selection'] = array(
+    '#prefix' => '<div id="mediamosa-ck-media-management-batch-selection-wrapper">',
     '#suffix' => '</div>',
-    '#markup' => _mediamosa_ck_content_supplier_batch_selection_page(),
+    '#markup' => _mediamosa_ck_media_management_batch_selection_page(),
   );
-  $form['mediamosa_ck_content_supplier']['mediamosa_ck_content_supplier_batch_selection_refresh'] = array(
+  $form['mediamosa_ck_media_management']['mediamosa_ck_media_management_batch_selection_refresh'] = array(
     '#type' => 'button',
     '#value' => t('Refresh'),
     '#ajax' => array(
-      'callback' => '_mediamosa_ck_content_supplier_batch_selection_wrapper',
-      'wrapper' => 'mediamosa-ck-content-supplier-batch-selection-wrapper',
+      'callback' => '_mediamosa_ck_media_management_batch_selection_wrapper',
+      'wrapper' => 'mediamosa-ck-media-management-batch-selection-wrapper',
       'method' => 'replace',
       'effect' => 'fade',
       'speed' => 'fast',
@@ -695,7 +695,7 @@ function mediamosa_ck_content_supplier_batch_selection_form($form, &$form_state)
     ),
     '#attached' => array(
       'js' => array(
-        drupal_get_path('module', 'mediamosa_ck_content_supplier') . '/mediamosa_ck_content_supplier.js',
+        drupal_get_path('module', 'mediamosa_ck_media_management') . '/mediamosa_ck_media_management.js',
       ),
     ),
   );
@@ -716,7 +716,7 @@ function mediamosa_ck_content_supplier_batch_selection_form($form, &$form_state)
  * @return array
  *   Form array to render.
  */
-function _mediamosa_ck_content_supplier_batch_listing_page() {
+function _mediamosa_ck_media_management_batch_listing_page() {
   // Setup header.
   $header = array(
     'title' => t('Title'),
@@ -729,7 +729,7 @@ function _mediamosa_ck_content_supplier_batch_listing_page() {
   $options = array(
     'offset' => 0,
   );
-  $batches = mediamosa_ck_content_supplier::get_batches($options);
+  $batches = mediamosa_ck_media_management::get_batches($options);
 
   $rows = array();
   foreach ($batches as $batch) {
@@ -758,9 +758,9 @@ function _mediamosa_ck_content_supplier_batch_listing_page() {
 /**
  * Form to confirm batch delete operation.
  */
-function mediamosa_ck_content_supplier_batch_delete_confirm($form, &$form_state, $bid) {
+function mediamosa_ck_media_management_batch_delete_confirm($form, &$form_state, $bid) {
   // Get the batch.
-  $batch = mediamosa_ck_content_supplier::get_batch($bid);
+  $batch = mediamosa_ck_media_management::get_batch($bid);
 
   $destination = drupal_get_destination();
   $form['bid'] = array(
@@ -790,7 +790,7 @@ function mediamosa_ck_content_supplier_batch_delete_confirm($form, &$form_state,
   );
 
   // Check if we can delete.
-  if (!mediamosa_ck_content_supplier_queue::can_delete_batch($bid)) {
+  if (!mediamosa_ck_media_management_queue::can_delete_batch($bid)) {
     $form['confirm']['form']['description'] = array(
       '#markup' => t('The batch %name can not be deleted, its being used.', array('%name' => $batch['title'])),
     );
@@ -804,10 +804,10 @@ function mediamosa_ck_content_supplier_batch_delete_confirm($form, &$form_state,
 }
 
 /**
- * Form submit handler for mediamosa_ck_content_supplier_batch_delete_confirm().
+ * Form submit handler for mediamosa_ck_media_management_batch_delete_confirm().
  */
-function mediamosa_ck_content_supplier_batch_delete_confirm_submit($form, &$form_state) {
-  mediamosa_ck_content_supplier::delete_batch((int) $form_state['values']['bid']);
+function mediamosa_ck_media_management_batch_delete_confirm_submit($form, &$form_state) {
+  mediamosa_ck_media_management::delete_batch((int) $form_state['values']['bid']);
   drupal_set_message(t('The batch has been deleted.'));
   $form_state['redirect'] = $form_state['values']['destination'];
 }
@@ -815,9 +815,9 @@ function mediamosa_ck_content_supplier_batch_delete_confirm_submit($form, &$form
 /**
  * Implements hook_form().
  */
-function mediamosa_ck_content_supplier_batch_queue_form($form, &$form_state, $bid) {
+function mediamosa_ck_media_management_batch_queue_form($form, &$form_state, $bid) {
   // Get the batch.
-  $batch = mediamosa_ck_content_supplier::get_batch($bid);
+  $batch = mediamosa_ck_media_management::get_batch($bid);
 
   $form['bid'] = array(
     '#type' => 'value',
@@ -839,7 +839,7 @@ function mediamosa_ck_content_supplier_batch_queue_form($form, &$form_state, $bi
       '</p><p>' .
       t('Select the batch operation and fill in the batch form to queue the batch.') .
       '</p>',
-    '#prefix' => '<div id="mediamosa-ck-content-supplier-plugin-form-wrapper">',
+    '#prefix' => '<div id="mediamosa-ck-media-management-plugin-form-wrapper">',
     '#suffix' => '</div>',
   );
 
@@ -847,24 +847,24 @@ function mediamosa_ck_content_supplier_batch_queue_form($form, &$form_state, $bi
     '#type' => 'select',
     '#title' => t('The batch operation'),
     '#required' => TRUE,
-    '#options' => mediamosa_ck_content_supplier::get_plugin_infos_options(),
+    '#options' => mediamosa_ck_media_management::get_plugin_infos_options(),
     '#ajax' => array(
-      'callback' => '_mediamosa_ck_content_supplier_plugin_form_wrapper',
-      'wrapper' => 'mediamosa-ck-content-supplier-plugin-form-wrapper',
+      'callback' => '_mediamosa_ck_media_management_plugin_form_wrapper',
+      'wrapper' => 'mediamosa-ck-media-management-plugin-form-wrapper',
       'method' => 'replace',
       'event' => 'change',
       'progress' => array('message' => ''),
     ),
     '#attached' => array(
       'js' => array(
-        drupal_get_path('module', 'mediamosa_ck_content_supplier') . '/mediamosa_ck_content_supplier.js',
+        drupal_get_path('module', 'mediamosa_ck_media_management') . '/mediamosa_ck_media_management.js',
       ),
     ),
   );
 
   if (!empty($form_state['values']['plugin'])) {
     $plugin = $form_state['values']['plugin'];
-    $plugins = mediamosa_ck_content_supplier::get_plugin_infos();
+    $plugins = mediamosa_ck_media_management::get_plugin_infos();
 
     if (isset($plugins[$plugin]) && isset($plugins[$plugin]['class'])) {
       $form['queue']['plugin_form'] = array(
@@ -887,17 +887,17 @@ function mediamosa_ck_content_supplier_batch_queue_form($form, &$form_state, $bi
 /**
  * Implements hook_validate().
  */
-function mediamosa_ck_content_supplier_batch_queue_form_validate($form, $form_state) {
+function mediamosa_ck_media_management_batch_queue_form_validate($form, $form_state) {
   if (!empty($form_state['values']['plugin'])) {
     $plugin = $form_state['values']['plugin'];
-    $plugins = mediamosa_ck_content_supplier::get_plugin_infos();
+    $plugins = mediamosa_ck_media_management::get_plugin_infos();
 
     if (isset($plugins[$plugin]) && isset($plugins[$plugin]['class'])) {
       // Get batch ID.
       $bid = $form_state['values']['bid'];
 
       // Get the batch.
-      $batch = mediamosa_ck_content_supplier::get_batch($bid);
+      $batch = mediamosa_ck_media_management::get_batch($bid);
 
       $plugins[$plugin]['class']::settings_form_validate($form, $form_state, $batch);
     }
@@ -907,11 +907,11 @@ function mediamosa_ck_content_supplier_batch_queue_form_validate($form, $form_st
 /**
  * Implements hook_submit().
  */
-function mediamosa_ck_content_supplier_batch_queue_form_submit($form, $form_state) {
+function mediamosa_ck_media_management_batch_queue_form_submit($form, $form_state) {
   global $user;
 
   $plugin = $form_state['values']['plugin'];
-  $plugins = mediamosa_ck_content_supplier::get_plugin_infos();
+  $plugins = mediamosa_ck_media_management::get_plugin_infos();
 
     // Get batch ID.
   $bid = $form_state['values']['bid'];
@@ -921,7 +921,7 @@ function mediamosa_ck_content_supplier_batch_queue_form_submit($form, $form_stat
     $bid = $form_state['values']['bid'];
 
     // Get the batch.
-    $batch = mediamosa_ck_content_supplier::get_batch($bid);
+    $batch = mediamosa_ck_media_management::get_batch($bid);
 
     $plugins[$plugin]['class']::settings_form_submit($form, $form_state, $batch);
   }
@@ -945,7 +945,7 @@ function mediamosa_ck_content_supplier_batch_queue_form_submit($form, $form_stat
   );
 
   // Store it.
-  mediamosa_ck_content_supplier_queue::store_batch_queue($queue_batch);
+  mediamosa_ck_media_management_queue::store_batch_queue($queue_batch);
 
   drupal_set_message(t('The batch has been inserted into the queue.'));
 
@@ -966,7 +966,7 @@ function mediamosa_ck_content_supplier_batch_queue_form_submit($form, $form_stat
  * @return string
  *   The HTML.
  */
-function mediamosa_ck_content_supplier_batch_queued_log_form($form, &$form_state, $qid) {
+function mediamosa_ck_media_management_batch_queued_log_form($form, &$form_state, $qid) {
 
   $classes = array(
     WATCHDOG_DEBUG     => 'dblog-debug',
@@ -979,7 +979,7 @@ function mediamosa_ck_content_supplier_batch_queued_log_form($form, &$form_state
     WATCHDOG_EMERGENCY => 'dblog-emerg',
   );
 
-  $limit = mediamosa_ck_content_supplier::get_setting_max_items_log_list();
+  $limit = mediamosa_ck_media_management::get_setting_max_items_log_list();
   $header = array(
     // Icon column.
     '',
@@ -988,7 +988,7 @@ function mediamosa_ck_content_supplier_batch_queued_log_form($form, &$form_state
     t('Message'),
   );
 
-  $result = db_select('mediamosa_ck_cs_batch_queue_log', 'log')->extend('PagerDefault')->extend('TableSort')
+  $result = db_select('mediamosa_ck_mm_batch_queue_log', 'log')->extend('PagerDefault')->extend('TableSort')
     ->fields('log', array('lid', 'severity', 'timestamp', 'message', 'variables'))
     ->condition('qid', $qid)
     ->limit($limit)
@@ -1011,16 +1011,16 @@ function mediamosa_ck_content_supplier_batch_queued_log_form($form, &$form_state
 
   // Need the batch info to display.
   // Get batch ID.
-  $batch_queue = mediamosa_ck_content_supplier_queue::get_batch_queue($qid);
+  $batch_queue = mediamosa_ck_media_management_queue::get_batch_queue($qid);
 
   // Get batch.
-  $batch = mediamosa_ck_content_supplier::get_batch($batch_queue['bid']);
+  $batch = mediamosa_ck_media_management::get_batch($batch_queue['bid']);
 
   $form['log'] = array(
-    '#theme' => 'mediamosa_ck_cs_log',
+    '#theme' => 'mediamosa_ck_mm_log',
     '#title' => $batch['title'],
     '#description' => t('@descriptionThere are @count log entries.', array('@count' => $batch_queue['total'], '@description' => ($batch['description'] == '' ? '' : t('@description. ', array('@description' => rtrim($batch['description'], '.')))))),
-    '#prefix' => '<div id="mediamosa-ck-content-supplier-log-wrapper">',
+    '#prefix' => '<div id="mediamosa-ck-media-management-log-wrapper">',
     '#suffix' => '</div>',
     '#header' => $header,
     '#rows' => $rows,
@@ -1036,8 +1036,8 @@ function mediamosa_ck_content_supplier_batch_queued_log_form($form, &$form_state
  * @return string
  *   The HTML.
  */
-function _mediamosa_ck_content_supplier_queue_listing_wrapper() {
-  return '<div id="mediamosa-ck-content-supplier-queue-listing-wrapper">' . _mediamosa_ck_content_supplier_queue_listing_page(array('state_start' => mediamosa_ck_content_supplier_queue::STATE_START, 'state_end' => mediamosa_ck_content_supplier_queue::STATE_RUNNING_END)) . '</div>';
+function _mediamosa_ck_media_management_queue_listing_wrapper() {
+  return '<div id="mediamosa-ck-media-management-queue-listing-wrapper">' . _mediamosa_ck_media_management_queue_listing_page(array('state_start' => mediamosa_ck_media_management_queue::STATE_START, 'state_end' => mediamosa_ck_media_management_queue::STATE_RUNNING_END)) . '</div>';
 }
 
 /**
@@ -1046,8 +1046,8 @@ function _mediamosa_ck_content_supplier_queue_listing_wrapper() {
  * @return string
  *   The HTML.
  */
-function _mediamosa_ck_content_supplier_queue_done_listing_wrapper() {
-  return '<div id="mediamosa-ck-content-supplier-queue-done-listing-wrapper">' . _mediamosa_ck_content_supplier_queue_listing_page(array('state_start' => mediamosa_ck_content_supplier_queue::STATE_DONE, 'state_end' => mediamosa_ck_content_supplier_queue::STATE_END)) . '</div>';
+function _mediamosa_ck_media_management_queue_done_listing_wrapper() {
+  return '<div id="mediamosa-ck-media-management-queue-done-listing-wrapper">' . _mediamosa_ck_media_management_queue_listing_page(array('state_start' => mediamosa_ck_media_management_queue::STATE_DONE, 'state_end' => mediamosa_ck_media_management_queue::STATE_END)) . '</div>';
 }
 
 
@@ -1059,7 +1059,7 @@ function _mediamosa_ck_content_supplier_queue_done_listing_wrapper() {
  * @return string
  *   The HTML.
  */
-function _mediamosa_ck_content_supplier_queue_listing_page(array $options = array()) {
+function _mediamosa_ck_media_management_queue_listing_page(array $options = array()) {
   // Setup header.
   $header = array(
     'batch' => t('Batch'),
@@ -1070,14 +1070,14 @@ function _mediamosa_ck_content_supplier_queue_listing_page(array $options = arra
     'actions' => t('Actions'),
   );
 
-  $limit = mediamosa_ck_content_supplier::get_setting_max_items_queued_batches_list();
+  $limit = mediamosa_ck_media_management::get_setting_max_items_queued_batches_list();
   $page = isset($_GET['page']) ? $_GET['page'] : 0;
   $offset = $page * $limit;
   $options += array(
     'offset' => $offset,
     'limit' => $limit,
   );
-  $queued_batches = mediamosa_ck_content_supplier_queue::get_queued_batches($options);
+  $queued_batches = mediamosa_ck_media_management_queue::get_queued_batches($options);
 
   $rows = array();
   foreach ($queued_batches as $queued_batch) {
@@ -1089,7 +1089,7 @@ function _mediamosa_ck_content_supplier_queue_listing_page(array $options = arra
       check_plain(truncate_utf8($queued_batch['queue_plugin_title'], 40, TRUE, TRUE)),
       $queued_batch['total'],
       format_date($queued_batch['created']),
-      mediamosa_ck_content_supplier_queue::get_state_text($queued_batch['state'], $queued_batch['position'], $queued_batch['total']),
+      mediamosa_ck_media_management_queue::get_state_text($queued_batch['state'], $queued_batch['position'], $queued_batch['total']),
       empty($actions) ? '-' : implode(', ', $actions),
     );
   }
@@ -1101,7 +1101,7 @@ function _mediamosa_ck_content_supplier_queue_listing_page(array $options = arra
       'rows' => $rows,
       'empty' => t('There are no batches queued.'),
       'attributes' => array('class' => array('mediamosa-ck-cs-batch-listing')),
-      'item_count_total' => mediamosa_ck_content_supplier_queue::count_queued_batches($options),
+      'item_count_total' => mediamosa_ck_media_management_queue::count_queued_batches($options),
       'item_limit' => $limit,
       'page' => $page,
       'pager top' => FALSE,
@@ -1115,7 +1115,7 @@ function _mediamosa_ck_content_supplier_queue_listing_page(array $options = arra
  * @return array
  *   The result ajax command array.
  */
-function _mediamosa_ck_cs_ajax_paging() {
+function _mediamosa_ck_mm_ajax_paging() {
   if (!isset($_REQUEST['wrapper']) || !isset($_REQUEST['path'])) {
     return;
   }
@@ -1145,24 +1145,24 @@ function _mediamosa_ck_cs_ajax_paging() {
   $_GET['q'] = $path;
 
   switch ($wrapper) {
-    case 'mediamosa-ck-content-supplier-search-result-wrapper':
-      $content = _mediamosa_ck_content_supplier_search_wrapper();
+    case 'mediamosa-ck-media-management-search-result-wrapper':
+      $content = _mediamosa_ck_media_management_search_wrapper();
       break;
 
-    case 'mediamosa-ck-content-supplier-batch-selection-wrapper':
-      $content = _mediamosa_ck_content_supplier_batch_selection_wrapper();
+    case 'mediamosa-ck-media-management-batch-selection-wrapper':
+      $content = _mediamosa_ck_media_management_batch_selection_wrapper();
       break;
 
-    case 'mediamosa-ck-content-supplier-queue-listing-wrapper':
-      $content = _mediamosa_ck_content_supplier_queue_listing_wrapper();
+    case 'mediamosa-ck-media-management-queue-listing-wrapper':
+      $content = _mediamosa_ck_media_management_queue_listing_wrapper();
       break;
 
-    case 'mediamosa-ck-content-supplier-queue-done-listing-wrapper':
-      $content = _mediamosa_ck_content_supplier_queue_done_listing_wrapper();
+    case 'mediamosa-ck-media-management-queue-done-listing-wrapper':
+      $content = _mediamosa_ck_media_management_queue_done_listing_wrapper();
       break;
 
-    case 'mediamosa-ck-content-supplier-log-wrapper':
-      $form = drupal_get_form('mediamosa_ck_content_supplier_batch_queued_log_form', arg(6, $path));
+    case 'mediamosa-ck-media-management-log-wrapper':
+      $form = drupal_get_form('mediamosa_ck_media_management_batch_queued_log_form', arg(6, $path));
       $wrapper = 'mediamosa-ck-cs-popup-full';
       $content = '<div id="mediamosa-ck-cs-popup-full">' . drupal_render($form) . '</div>';
       break;
@@ -1185,8 +1185,8 @@ function _mediamosa_ck_cs_ajax_paging() {
  * @return string
  *   The HTML.
  */
-function _mediamosa_ck_content_supplier_search_item_view_page($asset_id) {
-  $form = drupal_get_form('mediamosa_ck_content_supplier_asset_view_form', $asset_id);
+function _mediamosa_ck_media_management_search_item_view_page($asset_id) {
+  $form = drupal_get_form('mediamosa_ck_media_management_asset_view_form', $asset_id);
   return theme('mediamosa_ck_popup', array('markup' => drupal_render($form)));
 }
 
@@ -1203,7 +1203,7 @@ function _mediamosa_ck_content_supplier_search_item_view_page($asset_id) {
  * @return string
  *   The HTML.
  */
-function mediamosa_ck_content_supplier_asset_view_form($form, &$form_state, $asset_id = null) {
+function mediamosa_ck_media_management_asset_view_form($form, &$form_state, $asset_id = null) {
 
   if (empty($asset_id)) {
     $asset_id = $form_state['build_info']['args'][0];
@@ -1211,7 +1211,7 @@ function mediamosa_ck_content_supplier_asset_view_form($form, &$form_state, $ass
 
   $form = array();
   $form['asset'] = array(
-    '#prefix' => '<div id="mediamosa-ck-content-supplier-asset-view">',
+    '#prefix' => '<div id="mediamosa-ck-media-management-asset-view">',
     '#suffix' => '</div>',
     '#type' => 'vertical_tabs',
   );
@@ -1251,7 +1251,7 @@ function mediamosa_ck_content_supplier_asset_view_form($form, &$form_state, $ass
         }
       }
       $form['asset-metadata-' . $set][$name] = array(
-        '#theme' => 'mediamosa_ck_cs_name_value_pair',
+        '#theme' => 'mediamosa_ck_mm_name_value_pair',
         '#title' => $contents['label'],
         '#default_value' => implode('<br \>', $markup),
       );
@@ -1280,5 +1280,5 @@ function mediamosa_ck_content_supplier_asset_view_form($form, &$form_state, $ass
 /**
  * Implements hook_submit().
  */
-function mediamosa_ck_content_supplier_asset_view_form_submit($form, &$form_state) {
+function mediamosa_ck_media_management_asset_view_form_submit($form, &$form_state) {
 }

@@ -1,0 +1,4 @@
+
+Mediamosa CK Media Management 7.x-3.x-dev
+-----------------------------------------
+- Renamed to Media Management instead of content supplier.

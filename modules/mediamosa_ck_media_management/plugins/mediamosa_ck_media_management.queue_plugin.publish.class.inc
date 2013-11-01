@@ -1,10 +1,10 @@
 <?php
 /**
  * @file
- * Start transcodes plugin.
+ * Pubish / unpublish assets plugin.
  */
 
-class mediamosa_ck_content_supplier_queue_plugin_transcode extends mediamosa_ck_content_supplier_queue_plugin {
+class mediamosa_ck_media_management_queue_plugin_publish extends mediamosa_ck_media_management_queue_plugin {
 
   /**
    * Get the settings form.
@@ -22,7 +22,7 @@ class mediamosa_ck_content_supplier_queue_plugin_transcode extends mediamosa_ck_
    *   The settings form.
    */
   public static function settings_form($form, &$form_state, $batch) {
-    return self::transcode_form($form, $form_state);
+    return self::publish_form($form, $form_state);
   }
 
   /**
@@ -40,23 +40,18 @@ class mediamosa_ck_content_supplier_queue_plugin_transcode extends mediamosa_ck_
    */
   public function process_asset(mediamosa_connector_response_asset $response, array $data = array()) {
     $user_id = $this->get_session_id();
+    $options = array(
+      'isprivate' => $data['publish'] == 1 ? 'FALSE' : 'TRUE',
+      'user_id' => $user_id,
+    );
 
-    // Find original mediafiles, loop them.
-    $mediafiles = $response->get_original_mediafiles();
-    foreach ($mediafiles as $mediafile_id => $mediafile) {
-      // And start the choosen transcodes.
-      foreach ($data['media_mediamosa_transcodes'] as $transcode_profile) {
-        if ($transcode_profile > 0) {
-          MediaMosaCkConnectorWrapper::create_transcode($mediafile_id, array('profile_id' => $transcode_profile, 'user_id' => $user_id));
-        }
-      }
-    }
+    MediaMosaCkConnectorWrapper::update_asset($response->get_asset_id(), $options);
 
     return $data;
   }
 
   /**
-   * Transcode parameters.
+   * Publish options.
    *
    * @param array $form
    *   The form array.
@@ -66,15 +61,11 @@ class mediamosa_ck_content_supplier_queue_plugin_transcode extends mediamosa_ck_
    * @return array
    *   The transcode settings form.
    */
-  public static function transcode_form($form, &$form_state) {
-    // This batch will start the choosen transcode job(s) on the original
-    // mediafiles of the assets in the batch.
-    $available_transcode_profiles = variable_get('mediamosa_ck_transcode_profiles_allowed');
-
-    $form['media_mediamosa_upload']['media_mediamosa_transcodes'] = array(
-      '#type' => 'checkboxes',
-      '#title' => t('Start transcodes:'),
-      '#options' => $available_transcode_profiles,
+  public static function publish_form($form, &$form_state) {
+    $form['publish'] = array(
+      '#type' => 'radios',
+      '#title' => t('Do you want to publish or unpublish the selected assets?'),
+      '#options' => array(1 => t('Publish'), 0 => t('Unpublish')),
       '#required' => TRUE,
     );
 

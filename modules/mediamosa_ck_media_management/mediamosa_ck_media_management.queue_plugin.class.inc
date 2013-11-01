@@ -1,13 +1,13 @@
 <?php
 
-abstract class mediamosa_ck_content_supplier_queue_plugin extends mediamosa_ck_content_supplier_queue {
+abstract class mediamosa_ck_media_management_queue_plugin extends mediamosa_ck_media_management_queue {
   // ------------------------------------------------------------------- Consts.
 
   // --------------------------------------------------------------------- Vars.
   /**
    * The batch queue data.
    *
-   * Array taken from mediamosa_ck_cs_batch_queue table.
+   * Array taken from mediamosa_ck_mm_batch_queue table.
    *
    * @var array
    */
@@ -16,7 +16,7 @@ abstract class mediamosa_ck_content_supplier_queue_plugin extends mediamosa_ck_c
   /**
    * The parent batch data.
    *
-   * Array taken from mediamosa_ck_cs_batch table.
+   * Array taken from mediamosa_ck_mm_batch table.
    *
    * @var array
    */
@@ -206,7 +206,7 @@ abstract class mediamosa_ck_content_supplier_queue_plugin extends mediamosa_ck_c
     $position = $this->batch_queue['position']++;
 
     // Get the next asset ID to process.
-    $asset_id = db_select('mediamosa_ck_cs_selection', 's')
+    $asset_id = db_select('mediamosa_ck_mm_selection', 's')
       ->fields('s', array('asset_id'))
       ->condition('bid', $this->batch_queue['bid'])
       ->range($position, 1)
@@ -242,7 +242,7 @@ abstract class mediamosa_ck_content_supplier_queue_plugin extends mediamosa_ck_c
     }
 
     // Store the batch queue.
-    mediamosa_ck_content_supplier_queue::store_batch_queue($this->batch_queue);
+    mediamosa_ck_media_management_queue::store_batch_queue($this->batch_queue);
 
     // Done.
     return TRUE;

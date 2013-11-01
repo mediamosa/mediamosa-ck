@@ -117,7 +117,7 @@ function mediamosa_ck_upload_menu() {
     'file' => 'mediamosa_ck_upload.admin.inc',
   );
   $items['admin/content/mediamosa/upload'] = array(
-    'title' => 'Content upload',
+    'title' => 'Bulk upload',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -10,
   );

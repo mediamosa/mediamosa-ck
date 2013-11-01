@@ -4,7 +4,7 @@
  * All queue related functions.
  */
 
-class mediamosa_ck_content_supplier_queue extends mediamosa_ck_content_supplier {
+class mediamosa_ck_media_management_queue extends mediamosa_ck_media_management {
   // ------------------------------------------------------------------- Consts.
   // Lowest state #.
   const STATE_START = 0;
@@ -34,7 +34,7 @@ class mediamosa_ck_content_supplier_queue extends mediamosa_ck_content_supplier 
   const STATE_END = 99;
 
   // Lock name.
-  const LOCK_NAME = 'mediamosa_ck_cs_queue';
+  const LOCK_NAME = 'mediamosa_ck_mm_queue';
 
   // Max time lock.
   const LOCK_MAX_SECONDS = 60;
@@ -71,7 +71,7 @@ class mediamosa_ck_content_supplier_queue extends mediamosa_ck_content_supplier 
     $cs_queue_running = &drupal_static('cs_queue_running');
     $cs_queue_running = $qid;
     $variables['qid'] = $cs_queue_running;
-    watchdog('Content supplier queue', $message, $variables, $severity);
+    watchdog('Media Management queue', $message, $variables, $severity);
   }
 
   /**
@@ -86,8 +86,8 @@ class mediamosa_ck_content_supplier_queue extends mediamosa_ck_content_supplier 
    *     The number of log entries.
    */
   public static function get_batch_queue($qid) {
-    $query = db_select('mediamosa_ck_cs_batch_queue', 'bq');
-    $query->leftJoin('mediamosa_ck_cs_batch_queue_log', 'bql', 'bql.qid = bq.qid');
+    $query = db_select('mediamosa_ck_mm_batch_queue', 'bq');
+    $query->leftJoin('mediamosa_ck_mm_batch_queue_log', 'bql', 'bql.qid = bq.qid');
     $query->addExpression('COUNT(bql.qid)', 'total');
     $batch_queue = $query
       ->fields('bq')
@@ -115,7 +115,7 @@ class mediamosa_ck_content_supplier_queue extends mediamosa_ck_content_supplier 
    *   The batch ID.
    */
   public static function get_batch_queue_bid($qid) {
-    return db_select('mediamosa_ck_cs_batch_queue', 'bq')
+    return db_select('mediamosa_ck_mm_batch_queue', 'bq')
       ->fields('bp', array('bid'))
       ->condition('qid', $qid)
       ->countQuery()
@@ -157,11 +157,11 @@ class mediamosa_ck_content_supplier_queue extends mediamosa_ck_content_supplier 
    */
   public static function store_batch_queue($record) {
     if (empty($record['qid'])) {
-      drupal_write_record('mediamosa_ck_cs_batch_queue', $record);
+      drupal_write_record('mediamosa_ck_mm_batch_queue', $record);
     }
     else {
       // Write.
-      drupal_write_record('mediamosa_ck_cs_batch_queue', $record, 'qid');
+      drupal_write_record('mediamosa_ck_mm_batch_queue', $record, 'qid');
     }
   }
 
@@ -211,9 +211,9 @@ class mediamosa_ck_content_supplier_queue extends mediamosa_ck_content_supplier 
       'limit' => self::get_setting_max_items_queued_batches_list(),
      );
 
-    $query = db_select('mediamosa_ck_cs_batch_queue', 'bq');
-    $query->join('mediamosa_ck_cs_batch', 'b', 'b.bid = bq.bid');
-    $query->join('mediamosa_ck_cs_selection', 's', 's.bid = bq.bid');
+    $query = db_select('mediamosa_ck_mm_batch_queue', 'bq');
+    $query->join('mediamosa_ck_mm_batch', 'b', 'b.bid = bq.bid');
+    $query->join('mediamosa_ck_mm_selection', 's', 's.bid = bq.bid');
     if (isset($options['state_start']) || isset($options['state_end'])) {
       $options += array(
         'state_start' => self::STATE_START,
@@ -347,7 +347,7 @@ class mediamosa_ck_content_supplier_queue extends mediamosa_ck_content_supplier 
    *   The batch queue array or FALSE when none are waiting/running.
    */
   public static function get_batch_for_running() {
-    return db_select('mediamosa_ck_cs_batch_queue', 'bq')
+    return db_select('mediamosa_ck_mm_batch_queue', 'bq')
       ->fields('bq')
       ->condition(
         db_or()
@@ -379,7 +379,7 @@ class mediamosa_ck_content_supplier_queue extends mediamosa_ck_content_supplier 
    *   The current state.
    */
   public static function get_batch_queue_state($qid) {
-    return db_select('mediamosa_ck_cs_batch_queue', 'bq')
+    return db_select('mediamosa_ck_mm_batch_queue', 'bq')
       ->fields('bq', array('state'))
       ->condition('qid', $qid)
       ->execute()
@@ -398,7 +398,7 @@ class mediamosa_ck_content_supplier_queue extends mediamosa_ck_content_supplier 
    *   The state changed.
    */
   public static function set_batch_queue_state($qid, $state) {
-    db_update('mediamosa_ck_cs_batch_queue')
+    db_update('mediamosa_ck_mm_batch_queue')
       ->fields(array('state' => $state))
       ->condition('qid', $qid)
       ->execute();
@@ -466,7 +466,7 @@ class mediamosa_ck_content_supplier_queue extends mediamosa_ck_content_supplier 
 
       // When waiting state, set to running.
       if (self::is_state_waiting($batch_queue['state'])) {
-        $batch_queue['state'] = self::set_batch_queue_state($qid, mediamosa_ck_content_supplier_queue::STATE_RUNNING);
+        $batch_queue['state'] = self::set_batch_queue_state($qid, mediamosa_ck_media_management_queue::STATE_RUNNING);
       }
 
       // Create the batch queue object.
@@ -475,7 +475,7 @@ class mediamosa_ck_content_supplier_queue extends mediamosa_ck_content_supplier 
       // Process one run. Returns TRUE when done.
       if (!$batch_queue_plugin->process()) {
         // Back to waiting state.
-        $batch_queue['state'] = self::set_batch_queue_state($qid, mediamosa_ck_content_supplier_queue::STATE_WAITING);
+        $batch_queue['state'] = self::set_batch_queue_state($qid, mediamosa_ck_media_management_queue::STATE_WAITING);
       }
     }
     catch (Exception $e) {
@@ -483,7 +483,7 @@ class mediamosa_ck_content_supplier_queue extends mediamosa_ck_content_supplier 
       self::watchdog($qid, 'Exception caught, message; @message', array('@message' => $e->getMessage()), WATCHDOG_CRITICAL);
 
       // Set state to failed.
-      self::set_batch_queue_state($qid, mediamosa_ck_content_supplier_queue::STATE_DONE_FAILED);
+      self::set_batch_queue_state($qid, mediamosa_ck_media_management_queue::STATE_DONE_FAILED);
     }
 
     // Done.
@@ -506,7 +506,7 @@ class mediamosa_ck_content_supplier_queue extends mediamosa_ck_content_supplier 
       'limit' => self::get_setting_max_items_log_list(),
     );
 
-    return db_select('mediamosa_ck_cs_batch_queue_log', 'log')
+    return db_select('mediamosa_ck_mm_batch_queue_log', 'log')
       ->fields('log')
       ->condition('qid', $qid)
       ->range($options['offset'], $options['limit'])

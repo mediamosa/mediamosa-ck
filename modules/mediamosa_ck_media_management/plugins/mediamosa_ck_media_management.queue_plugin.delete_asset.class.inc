@@ -4,7 +4,7 @@
  * Delete assets in queue plugin.
  */
 
-class mediamosa_ck_content_supplier_queue_plugin_delete_asset extends mediamosa_ck_content_supplier_queue_plugin {
+class mediamosa_ck_media_management_queue_plugin_delete_asset extends mediamosa_ck_media_management_queue_plugin {
 
   /**
    * Get the settings form.

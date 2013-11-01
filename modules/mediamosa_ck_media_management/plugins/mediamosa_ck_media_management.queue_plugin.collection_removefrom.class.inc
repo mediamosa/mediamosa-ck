@@ -4,7 +4,7 @@
  * Delete assets in queue plugin.
  */
 
-class mediamosa_ck_content_supplier_queue_plugin_collection_addto extends mediamosa_ck_content_supplier_queue_plugin {
+class mediamosa_ck_media_management_queue_plugin_collection_removefrom extends mediamosa_ck_media_management_queue_plugin {
 
   /**
    * Get the settings form.
@@ -85,9 +85,7 @@ class mediamosa_ck_content_supplier_queue_plugin_collection_addto extends mediam
 
     foreach ($data['select_collections'] as $coll_id) {
       // Put asset in collections.
-      if (MediaMosaCkConnectorWrapper::create_collection_asset_relations($coll_id, $user_id, array($asset_id))) {
-        self::watchdog($this->batch_queue['qid'], 'Asset with ID @asset_id could not be put into collection.', array('@asset_id' => $asset_id), WATCHDOG_NOTICE);
-      }
+      MediaMosaCkConnectorWrapper::delete_collection_asset_relations($coll_id, $user_id, array($asset_id));
     }
 
     return $data;

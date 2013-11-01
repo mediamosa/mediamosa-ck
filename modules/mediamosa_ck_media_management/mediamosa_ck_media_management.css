@@ -1,9 +1,9 @@
-body.page-admin-mediamosa-content-supplier .mediamosa-ck-two-column-left,
-body.page-admin-content-mediamosa-supplier .mediamosa-ck-two-column-left {
+body.page-admin-mediamosa-media-management .mediamosa-ck-two-column-left,
+body.page-admin-media-mediamosa-management .mediamosa-ck-two-column-left {
   width: 50%;
 }
-body.page-admin-mediamosa-content-supplier .mediamosa-ck-two-column-right,
-body.page-admin-content-mediamosa-supplier .mediamosa-ck-two-column-right {
+body.page-admin-mediamosa-media-management .mediamosa-ck-two-column-right,
+body.page-admin-media-mediamosa-management .mediamosa-ck-two-column-right {
   width: 49.99%;
 }
 

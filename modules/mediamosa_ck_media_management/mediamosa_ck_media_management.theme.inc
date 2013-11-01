@@ -16,7 +16,7 @@
  * @return string
  *   The HTML.
  */
-function theme_mediamosa_ck_cs_log($variables) {
+function theme_mediamosa_ck_mm_log($variables) {
 
   // Build as form.
   $form = array();
@@ -36,7 +36,7 @@ function theme_mediamosa_ck_cs_log($variables) {
 /**
  * Shows an name-value-pair combination.
  */
-function theme_mediamosa_ck_cs_name_value_pair($variables) {
+function theme_mediamosa_ck_mm_name_value_pair($variables) {
 
   $value = $variables['default_value'];
   $value = $variables['check_plain'] ? check_plain($value) : check_plain($value);

@@ -1,0 +1,22 @@
+name = "MediaMosa CK: Media Management"
+description = The media management module is a tool for managing your mediafiles. It allows you to process multiple mediafiles with the same action.
+package = "MediaMosa - Construction Kit"
+version = 7.x-3.5-RC2
+core = 7.x
+
+dependencies[] = mediamosa_ck (>=3.5-RC1)
+
+files[] = mediamosa_ck_media_management.class.inc
+files[] = mediamosa_ck_media_management.queue.class.inc
+files[] = mediamosa_ck_media_management.queue_plugin.class.inc
+
+; Plugins.
+files[] = plugins/mediamosa_ck_media_management.queue_plugin.collection_addto.class.inc
+files[] = plugins/mediamosa_ck_media_management.queue_plugin.collection_removefrom.class.inc
+files[] = plugins/mediamosa_ck_media_management.queue_plugin.delete_asset.class.inc
+files[] = plugins/mediamosa_ck_media_management.queue_plugin.generate_still.class.inc
+files[] = plugins/mediamosa_ck_media_management.queue_plugin.transcode.class.inc
+files[] = plugins/mediamosa_ck_media_management.queue_plugin.publish.class.inc
+
+stylesheets[all][] = mediamosa_ck_media_management.css
+

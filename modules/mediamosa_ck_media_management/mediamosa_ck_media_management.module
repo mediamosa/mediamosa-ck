@@ -1,0 +1,356 @@
+<?php
+/**
+ * @file
+ * The MediaMosa batch module.
+ */
+
+/**
+ * Implements hook_permission().
+ */
+function mediamosa_ck_media_management_permission() {
+  return array(
+    mediamosa_ck_media_management::PERM_ACCESS_TOOLS_MEDIAMANAGEMENT =>  array(
+      'title' => t('Access to the media management'),
+      'description' => t('Allow users to work with the media management.'),
+    ),
+    mediamosa_ck_media_management::PERM_ADMIN_MEDIA_MANAGEMENT =>  array(
+      'title' => t('Administer media management'),
+      'description' => t('Warning: Give to trusted roles only; this permission has security implications.'),
+    ),
+  );
+}
+
+/**
+ * Form wrapper for plugin form.
+ *
+ * @param array $form
+ *   The form array.
+ * @param array $form_state
+ *   An associative array containing the current state of the form.
+ *
+ * @return string
+ *   The HTML.
+ */
+function _mediamosa_ck_media_management_plugin_form_wrapper($form, &$form_state) {
+  // Need bid.
+  $bid = $form_state['values']['bid'];
+
+  // Return the rendered form.
+  return drupal_build_form('mediamosa_ck_media_management_batch_queue_form', $form_state, $bid);
+}
+
+/**
+ * Implements hook_menu().
+ */
+function mediamosa_ck_media_management_menu() {
+
+  $items = array();
+
+  // Tab mediamanagement (admin/content).
+  $items['admin/content/mediamosa/mediamanagement'] = array(
+    'title' => 'Media Management',
+    'page callback' => '_mediamosa_ck_media_management_page',
+    'access callback' => '_mediamosa_ck_media_management_user_access',
+    'access arguments' => array(mediamosa_ck_media_management::PERM_ACCESS_TOOLS_MEDIAMANAGEMENT),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'mediamosa_ck_media_management.admin.inc',
+  );
+
+  $items['admin/content/mediamosa/mediamanagement/asset/%'] = array(
+    'title' => 'Asset view',
+    'description' => 'View the asset.',
+    'type' => MENU_CALLBACK,
+    'page callback' => '_mediamosa_ck_media_management_search_item_view_page',
+    'page arguments' => array(5),
+    'access callback' => '_mediamosa_ck_media_management_user_access',
+    'access arguments' => array(mediamosa_ck_media_management::PERM_ACCESS_TOOLS_MEDIAMANAGEMENT),
+    'file' => 'mediamosa_ck_media_management.admin.inc',
+  );
+
+  // Delete batch.
+  $items['admin/content/mediamosa/mediamanagement/batch/%/delete'] = array(
+    'title' => 'Delete',
+    'description' => 'Delete the batch.',
+    'type' => MENU_CALLBACK,
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mediamosa_ck_media_management_batch_delete_confirm', 5),
+    'access callback' => '_mediamosa_ck_media_management_user_access',
+    'access arguments' => array(mediamosa_ck_media_management::PERM_ACCESS_TOOLS_MEDIAMANAGEMENT),
+    'file' => 'mediamosa_ck_media_management.admin.inc',
+  );
+  $items['admin/content/mediamosa/mediamanagement/batch/queued/%/log'] = array(
+    'title' => 'Queue batch log',
+    'description' => 'View the log of the batch run.',
+    'type' => MENU_CALLBACK,
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mediamosa_ck_media_management_batch_queued_log_form', 6),
+    'access callback' => '_mediamosa_ck_media_management_user_access',
+    'access arguments' => array(mediamosa_ck_media_management::PERM_ACCESS_TOOLS_MEDIAMANAGEMENT),
+    'file' => 'mediamosa_ck_media_management.admin.inc',
+  );
+  $items['admin/content/mediamosa/mediamanagement/batch/%/queue'] = array(
+    'title' => 'Queue',
+    'description' => 'Queue the batch.',
+    'type' => MENU_CALLBACK,
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mediamosa_ck_media_management_batch_queue_form', 5),
+    'access callback' => '_mediamosa_ck_media_management_user_access',
+    'access arguments' => array(mediamosa_ck_media_management::PERM_ACCESS_TOOLS_MEDIAMANAGEMENT),
+    'file' => 'mediamosa_ck_media_management.admin.inc',
+  );
+
+  // Ajax calls.
+  $items['mediamosa/ck/json/mediamanagement/selection/state/%/%'] = array(
+    'title' => 'Either set or reset the selection state',
+    'page callback' => '_mediamosa_ck_json_mediamanagement_selection_state_ajax',
+    'page arguments' => array(6, 7),
+    'access callback' => '_mediamosa_ck_media_management_user_access',
+    'access arguments' => array(mediamosa_ck_media_management::PERM_ACCESS_TOOLS_MEDIAMANAGEMENT),
+    'type' => MENU_CALLBACK,
+    'file' => 'mediamosa_ck_media_management.admin.inc',
+  );
+
+  $items['mediamosa/ck/json/mediamanagement/selection/list'] = array(
+    'title' => 'Returns the current selection in HTML.',
+    'page callback' => '_mediamosa_ck_media_management_batch_selection_ajax',
+    'access callback' => '_mediamosa_ck_media_management_user_access',
+    'access arguments' => array(mediamosa_ck_media_management::PERM_ACCESS_TOOLS_MEDIAMANAGEMENT),
+    'type' => MENU_CALLBACK,
+    'file' => 'mediamosa_ck_media_management.admin.inc',
+  );
+
+  // mediamosa/ck/cs/callback/[token]/[queue ID]
+  $items['mediamosa/ck/cs/callback/%/%'] = array(
+    'title' => 'Execute the callback for a queued batch.',
+    'page callback' => '_mediamosa_ck_media_management_callback_run',
+    'page arguments' => array(5),
+    'access callback' => '_mediamosa_ck_media_management_callback_access',
+    'access arguments' => array(4),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['mediamosa/ck/cs/ajax/paging'] = array(
+    'title' => 'CK CS ajax',
+    'page callback' => '_mediamosa_ck_mm_ajax_paging',
+    'theme callback' => 'ajax_base_page_theme',
+    'delivery callback' => 'ajax_deliver',
+    'access callback' => '_mediamosa_ck_media_management_user_access',
+    'access arguments' => array(mediamosa_ck_media_management::PERM_ACCESS_TOOLS_MEDIAMANAGEMENT),
+    'description' => 'Ajax callback for paging.',
+    'type' => MENU_CALLBACK,
+    'file' => 'mediamosa_ck_media_management.admin.inc',
+  );
+
+  if (module_exists('mediamosa_maintenance')) {
+    $items['admin/mediamosa/tools/mediamanagement'] = array(
+      'title' => 'Media Management',
+      'description' => 'Process multple assets using batches or easy browse through selection of assets.',
+      'page callback' => '_mediamosa_ck_media_management_page',
+      'access callback' => mediamosa_permission::CALLBACK_USER_ACCESS,
+      'access arguments' => array(mediamosa_permission::ACCESS_TOOLS_SUPPLIER),
+      'file' => 'mediamosa_ck_media_management.admin.inc',
+    );
+    $items['admin/mediamosa/tools/mediamanagement/list'] = array(
+      'title' => 'Content batch',
+      'type' => MENU_DEFAULT_LOCAL_TASK,
+      'weight' => mediamosa_settings::UI_TAB_WEIGHT_LIST,
+    );
+
+    // Copy from admin/content.
+    $items['admin/mediamosa/tools/mediamanagement/asset/%'] = $items['admin/content/mediamosa/mediamanagement/asset/%'];
+    $items['admin/mediamosa/tools/mediamanagement/asset/%']['access callback'] = mediamosa_permission::CALLBACK_USER_ACCESS;
+    $items['admin/mediamosa/tools/mediamanagement/asset/%']['access arguments'] = array(mediamosa_permission::ACCESS_TOOLS_SUPPLIER);
+
+    $items['admin/mediamosa/tools/mediamanagement/batch/%/delete'] = $items['admin/content/mediamosa/mediamanagement/batch/%/delete'];
+    $items['admin/mediamosa/tools/mediamanagement/batch/%/delete']['access callback'] = mediamosa_permission::CALLBACK_USER_ACCESS;
+    $items['admin/mediamosa/tools/mediamanagement/batch/%/delete']['access arguments'] = array(mediamosa_permission::ACCESS_TOOLS_SUPPLIER);
+
+    $items['admin/mediamosa/tools/mediamanagement/batch/queued/%/log'] = $items['admin/content/mediamosa/mediamanagement/batch/queued/%/log'];
+    $items['admin/mediamosa/tools/mediamanagement/batch/queued/%/log']['access callback'] = mediamosa_permission::CALLBACK_USER_ACCESS;
+    $items['admin/mediamosa/tools/mediamanagement/batch/queued/%/log']['access arguments'] = array(mediamosa_permission::ACCESS_TOOLS_SUPPLIER);
+
+    $items['admin/mediamosa/tools/mediamanagement/batch/%/queue'] = $items['admin/content/mediamosa/mediamanagement/batch/%/queue'];
+    $items['admin/mediamosa/tools/mediamanagement/batch/%/queue']['access callback'] = mediamosa_permission::CALLBACK_USER_ACCESS;
+    $items['admin/mediamosa/tools/mediamanagement/batch/%/queue']['access arguments'] = array(mediamosa_permission::ACCESS_TOOLS_SUPPLIER);
+  }
+
+  return $items;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function mediamosa_ck_media_management_theme() {
+  return array(
+    'mediamosa_ck_mm_log' => array(
+      'variables' => array(
+        // Table.
+        'header' => NULL,
+        'rows' => NULL,
+        'attributes' => array(),
+        'caption' => NULL,
+        'colgroups' => array(),
+        'sticky' => TRUE,
+        'empty' => '',
+        // Pager (optional).
+        'page' => 0,
+        'item_count_total' => 0,
+        'item_limit' => 25,
+        'element' => 0,
+        'quantity' => 10,
+        'pager top' => TRUE,
+        'pager bottom' => TRUE,
+        // Note (small font, bottom right).
+        'note' => NULL,
+        // Caption bottom, right.
+        'caption_bottom' => NULL,
+        // Title, description (top).
+        'title' => NULL,
+        'description' => NULL,
+        // Summary.
+        'summary' => NULL,
+      ),
+      'file' => 'mediamosa_ck_media_management.theme.inc',
+    ),
+    'mediamosa_ck_mm_name_value_pair' => array(
+      'variables' => array(
+        'default_value' => NULL,
+        'title' => NULL,
+        // Use check_plain on value.
+        'check_plain' => TRUE,
+      ),
+      'file' => 'mediamosa_ck_media_management.theme.inc',
+    ),
+  );
+}
+
+/**
+ * Determine whether the user has a given privilege.
+ *
+ * Any CS privilege is only allowed on logged in users.
+ *
+ * @param string $string
+ *   The permission, such as "administer nodes", being checked for.
+ * @param object $account
+ *   (optional) The account to check, if not given use currently logged in user.
+ *
+ * @return boolean
+ *   Boolean TRUE if the current user has the requested permission.
+ */
+function _mediamosa_ck_media_management_user_access($string, $account = NULL) {
+  // No anonymous users.
+  if (user_is_anonymous()) {
+    return FALSE;
+  }
+
+  return user_access($string, $account);
+}
+
+/**
+ * Implements hook_cron().
+ */
+function mediamosa_ck_media_management_cron() {
+  // Run the cron.
+  mediamosa_ck_media_management_queue::do_cron();
+}
+
+/**
+ * Verify that the call did came from us.
+ *
+ * @param string $token
+ *   The unique token for this call.
+ *
+ * @return boolean
+ *   Returns TRUE when call is allowed.
+ */
+function _mediamosa_ck_media_management_callback_access($token) {
+  return mediamosa_ck::valid_token($token);
+}
+
+/**
+ * Run the queue during this page call.
+ *
+ * @param integer $qid
+ *   The queue ID.
+ */
+function _mediamosa_ck_media_management_callback_run($qid) {
+  // Run the queue.
+  mediamosa_ck_media_management_queue::run($qid);
+}
+
+/**
+ * Implements hook_watchdog().
+ *
+ * We insert our 'queue' log entries here.
+ */
+function mediamosa_ck_media_management_watchdog(array $log_entry) {
+  static $in_error_state = FALSE;
+
+  if ($in_error_state) {
+    return;
+  }
+  $in_error_state = TRUE;
+
+  // This static contains the queue ID. Is set when queue is running.
+  $ck_cs_queue_running = &drupal_static('cs_queue_running', FALSE);
+
+  // Only log during our queue.
+  if (!$ck_cs_queue_running) {
+    return;
+  }
+
+  // Log into our table.
+  Database::getConnection('default', 'default')->insert('mediamosa_ck_mm_batch_queue_log')
+    ->fields(array(
+      'qid' => $ck_cs_queue_running,
+      'message' => $log_entry['message'],
+      'variables' => serialize($log_entry['variables']),
+      'severity' => $log_entry['severity'],
+      'location' => $log_entry['request_uri'],
+      'referer' => $log_entry['referer'],
+      'timestamp' => $log_entry['timestamp'],
+    ))
+    ->execute();
+
+  // Off.
+  $in_error_state = FALSE;
+}
+
+/**
+ * Implements hook_mediamosa_ck_media_management_plugin_info().
+ */
+function mediamosa_ck_media_management_mediamosa_ck_media_management_plugin_info() {
+  // Our default plugins.
+  return array(
+    'generate still' => array(
+      'title' => t('Generate still'),
+      'description' => t('Allows to generate still on the selection of the batch.'),
+      'class' => 'mediamosa_ck_media_management_queue_plugin_generate_still',
+    ),
+    'delete assets' => array(
+      'title' => t('Delete assets'),
+      'description' => t('Deletes all assets within the batch.'),
+      'class' => 'mediamosa_ck_media_management_queue_plugin_delete_asset',
+    ),
+    'transcode assets' => array(
+      'title' => t('Transcode assets'),
+      'description' => t('Transcode mediafiles.'),
+      'class' => 'mediamosa_ck_media_management_queue_plugin_transcode',
+    ),
+    'publish assets' => array(
+      'title' => t('Publish assets'),
+      'description' => t('Publish or unpublish assets.'),
+      'class' => 'mediamosa_ck_media_management_queue_plugin_publish',
+    ),
+    'Put assets in collection(s)' => array(
+      'title' => t('Put assets in collection(s)'),
+      'description' => t('Put queued assets into collections.'),
+      'class' => 'mediamosa_ck_media_management_queue_plugin_collection_addto',
+    ),
+    'Remove assets from collection(s)' => array(
+      'title' => t('Remove assets from collection(s)'),
+      'description' => t('Remove queued assets from collections.'),
+      'class' => 'mediamosa_ck_media_management_queue_plugin_collection_removefrom',
+    ),
+  );
+}

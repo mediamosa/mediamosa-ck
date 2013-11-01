@@ -4,7 +4,7 @@
  * Generate still plugin.
  */
 
-class mediamosa_ck_content_supplier_queue_plugin_generate_still extends mediamosa_ck_content_supplier_queue_plugin {
+class mediamosa_ck_media_management_queue_plugin_generate_still extends mediamosa_ck_media_management_queue_plugin {
   // ------------------------------------------------------------------- Consts.
   const STILL_TYPE_NONE = 'NONE';
   const STILL_TYPE_SECOND = 'SECOND';
@@ -126,8 +126,8 @@ class mediamosa_ck_content_supplier_queue_plugin_generate_still extends mediamos
       '#required' => TRUE,
       '#default_value' => $still_type,
       '#ajax' => array(
-        'callback' => '_mediamosa_ck_content_supplier_plugin_form_wrapper',
-        'wrapper' => 'mediamosa-ck-content-supplier-plugin-form-wrapper',
+        'callback' => '_mediamosa_ck_media_management_plugin_form_wrapper',
+        'wrapper' => 'mediamosa-ck-media-management-plugin-form-wrapper',
         'method' => 'replace',
         'event' => 'change',
         'progress' => array('message' => ''),
@@ -138,7 +138,7 @@ class mediamosa_ck_content_supplier_queue_plugin_generate_still extends mediamos
       '#title' => t('Size of still (in pixels, WidthxHeight)'),
       '#type' => 'textfield',
       '#size' => 15,
-      '#default_value' => variable_get('mediamosa_ck_cs_still_size', self::STILL_SIZE),
+      '#default_value' => variable_get('mediamosa_ck_mm_still_size', self::STILL_SIZE),
       '#required' => TRUE,
     );
 
@@ -146,7 +146,7 @@ class mediamosa_ck_content_supplier_queue_plugin_generate_still extends mediamos
       '#title' => t('Horizontal padding (in pixels)'),
       '#type' => 'textfield',
       '#size' => 4,
-      '#default_value' => variable_get('mediamosa_ck_cs_still_h_padding', self::STILL_H_PADDING),
+      '#default_value' => variable_get('mediamosa_ck_mm_still_h_padding', self::STILL_H_PADDING),
       '#required' => TRUE,
     );
 
@@ -154,7 +154,7 @@ class mediamosa_ck_content_supplier_queue_plugin_generate_still extends mediamos
       '#title' => t('Vertical padding (in pixels)'),
       '#type' => 'textfield',
       '#size' => 4,
-      '#default_value' => variable_get('mediamosa_ck_cs_still_v_padding', self::STILL_V_PADDING),
+      '#default_value' => variable_get('mediamosa_ck_mm_still_v_padding', self::STILL_V_PADDING),
       '#required' => TRUE,
     );
 
@@ -163,7 +163,7 @@ class mediamosa_ck_content_supplier_queue_plugin_generate_still extends mediamos
         '#title' => t('# of stills per mediafile'),
         '#type' => 'textfield',
         '#size' => 3,
-        '#default_value' => variable_get('mediamosa_ck_cs_still_per_mediafile', self::STILL_PER_MEDIAFILE),
+        '#default_value' => variable_get('mediamosa_ck_mm_still_per_mediafile', self::STILL_PER_MEDIAFILE),
       );
     }
 
@@ -172,7 +172,7 @@ class mediamosa_ck_content_supplier_queue_plugin_generate_still extends mediamos
         '#title' => t('One still every # of seconds'),
         '#type' => 'textfield',
         '#size' => 6,
-        '#default_value' => variable_get('mediamosa_ck_cs_still_every_second', self::STILL_EVERY_SECOND),
+        '#default_value' => variable_get('mediamosa_ck_mm_still_every_second', self::STILL_EVERY_SECOND),
       );
     }
 
@@ -181,14 +181,14 @@ class mediamosa_ck_content_supplier_queue_plugin_generate_still extends mediamos
         '#title' => t('Start time in seconds'),
         '#type' => 'textfield',
         '#size' => 7,
-        '#default_value' => variable_get('mediamosa_ck_cs_still_start_time', self::STILL_START_TIME),
+        '#default_value' => variable_get('mediamosa_ck_mm_still_start_time', self::STILL_START_TIME),
       );
 
       $form['still']['end_time'] = array(
         '#title' => t('End time in seconds'),
         '#type' => 'textfield',
         '#size' => 7,
-        '#default_value' => variable_get('mediamosa_ck_cs_still_end_time', self::STILL_END_TIME),
+        '#default_value' => variable_get('mediamosa_ck_mm_still_end_time', self::STILL_END_TIME),
       );
     }
     return $form;
