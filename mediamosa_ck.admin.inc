@@ -67,7 +67,7 @@ function mediamosa_ck_configuration_form() {
     0 => t('Select default profile'),
   );
 
-  $profiles = MediaMosaCkConnectorTranscodeWrapper::get_transcode_profiles();
+  $profiles = MediaMosaCkConnectorWrapper::get_transcode_profiles();
   if ($profiles && isset($profiles->items->item)) {
     foreach ($profiles->items->item as $profile) {
       $options[(int) $profile->profile_id] = (string) $profile->profile;
@@ -80,7 +80,7 @@ function mediamosa_ck_configuration_form() {
     '#type' => 'select',
     '#options' => $options,
     '#size' => 1,
-    '#default_value' => MediaMosaCkConnectorTranscodeWrapper::get_default_transcode_profile(),
+    '#default_value' => MediaMosaCkConnectorWrapper::get_default_transcode_profile(),
   );
 
   // Remove none for the allowed list.
@@ -92,7 +92,7 @@ function mediamosa_ck_configuration_form() {
     '#type' => 'select',
     '#options' => $options,
     '#multiple' => TRUE,
-    '#default_value' => array_keys(MediaMosaCkConnectorTranscodeWrapper::get_allowed_transcode_profiles()),
+    '#default_value' => array_keys(MediaMosaCkConnectorWrapper::get_allowed_transcode_profiles()),
   );
 
   // Start automatically transcodes?
