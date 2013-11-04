@@ -60,7 +60,7 @@ function mediamosa_ck_upload_library() {
     ),
   );
 
-  if (module_exists('locale')) {
+  if (module_exists('locale') && module_exists('plupload')) {
     $module_path = drupal_get_path('module', 'plupload');
     $libraries['plupload']['js'][$module_path . '/i18n.js'] = array('scope' => 'footer');
   }
