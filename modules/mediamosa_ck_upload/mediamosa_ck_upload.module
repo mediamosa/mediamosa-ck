@@ -227,6 +227,14 @@ function mediamosa_ck_upload_mediamosa_ck_configuration_collect() {
     '#default_value' => mediamosa_ck_upload::get_max_file_size(),
   );
 
+  $form['mediamosa_ck_upload']['mediamosa_ck_upload_allowed_file_ext'] = array(
+    '#title' => t('Allowed file extensions'),
+    '#description' => t('Enter the extensions (no dots, seperated with either spaces or comma).'),
+    '#type' => 'textfield',
+    '#size' => 255,
+    '#default_value' => mediamosa_ck_upload::get_allowed_file_ext(),
+  );
+
   return $form;
 }
 

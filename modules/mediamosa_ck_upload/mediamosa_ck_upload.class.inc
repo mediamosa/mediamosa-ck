@@ -28,10 +28,20 @@ class mediamosa_ck_upload {
   }
 
   /**
+   * Return the setting for allowed CK Upload allowed file extension.
+   * @return type
+   */
+  public static function get_allowed_file_ext() {
+    return variable_get('mediamosa_ck_upload_allowed_file_ext', 'avi mov mp4 mpg m4v ogv wmv 3gp vob divx dv mpeg flv webm srt mp3 m4a ogg wav bmp pdf jpg jpeg gif tiff tif png');
+  }
+
+  /**
    * Helper function to add defaults to $element['#upload_validators'].
    */
   public static function get_default_upload_validators() {
-    $default_ext = explode(' ', 'avi mov mp4 mpg m4v ogv wmv 3gp vob divx dv mpeg flv webm srt mp3 m4a ogg wav bmp pdf jpg jpeg gif tiff tif png');
+    $mediamosa_ck_upload_allowed_file_ext = self::get_allowed_file_ext();
+
+    $default_ext = explode(' ', $mediamosa_ck_upload_allowed_file_ext);
     if (function_exists('media_variable_get')) {
       $default_ext += explode(' ', media_variable_get('file_extensions'));
     }

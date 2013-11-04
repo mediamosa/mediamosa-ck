@@ -205,3 +205,14 @@ li.plupload_droptext {
   background:transparent url(images/up_arrow.png) no-repeat 0 center;
   z-index:100000;
 }
+
+#mediamosa-ck-upload-form div.description {
+  background: none;
+  width: auto;
+  position: static;
+  display: inline;
+  border: none;
+  right: inherit;
+  padding: 0;
+  color:inherit;
+}
