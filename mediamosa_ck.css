@@ -73,7 +73,7 @@ CK popup
 div.mediamosa-ck-popup {
   display: block;
   position: absolute;
-  z-index: 10;
+  z-index: 2;
   width: 100%;
 }
 

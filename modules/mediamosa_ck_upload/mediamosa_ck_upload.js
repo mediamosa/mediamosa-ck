@@ -4,10 +4,32 @@ Drupal.mediamosaCK = Drupal.mediamosaCK || {};
 
 Drupal.mediamosaCK.refreshUploadlist = function() {
   if ($('#edit-mediamosa-ck-upload-listing-refresh') !== undefined) {
-    console.log('Refreshing upload listing.');
-  //  jQuery($('#edit-mediamosa-ck-upload-listing-refresh')).hide();
     jQuery($('#edit-mediamosa-ck-upload-listing-refresh')).trigger('click');
   }
+};
+
+/**
+ * Process uploaded file.
+ *
+ * @param file file
+ * @returns {uploadticket|Drupal.mediamosaCK.fileUploaded.result}
+ */
+Drupal.mediamosaCK.fileUploaded = function(file) {
+  var result = null;
+  console.log(file);
+  $.ajax({
+    type: 'GET',
+    url: Drupal.settings.basePath + 'mediamosa/ck/json/upload/fileuploaded/' + escape(file.mediafile_id),
+		async: false,
+    dataType: 'json',
+    success: function (result) {
+      console.log(result);
+    },
+    error: function (xmlhttp) {
+      alert(Drupal.ajaxError(xmlhttp, 'mediamosa/ck/json/upload/fileuploaded'));
+      console.log('Unable to process post file upload.');
+    }
+  });
 };
 
 /**
@@ -82,13 +104,16 @@ Drupal.behaviors.ckuploadform = {
 
         $(this).find('.mm-ck-upload-element').each( function(index) {
           var uploader = $(this).pluploadQueue();
-          uploader.bind('BeforeUpload', function(Uploader, File) {
-            var action = Drupal.mediamosaCK.getUploadTicket();
-            Uploader.settings['url'] = action;
+          uploader.bind('BeforeUpload', function(Uploader, file) {
+            var uploadticket = Drupal.mediamosaCK.getUploadTicket(file);
+            Uploader.settings['url'] = uploadticket.action;
+            file['asset_id'] = uploadticket.asset_id;
+            file['mediafile_id'] = uploadticket.mediafile_id;
           });
 
-          uploader.bind('FileUploaded', function(Uploader, files) {
+          uploader.bind('FileUploaded', function(Uploader, file) {
             Drupal.mediamosaCK.refreshUploadlist();
+            Drupal.mediamosaCK.fileUploaded(file)
           });
         });
 

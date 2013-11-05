@@ -30,21 +30,23 @@ Drupal.mediamosaCK = Drupal.mediamosaCK || {};
  *     The upload URL for the file.
  *   - 'progress_id'
  *     Progress ID to use when getting upload progression from server.
+ *   - 'uploadprogress_url'
+ *     A json based progress URL.
  *   - 'asset_id'
  *     The asset ID of the upload.
  *   - 'mediafile_id'
  *     The mediafile ID of the upload.
  */
-Drupal.mediamosaCK.getUploadTicket = function() {
+Drupal.mediamosaCK.getUploadTicket = function(file) {
   var result = null;
   $.ajax({
     type: 'GET',
-    url: Drupal.settings.basePath + 'mediamosa/ck/json/uploadticket/create',
+    url: Drupal.settings.basePath + 'mediamosa/ck/json/uploadticket/create?filename=' + escape(file.name),
 		async: false,
     dataType: 'json',
     success: function (uploadticket) {
       if (typeof uploadticket.action !== undefined) {
-        result = uploadticket.action;
+        result = uploadticket;
       }
     },
     error: function (xmlhttp) {

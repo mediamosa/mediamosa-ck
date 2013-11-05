@@ -20,6 +20,11 @@
  */
 function _mediamosa_ck_json_create_upload_ticket($options = array()) {
 
+  $filename = !empty($_GET['filename']) ? $_GET['filename'] : '';
+  if (!empty($filename)) {
+    $options['filename'] = $filename;
+  }
+
   // Create upload ticket.
   $upload_ticket = MediaMosaCkConnectorWrapper::create_upload_ticket($options);
 

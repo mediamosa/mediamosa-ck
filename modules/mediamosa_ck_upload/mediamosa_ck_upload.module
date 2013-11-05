@@ -60,8 +60,8 @@ function mediamosa_ck_upload_library() {
     ),
   );
 
-  if (module_exists('locale') && module_exists('plupload')) {
-    $module_path = drupal_get_path('module', 'plupload');
+  if (module_exists('locale')) {
+    $module_path = drupal_get_path('module', 'mediamosa_ck_upload');
     $libraries['plupload']['js'][$module_path . '/i18n.js'] = array('scope' => 'footer');
   }
 
@@ -105,7 +105,16 @@ function mediamosa_ck_upload_menu() {
     'page callback' => '_mediamosa_ck_upload_die',
     'access arguments' => array(mediamosa_ck::PERMISSION_ADD_MEDIA),
     'type' => MENU_CALLBACK,
-    'file' => 'mediamosa_ck.inc',
+    'file' => 'mediamosa_ck_upload.inc',
+  );
+
+  $items['mediamosa/ck/json/upload/fileuploaded/%'] = array(
+    'title' => 'Process file upload',
+    'page callback' => '_mediamosa_ck_json_file_uploaded',
+    'page arguments' => array(5),
+    'access arguments' => array(mediamosa_ck::PERMISSION_ADD_MEDIA),
+    'type' => MENU_CALLBACK,
+    'file' => 'mediamosa_ck_upload.inc',
   );
 
   $items['admin/content/mediamosa'] = array(
@@ -210,6 +219,18 @@ function mediamosa_ck_upload_element_pre_render($element) {
  */
 function mediamosa_ck_upload_mediamosa_ck_configuration_collect() {
 
+  // Build up the options.
+  $options = array(
+    0 => t('Select bagit transcode profile'),
+  );
+
+  $profiles = MediaMosaCkConnectorWrapper::get_transcode_profiles();
+  if ($profiles && isset($profiles->items->item)) {
+    foreach ($profiles->items->item as $profile) {
+      $options[(int) $profile->profile_id] = (string) $profile->profile;
+    }
+  }
+
   $form['mediamosa_ck_upload'] = array(
     '#type' => 'fieldset',
     '#title' => t('Bulk upload settings'),
@@ -229,10 +250,34 @@ function mediamosa_ck_upload_mediamosa_ck_configuration_collect() {
 
   $form['mediamosa_ck_upload']['mediamosa_ck_upload_allowed_file_ext'] = array(
     '#title' => t('Allowed file extensions'),
-    '#description' => t('Enter the extensions (no dots, seperated with either spaces or comma).'),
+    '#description' => t('Enter the extensions (no dots, seperated with spaces).'),
     '#type' => 'textfield',
     '#size' => 255,
     '#default_value' => mediamosa_ck_upload::get_allowed_file_ext(),
+  );
+
+  $form['mediamosa_ck_upload']['mediamosa_ck_upload_allow_bagit_upload'] = array(
+    '#title' => t('Allow bagit upload'),
+    '#description' => t('This allows upload for bagit files. Also enter the file extensions'),
+    '#type' => 'checkbox',
+    '#default_value' => mediamosa_ck_upload::get_allow_bagit_upload(),
+  );
+
+  $form['mediamosa_ck_upload']['mediamosa_ck_upload_bagit_file_ext'] = array(
+    '#title' => t('Bagit file extensions'),
+    '#description' => t('Enter the extensions for bagit (no dots, seperated with spaces). Will only allow upload with these extensions when bagit upload is enabled.'),
+    '#type' => 'textfield',
+    '#size' => 255,
+    '#default_value' => mediamosa_ck_upload::get_bagit_file_ext(),
+  );
+
+  $form['mediamosa_ck_upload']['mediamosa_ck_upload_bagit_profile'] = array(
+    '#title' => t('Select the bagit transcode profile'),
+    '#description' => t('The bagit transcode profile is set when an file is uploaded that has an bagit extension.'),
+    '#type' => 'select',
+    '#options' => $options,
+    '#size' => 1,
+    '#default_value' => mediamosa_ck_upload::get_bagit_transcode_profile(),
   );
 
   return $form;

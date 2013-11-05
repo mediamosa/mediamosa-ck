@@ -264,7 +264,7 @@ function theme_mediamosa_ck_tabs($variables) {
  */
 function theme_mediamosa_ck_popup($variables) {
 
-  $icon_close = theme('image', array('path' => drupal_get_path('module', 'mediamosa_ck') . '/images/close.png'));
+  $icon_close = theme('image', array('path' => drupal_get_path('module', 'mediamosa_ck') . '/images/close.gif'));
 
   $frameset['element'] = array(
     '#title' => $variables['title'],

@@ -44,7 +44,7 @@ function media_mediamosa_upload_form($form, &$form_state, $types = NULL) {
 
   // Remove not choosen transcodes.
   $options['transcode'] = array();
-  foreach ($media_mediamosa_transcodes as $key => $value) {
+  foreach ($media_mediamosa_transcodes as $value) {
     if ($value > 0) {
       $options['transcode'][] = $value;
     }

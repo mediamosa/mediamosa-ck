@@ -1,10 +1,12 @@
 <?php
+
 /**
  * @file
  * The basic CK upload class.
  */
 
 class mediamosa_ck_upload {
+
   // ------------------------------------------------------------------- Consts.
   // Default max file size, about 2gb.
   const MAX_FILE_SIZE = 2000;
@@ -29,10 +31,44 @@ class mediamosa_ck_upload {
 
   /**
    * Return the setting for allowed CK Upload allowed file extension.
-   * @return type
+   *
+   * @return string
+   *   The allowed file ext string setting.
    */
-  public static function get_allowed_file_ext() {
-    return variable_get('mediamosa_ck_upload_allowed_file_ext', 'avi mov mp4 mpg m4v ogv wmv 3gp vob divx dv mpeg flv webm srt mp3 m4a ogg wav bmp pdf jpg jpeg gif tiff tif png');
+  public static function get_allowed_file_ext($as_array = FALSE) {
+    $mediamosa_ck_upload_allowed_file_ext = variable_get('mediamosa_ck_upload_allowed_file_ext', 'avi mov mp4 mpg m4v ogv wmv 3gp vob divx dv mpeg flv webm srt mp3 m4a ogg wav bmp pdf jpg jpeg gif tiff tif png');
+    return $as_array ? explode(' ', $mediamosa_ck_upload_allowed_file_ext) : $mediamosa_ck_upload_allowed_file_ext;
+  }
+
+  /**
+   * Return the setting for allowing bagit upload.
+   *
+   * @return integer
+   *   The allowed file ext string setting.
+   */
+  public static function get_allow_bagit_upload() {
+    return variable_get('mediamosa_ck_upload_allow_bagit_upload', FALSE);
+  }
+
+  /**
+   * Return the setting for allowed CK Upload allowed file extension.
+   *
+   * @return string
+   *   The allowed file ext string setting.
+   */
+  public static function get_bagit_file_ext($as_array = FALSE) {
+    $mediamosa_ck_upload_bagit_file_ext = variable_get('mediamosa_ck_upload_bagit_file_ext', 'zip tar.gz tgz');
+    return $as_array ? explode(' ', $mediamosa_ck_upload_bagit_file_ext) : $mediamosa_ck_upload_bagit_file_ext;
+  }
+
+  /**
+   * Return the setting for allowed CK Upload allowed file extension.
+   *
+   * @return integer
+   *   The bagit transcode profile ID.
+   */
+  public static function get_bagit_transcode_profile() {
+    return variable_get('mediamosa_ck_upload_bagit_profile', 0);
   }
 
   /**
@@ -40,6 +76,11 @@ class mediamosa_ck_upload {
    */
   public static function get_default_upload_validators() {
     $mediamosa_ck_upload_allowed_file_ext = self::get_allowed_file_ext();
+
+    // Include settings for bagit upload.
+    if (self::get_allow_bagit_upload()) {
+      $mediamosa_ck_upload_allowed_file_ext .= ' ' . self::get_bagit_file_ext();
+    }
 
     $default_ext = explode(' ', $mediamosa_ck_upload_allowed_file_ext);
     if (function_exists('media_variable_get')) {

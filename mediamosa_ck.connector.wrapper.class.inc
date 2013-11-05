@@ -93,8 +93,31 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       'transcode_inherits_acl' => TRUE,
       'create_still' => mediamosa_ck::setting_mediafile_upload_create_still(),
       'is_downloadable' => mediamosa_ck::setting_mediafile_downloadable(),
-      'transcode' => mediamosa_connector::variable_get('mediamosa_ck_transcodes_autostart'),
     );
+
+    $process_auto_transcode = TRUE;
+    if (module_exists('mediamosa_ck_upload') && mediamosa_ck_upload::get_bagit_file_ext() && mediamosa_ck_upload::get_allow_bagit_upload() && !empty($options['filename'])) {
+      $bagit_exts = mediamosa_ck_upload::get_bagit_file_ext(TRUE);
+      foreach ($bagit_exts as $bagit_ext) {
+        $bagit_ext = trim($bagit_ext, ". \t\n\r\0\x0B");
+        $bagit_ext = '.' . $bagit_ext;
+        if (drupal_substr($options['filename'], -drupal_strlen($bagit_ext)) == $bagit_ext) {
+          $process_auto_transcode = FALSE;
+          break;
+        }
+      }
+    }
+
+    if (!isset($options['transcode']) && $process_auto_transcode) {
+      $options['transcode'] = array();
+      foreach (mediamosa_connector::variable_get('mediamosa_ck_transcodes_autostart') as $value) {
+        if ($value > 0) {
+          $options['transcode'][] = $value;
+        }
+      }
+    }
+
+    unset($options['filename']);
 
     try {
       // Get the user_id for the owner.
@@ -133,6 +156,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
 
       // Get the Progress id from the result.
       $progress_id = (int) $response->items->item->progress_id;
+      $uploadprogress_url = $response->items->item->uploadprogress_url;
 
       // Inherit ACL / Create still.
       if ($options['transcode_inherits_acl'] || $options['create_still'] || !empty($options['transcode'])) {
@@ -148,12 +172,10 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
         }
 
         if ($options['create_still']) {
-          // Set create still.
           $parse_url['query']['create_still'] = $options['create_still'] ? 'TRUE' : 'FALSE';
         }
 
         if (!empty($options['transcode'])) {
-          // Set create still.
           $parse_url['query']['transcode'] = $options['transcode'];
         }
 
@@ -168,6 +190,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
         'asset_id' => $data_create_mediafile['asset_id'],
         'mediafile_id' => $mediafile_id,
         'progress_id' => $progress_id,
+        'uploadprogress_url' => $uploadprogress_url,
         'action' => $action,
       );
     }
@@ -1004,7 +1027,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @param array $options
    *   The options for the REST call.
    *
-   * @return boolean
+   * @return bool
    *   Returns FALSE for failure.
    */
   public static function create_transcode($mediafile_id, $options = array()) {
