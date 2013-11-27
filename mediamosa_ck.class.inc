@@ -379,6 +379,13 @@ class mediamosa_ck extends mediamosa_sdk {
   }
 
   /**
+   * Return the setting for mediafile is private.
+   */
+  public static function setting_mediafile_isprivate() {
+    return variable_get('mediamosa_ck_mediafile_isprivate', FALSE);
+  }
+
+  /**
    * Opposite of parse_url.
    *
    * @param array $urls

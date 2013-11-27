@@ -280,6 +280,13 @@ function mediamosa_ck_upload_mediamosa_ck_configuration_collect() {
     '#default_value' => mediamosa_ck_upload::get_bagit_transcode_profile(),
   );
 
+  $form['mediamosa_ck_upload']['mediamosa_ck_upload_isprivate'] = array(
+    '#title' => t('Make the uploaded files private'),
+    '#description' => t('When checked, the uploaded files will be private'),
+    '#type' => 'checkbox',
+    '#default_value' => mediamosa_ck_upload::get_isprivate(),
+  );
+
   return $form;
 }
 

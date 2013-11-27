@@ -72,6 +72,16 @@ class mediamosa_ck_upload {
   }
 
   /**
+   * Return the setting to specify if bulk uploads are private.
+   *
+   * @return integer
+   *   Private or not
+   */
+  public static function get_isprivate() {
+    return variable_get('mediamosa_ck_mediafile_isprivate', 0);
+  }
+
+  /**
    * Helper function to add defaults to $element['#upload_validators'].
    */
   public static function get_default_upload_validators() {
