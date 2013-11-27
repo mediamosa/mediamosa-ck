@@ -93,6 +93,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       'transcode_inherits_acl' => TRUE,
       'create_still' => mediamosa_ck::setting_mediafile_upload_create_still(),
       'is_downloadable' => mediamosa_ck::setting_mediafile_downloadable(),
+      'isprivate' => mediamosa_ck::setting_mediafile_isprivate(),
     );
 
     $process_auto_transcode = TRUE;
