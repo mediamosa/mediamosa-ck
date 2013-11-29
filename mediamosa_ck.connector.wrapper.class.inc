@@ -1695,7 +1695,10 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       'limit' => 10,
       'order_by' => '',
       'order_direction' => 'asc',
+      'include_default_definitions' => TRUE,
     );
+
+    $options = self::bool2string($options, array('include_default_definitions'));
 
     $data = array(
       'name' => $options['name'],
@@ -1703,6 +1706,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       'limit' => $options['limit'],
       'order_by' => $options['order_by'],
       'order_direction' => $options['order_direction'],
+      'include_default_definitions' => $options['include_default_definitions'],
     );
 
     try {
