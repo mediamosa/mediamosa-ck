@@ -1,4 +1,4 @@
-Mediamosa CK 7.x-3.5-RC2 (build xx)
+Mediamosa CK 7.x-3.5-RC3 (build 91)
 -----------------------------------
 - Fixed an awkward setting flip on 'granted'.
 - Fixed query settings for mediamosa_ck views.
@@ -14,6 +14,8 @@ Mediamosa CK 7.x-3.5-RC2 (build xx)
 - Plupload widget will now allowed multiple upload sessions.
 - Fixed wrong message when PHP upload file / POST setting was set to 0
   (unlimited).
+- Accept include_default_definitions for metadata_tags REST call.
+- Bulk upload: add option for isprivate.
 
 Mediamosa CK 7.x-3.5-RC1 (build 85)
 -----------------------------------
@@ -88,7 +90,8 @@ Mediamosa CK 7.x-3.5-RC1 (build 85)
 - Added a download block on asset detail page.
 - Added ?t parameter to embed video object.
 - Added proper playing of audiofiles.
-- Added More filter options for MediaBrowser (collection/my assets/global search)
+- Added More filter options for MediaBrowser (collection/my assets/global
+  search).
 - Introduced a 'published' field.
 - Added more cs plugins: publish/transcode.
 - Added proper authorisation checking in cs plugins.

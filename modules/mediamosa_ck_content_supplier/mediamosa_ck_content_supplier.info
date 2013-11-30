@@ -1,5 +1,5 @@
 name = "MediaMosa CK: Content Supplier"
 description = The content supplier module has been renamed to MediaMosa Media Management. Please turn this module off and remove it.
 package = "MediaMosa - Construction Kit"
-version = 7.x-3.5-RC2
+version = 7.x-3.5-RC3
 core = 7.x

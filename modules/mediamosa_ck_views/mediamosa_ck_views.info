@@ -1,7 +1,7 @@
 name = "MediaMosa CK: Views"
 description = "Create views using MediaMosa REST backend."
 package = "MediaMosa - Construction Kit"
-version = 7.x-3.5-RC2
+version = 7.x-3.5-RC3
 core = 7.x
 
 dependencies[] = views (>=3.0)
