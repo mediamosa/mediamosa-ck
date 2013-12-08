@@ -1,5 +1,5 @@
-Mediamosa CK 7.x-3.5-RC3 (build 91)
------------------------------------
+Mediamosa CK 7.x-3.5 build (92)
+-------------------------------
 - Fixed an awkward setting flip on 'granted'.
 - Fixed query settings for mediamosa_ck views.
 - Added support for boolean views fields.
@@ -16,9 +16,6 @@ Mediamosa CK 7.x-3.5-RC3 (build 91)
   (unlimited).
 - Accept include_default_definitions for metadata_tags REST call.
 - Bulk upload: add option for isprivate.
-
-Mediamosa CK 7.x-3.5-RC1 (build 85)
------------------------------------
 - Fixed case sensitive problem with parameter, causing fatal error on MediaMosa.
 - Adding field types for mediamosa media browser plugin filters and autocomplete
   of taxonomy.

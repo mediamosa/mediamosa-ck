@@ -1,7 +1,7 @@
 name = "MediaMosa CK: Upload"
 description = The MediaMosa Upload module enables bulk upload to MediaMosa for MediaMosa frontend applications. Requires the <a href="http://www.plupload.com/" target="_blank">Plupload Library</a> v1.5.5 or higher installed under sites/all/libraries.
 package = "MediaMosa - Construction Kit"
-version = 7.x-3.5-RC3
+version = 7.x-3.5
 core = 7.x
 
 dependencies[] = libraries

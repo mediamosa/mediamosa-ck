@@ -1,7 +1,7 @@
 name = "MediaMosa CK: Media Management"
 description = The media management module is a tool for managing your mediafiles. It allows you to process multiple mediafiles with the same action.
 package = "MediaMosa - Construction Kit"
-version = 7.x-3.5-RC3
+version = 7.x-3.5
 core = 7.x
 
 dependencies[] = mediamosa_ck (>=3.5-RC1)

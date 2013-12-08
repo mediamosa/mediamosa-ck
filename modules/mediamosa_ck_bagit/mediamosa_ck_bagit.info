@@ -1,7 +1,7 @@
 name = "MediaMosa CK: Bagit"
 description = Bagit is an archive format for files that can be used to import asset and its metadata.
 package = "MediaMosa - Construction Kit"
-version = 7.x-3.5-RC3
+version = 7.x-3.5
 core = 7.x
 
 dependencies[] = libraries (>= 2.0)
