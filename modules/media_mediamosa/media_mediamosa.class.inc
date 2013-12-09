@@ -115,7 +115,7 @@ class MediaMediaMosa {
 
     // To distinct data in Drupal and in Mediamosa we use drupal_ prefix for
     // the Drupal side variables.
-    $drupal_multiple_media = media_multi_load("{$media_id}");
+    $drupal_multiple_media = media_mediamosa_multi_load("{$media_id}");
     $drupal_media = $drupal_multiple_media[$media_id];
 
     $drupal_uri = mediamosa_ck::fileuri2parts($drupal_media->uri);

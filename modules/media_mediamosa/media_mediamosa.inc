@@ -137,8 +137,8 @@ function _media_mediamosa_file_type_check($fid) {
   }
 
   // Again, we don't have media_load function, so we have to use
-  // media_multi_load() and then reset array.
-  $multi_media = media_multi_load($fid);
+  // media_mediamosa_multi_load() and then reset array.
+  $multi_media = media_mediamosa_multi_load($fid);
 
   if ($multi_media) {
     foreach ($multi_media as $media) {
