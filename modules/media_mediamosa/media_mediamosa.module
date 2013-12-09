@@ -442,7 +442,7 @@ function media_mediamosa_mediamosa_ck_configuration_collect() {
 function media_mediamosa_media_edit_submit($form, &$form_state) {
 
   // Fix for missing media_load() function.
-  $multi_media = media_multi_load($form_state['values']['fid']);
+  $multi_media = media_mediamosa_multi_load($form_state['values']['fid']);
 
   foreach ($multi_media as $media) {
     // Now we have Mediamosa URI in $media->uri .
@@ -695,4 +695,11 @@ function _batch_process_mediamosa_to_drupal($limit, &$context) {
 function media_mediamosa_entity_info_alter(&$entity_info) {
   // FIXME: Needs review.
   //$entity_info['node']['field cache'] = FALSE;
+}
+
+/**
+ * Helper function for the deprecated media_multi_load function.
+ */
+function media_mediamosa_multi_load($fids) {
+  return file_load_multiple(explode(' ', $fids));
 }
