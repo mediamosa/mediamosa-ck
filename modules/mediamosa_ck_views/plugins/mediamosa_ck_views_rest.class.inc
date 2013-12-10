@@ -447,7 +447,7 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
         'title' => t('Description'),
         'help' => t('The description of the collection.'),
         'field' => array(
-          'handler' => 'mediamosa_ck_views_field_text',
+          'handler' => 'mediamosa_ck_views_field_formatted_text',
         ),
         'filter' => array(
           'handler' => 'mediamosa_ck_views_filter_text',
