@@ -592,6 +592,9 @@ class mediamosa_ck extends mediamosa_sdk {
       ),
     );
 
+    // Give chance for others to change/add the metadata fields.
+    drupal_alter('mediamosa_metadata_fields', $metadata_fields);
+
     return $metadata_fields;
   }
 
