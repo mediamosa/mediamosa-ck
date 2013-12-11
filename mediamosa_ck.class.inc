@@ -592,6 +592,9 @@ class mediamosa_ck extends mediamosa_sdk {
       ),
     );
 
+    $additional_fields = module_invoke_all('mediamosa_metadata_fields', $metadata_fields);
+    $metadata_fields += $additional_fields;
+
     return $metadata_fields;
   }
 
