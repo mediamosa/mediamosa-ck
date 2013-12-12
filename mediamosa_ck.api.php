@@ -48,5 +48,11 @@ function hook_mediamosa_ck_configuration_collect_submit($form, &$form_state) {
 }
 
 /**
+ * Allows modules to define additional metadata fields.
+ */
+function hook_mediamosa_ck_metadata_fields($metadata_fields) {
+}
+
+/**
  * @} End of "addtogroup hooks".
  */
