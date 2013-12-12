@@ -542,58 +542,62 @@ class mediamosa_ck extends mediamosa_sdk {
    * yet have a REST call that will return the metadata fields in MediaMosa.
    */
   public static function get_metadata_fields() {
-    // The metadata fields.
-    static $metadata_fields = array(
-      'dc' => array(
-        'title' => 'Dublin Core',
-        'xpath' => 'dublin_core',
-        'fields' => array(
-          'type' => 'CHAR',
-          'format' => 'CHAR',
-          'language' => 'CHAR',
-          'title' => 'CHAR',
-          'creator' => 'CHAR',
-          'publisher' => 'CHAR',
-          'subject' => 'CHAR',
-          'description' => 'CHAR',
-          'contributor' => 'CHAR',
-          'date' => 'DATETIME',
-          'identifier' => 'CHAR',
-          'source' => 'CHAR',
-          'relation' => 'CHAR',
-          'coverage_temporal' => 'CHAR',
-          'coverage_spatial' => 'CHAR',
-          'rights' => 'CHAR',
-        ),
-      ),
-      'qdc' => array(
-        'title' => 'Qualified Dublin Core',
-        'xpath' => 'qualified_dublin_core',
-        'fields' => array(
-          'title_alternative' => 'CHAR',
-          'description_abstract' => 'CHAR',
-          'created' => 'DATETIME',
-          'issued' => 'DATETIME',
-          'hasformat' => 'CHAR',
-          'isformatof' => 'CHAR',
-          'format_medium' => 'CHAR',
-          'format_extent' => 'CHAR',
-          'license' => 'CHAR',
-          'rightsholder' => 'CHAR',
-          'isreferencedby' => 'CHAR',
-        ),
-      ),
-      'asset' => array(
-        'title' => 'Asset',
-        'xpath' => 'asset',
-        'fields' => array(
-          'tag' => 'CHAR',
-        ),
-      ),
-    );
 
-    // Give chance for others to change/add the metadata fields.
-    drupal_alter('mediamosa_metadata_fields', $metadata_fields);
+    $metadata_fields = &drupal_static('mediamosa_ck_metadata_fields');
+    if (!isset($metadata_fields)) {
+      // The metadata fields.
+      $metadata_fields = array(
+        'dc' => array(
+          'title' => 'Dublin Core',
+          'xpath' => 'dublin_core',
+          'fields' => array(
+            'type' => 'CHAR',
+            'format' => 'CHAR',
+            'language' => 'CHAR',
+            'title' => 'CHAR',
+            'creator' => 'CHAR',
+            'publisher' => 'CHAR',
+            'subject' => 'CHAR',
+            'description' => 'CHAR',
+            'contributor' => 'CHAR',
+            'date' => 'DATETIME',
+            'identifier' => 'CHAR',
+            'source' => 'CHAR',
+            'relation' => 'CHAR',
+            'coverage_temporal' => 'CHAR',
+            'coverage_spatial' => 'CHAR',
+            'rights' => 'CHAR',
+          ),
+        ),
+        'qdc' => array(
+          'title' => 'Qualified Dublin Core',
+          'xpath' => 'qualified_dublin_core',
+          'fields' => array(
+            'title_alternative' => 'CHAR',
+            'description_abstract' => 'CHAR',
+            'created' => 'DATETIME',
+            'issued' => 'DATETIME',
+            'hasformat' => 'CHAR',
+            'isformatof' => 'CHAR',
+            'format_medium' => 'CHAR',
+            'format_extent' => 'CHAR',
+            'license' => 'CHAR',
+            'rightsholder' => 'CHAR',
+            'isreferencedby' => 'CHAR',
+          ),
+        ),
+        'asset' => array(
+          'title' => 'Asset',
+          'xpath' => 'asset',
+          'fields' => array(
+            'tag' => 'CHAR',
+          ),
+        ),
+      );
+
+      // Give chance for others to change/add the metadata fields.
+      drupal_alter('mediamosa_ck_metadata_fields', $metadata_fields);
+    }
 
     return $metadata_fields;
   }

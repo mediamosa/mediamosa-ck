@@ -48,5 +48,22 @@ function hook_mediamosa_ck_configuration_collect_submit($form, &$form_state) {
 }
 
 /**
+ * Allows modules to add or alter metadata fields definition.
+ *
+ * @param array $metadata_fields
+ *   The metadata fields to alter.
+ */
+function hook_mediamosa_ck_metadata_fields_alter(&$metadata_fields) {
+  $metadata_fields['myset'] = array(
+    'title' => 'My personal set',
+    'xpath' => 'myset',
+    'fields' => array(
+      'title' => 'CHAR',
+      'description' => 'CHAR',
+    ),
+  );
+}
+
+/**
  * @} End of "addtogroup hooks".
  */
