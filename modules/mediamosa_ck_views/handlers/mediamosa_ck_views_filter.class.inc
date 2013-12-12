@@ -54,11 +54,11 @@ class mediamosa_ck_views_filter extends views_handler_filter {
       foreach ($values as $value) {
         if (is_array($value)) {
           foreach ($value as $value_child) {
-            $cql_or[] = $this->field . '="' . $value_child . '"';
+            $cql_or[] = $this->field . '="' . mediamosa_sdk::escape_cql($value_child) . '"';
           }
         }
         else {
-          $cql_or[] = $this->field . '="' . $value . '"';
+          $cql_or[] = $this->field . '="' . mediamosa_sdk::escape_cql($value) . '"';
         }
       }
 
