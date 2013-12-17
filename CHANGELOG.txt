@@ -1,4 +1,4 @@
-Mediamosa CK 7.x-3.5 build (92)
+Mediamosa CK 7.x-3.5 build (93)
 -------------------------------
 - Fixed an awkward setting flip on 'granted'.
 - Fixed query settings for mediamosa_ck views.
@@ -109,6 +109,13 @@ Mediamosa CK 7.x-3.5 build (92)
 - Fixed bug in content supplier batch table.
 - Fixed a possible bug in media module.
 - Fixed undefined constant error.
+- Fixed: deprecated media_multi_load function in media module.
+- Views: introduce formatted text field handler for collection description.
+- Rename hook to mediamosa_ck_metadata_fields and add to .api.inc.
+- Add hook to allow modules to add extra metadata fields.
+- Escape filter values to produce valid CQL.
+- Views: add option to provide some more friendly search input.
+
 
 Mediamosa CK 7.x-2.0
 --------------------
