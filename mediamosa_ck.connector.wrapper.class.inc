@@ -47,7 +47,10 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    */
   public static function bool2string(array $in, array $params = array()) {
     foreach ($params as $param) {
-      assert(isset($in[$param]));
+      if (!isset($in[$param])) {
+        continue;
+      }
+
       if ($in[$param] === 'TRUE' || $in[$param] === 'FALSE') {
         // Not a number, ignore, expect TRUE/FALSE text.
         continue;
