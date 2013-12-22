@@ -1,5 +1,5 @@
-Mediamosa CK 7.x-3.5 build (93)
--------------------------------
+Mediamosa CK 7.x-3.5.1-dev build (94)
+-------------------------------------
 - Fixed an awkward setting flip on 'granted'.
 - Fixed query settings for mediamosa_ck views.
 - Added support for boolean views fields.
@@ -115,6 +115,8 @@ Mediamosa CK 7.x-3.5 build (93)
 - Add hook to allow modules to add extra metadata fields.
 - Escape filter values to produce valid CQL.
 - Views: add option to provide some more friendly search input.
+- Fixed bool2string() to handle optional values.
+- Removed fixed urls to css files in JS.
 
 
 Mediamosa CK 7.x-2.0
