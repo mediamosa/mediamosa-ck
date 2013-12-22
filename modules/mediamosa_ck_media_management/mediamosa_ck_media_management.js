@@ -76,8 +76,6 @@ Drupal.behaviors.MediaManagement = {
 
       popup.load($(this).attr('href'),'ajax=1',function() {
         popup.html($(this).find('div.mediamosa-ck-popup'));
-        $('<style type="text/css">@import url("http://mediawijsheid.local/sites/all/modules/contrib/mediamosa_ck/modules/mediamosa_ck_media_management/mediamosa_ck_media_management.css")</style>').appendTo("head");
-        $('<style type="text/css">@import url("http://mediawijsheid.local/sites/all/modules/contrib/mediamosa_ck/mediamosa_ck.css")</style>').appendTo("head");
       });
     });
   }
