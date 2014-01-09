@@ -10,6 +10,8 @@ class mediamosa_ck_views_field_text_metadata extends views_handler_field {
     $options = parent::option_definition();
 
     $options['metadata_theme'] = array('default' => 'mediamosa_ck_view_theme_asset_metadata');
+    $options['metadata_implode'] = array('default' => 0);
+    $options['metadata_implode_string'] = array('default' => NULL);
 
     return $options;
   }
@@ -25,6 +27,22 @@ class mediamosa_ck_views_field_text_metadata extends views_handler_field {
       '#type' => 'textfield',
       '#default_value' => $this->options['metadata_theme'],
     );
+
+    $form['metadata_implode'] = array(
+      '#type' => 'checkbox', 
+      '#title' => t('Join multiple values'),
+      '#description' => t('When the field has multiple values, join it into one string.'),
+      '#default_value' => $this->options['metadata_implode'],
+    );
+
+    $form['metadata_implode_string'] = array(
+      '#type' => 'textfield', 
+      '#title' => t('Join string'), 
+      '#description' => t('When the field contains multiple values and should be joined,
+                           this string will be used. You can use <code>\n</code> for a newline.'),
+      '#default_value' => $this->options['metadata_implode_string'],
+      '#size' => 10,
+    );
   }
 
   /**
@@ -39,6 +57,12 @@ class mediamosa_ck_views_field_text_metadata extends views_handler_field {
 
     // Get the data.
     $technical_metadata = parent::get_value($values, $field);
+
+    foreach ($technical_metadata as $key => $data) {
+      if (is_array($data) && $this->shouldJoinValues()) {
+        $technical_metadata[$key] = implode($this->getJoinString(), $data);
+      }
+    }
 
     return theme($this->options['metadata_theme'], array('metadata' => $technical_metadata));
   }
@@ -65,5 +89,14 @@ class mediamosa_ck_views_field_text_metadata extends views_handler_field {
     if (!empty($this->additional_fields)) {
       $this->add_additional_fields($this->additional_fields);
     }
+  }
+
+  protected function shouldJoinValues() {
+    return isset($this->options['metadata_implode']) ? $this->options['metadata_implode'] : FALSE;
+  }
+
+  protected function getJoinString() {
+    $str = isset($this->options['metadata_implode_string']) ? $this->options['metadata_implode_string'] : '';
+    return str_replace('\n', "\n", $str);
   }
 }

@@ -85,10 +85,28 @@ class mediamosa_ck_views_rest_asset_get extends mediamosa_ck_views_rest_asset {
         foreach ($item->xpath($metadata['xpath']) as $metadata_value) {
           foreach ($metadata_value as $name => $value) {
             // In variable.
-            $object->{$set . '.' . (string) $name} = (string) $value;
+            if (empty($object->{$set . '.'. (string) $name})) {
+              // first time we see this item
+              $object->{$set . '.' . (string) $name} = (string) $value;
+            } else {
+              // item has multiple values, convert to array if necessary
+              if (!is_array($object->{$set . '.' . (string) $name})) {
+                $object->{$set . '.' . (string) $name} = array($object->{$set . '.' . (string) $name});
+              }
+              // and add the new value to the array
+              $object->{$set . '.' . (string) $name}[] = (string) $value;
+            }
 
             // In set.
-            $object->{'metadata_' . $set}[(string) $name] = (string) $value;
+            if (empty($object->{'metadata_' . $set}[(string) $name])) {
+              $object->{'metadata_' . $set}[(string) $name] = (string) $value;
+            } else {
+              // item has multiple values, convert to array if necessary
+              if (!is_array($object->{'metadata_' . $set}[(string) $name])) {
+                $object->{'metadata_' . $set}[(string) $name] = array($object->{'metadata_' . $set}[(string) $name]);
+              }
+              $object->{'metadata_' . $set}[(string) $name][] = (string) $value;
+            }
           }
         }
       }
