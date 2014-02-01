@@ -842,6 +842,14 @@ class mediamosa_ck extends mediamosa_sdk {
       return self::get_asset_value($asset->items->item, $field, $default);
     }
 
+    if (is_array($asset->{$field})) {
+      if (count($asset->{$field}) > 0) {
+        return $asset->{$field}[0];
+      }
+      // the field is an array but does not contain any elements, return default
+      return $default;
+    }
+
     // Might be object that already has it set as [set].[name]
     if ((string) $asset->{$field} !== '') {
       return (string) $asset->{$field};
