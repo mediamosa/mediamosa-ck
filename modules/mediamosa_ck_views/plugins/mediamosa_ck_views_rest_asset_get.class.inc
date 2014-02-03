@@ -85,10 +85,10 @@ class mediamosa_ck_views_rest_asset_get extends mediamosa_ck_views_rest_asset {
         foreach ($item->xpath($metadata['xpath']) as $metadata_value) {
           foreach ($metadata_value as $name => $value) {
             // In variable.
-            $object->{$set . '.' . (string) $name} = (string) $value;
+            $object->{$set . '.' . (string) $name}[] = (string) $value;
 
             // In set.
-            $object->{'metadata_' . $set}[(string) $name] = (string) $value;
+            $object->{'metadata_' . $set}[(string) $name][] = (string) $value;
           }
         }
       }

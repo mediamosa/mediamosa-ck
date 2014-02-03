@@ -116,6 +116,10 @@ function theme_mediamosa_ck_views_theme_asset_metadata($variables) {
   foreach ($variables['metadata'] as $name => $value) {
     $name = drupal_ucfirst(str_replace('_', ' ', $name));
 
+    if (is_array($value)) {
+      $value = implode("\n", $value);
+    }
+
     $rows[] = array('name' => $name, 'value' => (empty($value) ? ' ' : nl2br(check_plain($value))));
   }
 
