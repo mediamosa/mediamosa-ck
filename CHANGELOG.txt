@@ -1,4 +1,4 @@
-Mediamosa CK 7.x-3.5.2-dev build (95)
+Mediamosa CK 7.x-3.5.2-dev build (96)
 -------------------------------------
 - Fixed an awkward setting flip on 'granted'.
 - Fixed query settings for mediamosa_ck views.
@@ -118,7 +118,8 @@ Mediamosa CK 7.x-3.5.2-dev build (95)
 - Fixed bool2string() to handle optional values.
 - Removed fixed urls to css files in JS.
 - Support for multivalue metadata for views.
-
+- Fixing typo in default metadata theme name when add new metadata block to
+  view.
 
 Mediamosa CK 7.x-2.0
 --------------------
