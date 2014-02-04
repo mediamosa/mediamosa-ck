@@ -9,7 +9,7 @@ class mediamosa_ck_views_field_text_metadata extends views_handler_field {
   public function option_definition() {
     $options = parent::option_definition();
 
-    $options['metadata_theme'] = array('default' => 'mediamosa_ck_view_theme_asset_metadata');
+    $options['metadata_theme'] = array('default' => 'mediamosa_ck_views_theme_asset_metadata');
 
     return $options;
   }
