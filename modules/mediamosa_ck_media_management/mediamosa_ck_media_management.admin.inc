@@ -8,7 +8,7 @@
  * Show the media management page.
  */
 function _mediamosa_ck_media_management_page() {
-
+  drupal_set_title(t('Mediamanagement'));
   $page = array();
   $page[] = '<div id="mediamosa-ck-cs-popup-left"></div>';
   $page[] = '<div id="mediamosa-ck-cs-popup-full"></div>';
