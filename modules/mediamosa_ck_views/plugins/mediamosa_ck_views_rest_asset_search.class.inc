@@ -204,6 +204,14 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest_asset
     return TRUE;
   }
 
+  function option_definition() {
+    $options = parent::option_definition();
+    $options['mediamosa_ck_views_is_public_list'] = array('default' => '');
+    $options['mediamosa_ck_views_hide_empty_assets'] = array('default' => '');
+    $options['mediamosa_ck_views_granted'] = array('default' => '');
+    return $options;
+  }
+
   /**
    * Provide a form to edit options for this plugin.
    */

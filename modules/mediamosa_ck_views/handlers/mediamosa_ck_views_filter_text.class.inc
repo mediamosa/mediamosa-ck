@@ -54,7 +54,7 @@ class mediamosa_ck_views_filter_text extends mediamosa_ck_views_filter {
   public function value_form(&$form, &$form_state) {
     $form['value'] = array(
       '#type' => 'textfield',
-      '#title' => t($this->definition['title']),
+      '#title' => $this->definition['title'],
       '#default_value' => $this->value,
     );
   }

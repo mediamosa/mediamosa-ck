@@ -93,10 +93,14 @@ function media_mediamosa_file_formatter_video_settings($form, &$form_state, $set
  * Implements hook_file_formatter_FORMATTER_view().
  */
 function media_mediamosa_file_formatter_image_view($file, $display, $langcode) {
+
   $scheme = file_uri_scheme($file->uri);
   if ($scheme == 'mediamosa') {
+
     $wrapper = file_stream_wrapper_get_instance_by_uri($file->uri);
-    $image_style = $display['settings']['image_style'];
+    if (isset($display['settings']['image_style'])) {
+      $image_style = $display['settings']['image_style'];
+    }
     $valid_image_styles = image_style_options(FALSE);
 
     if (empty($image_style) || !isset($valid_image_styles[$image_style])) {

@@ -10,7 +10,6 @@ class mediamosa_ck_views_filter_owned extends mediamosa_ck_views_filter {
    * Return mail address of current logged in user.
    */
   public function _convert_value($value) {
-
     if ($value) {
       return mediamosa_ck::session_user_id();
     }
@@ -20,18 +19,25 @@ class mediamosa_ck_views_filter_owned extends mediamosa_ck_views_filter {
    * Add input to filter data.
    */
   public function query() {
+
     $this->field = 'owner_id';
+    if (!empty($this->value)) {
+      $this->query->options['owner_id'] = $this->value;
+    }
+    unset($this->query->options['owned_id']);
     parent::_cql_exact();
   }
 
   /**
-   * Provide a simple textfield for equality.
+   * Provide a simple checkbox.
    */
   public function value_form(&$form, &$form_state) {
+    $options = array(1 => 'Only my assets');
     $form['value'] = array(
-      '#type' => 'checkbox',
+      '#type' => 'select',
       '#title' => 'My assets',
-      '#default_value' => $this->value,
+      '#options' => $options,
+      '#default_value' => '',
     );
   }
 }

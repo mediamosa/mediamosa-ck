@@ -9,6 +9,13 @@
 abstract class mediamosa_ck_views_rest_asset extends mediamosa_ck_views_rest {
 
   // ------------------------------------------------------------------ Methods.
+  function option_definition() {
+    $options = parent::option_definition();
+    $options['mediamosa_ck_views_show_stills'] = array('default' => '');
+    $options['mediamosa_ck_views_show_collections'] = array('default' => '');
+    return $options;
+  }
+
   /**
    * Provide a form to edit options for this plugin.
    */
