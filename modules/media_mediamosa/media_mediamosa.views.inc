@@ -74,6 +74,11 @@ function template_preprocess_media_mediamosa_views_view_media_browser(&$vars) {
     $file = null;
     if (isset($fids[$row->asset_id])) {
       $file = $files[$fids[$row->asset_id]];
+      // Normally the Browser shows filename, but we show assets, so title
+      // makes more sense.
+      if (isset($row->{'dc.title'})) {
+        $file->filename = $row->{'dc.title'};
+      }
 
       // Add url/preview to the file object.
       media_browser_build_media_item($file);
