@@ -19,7 +19,7 @@ class MediaInternetMediaMosaHandler extends MediaInternetBaseHandler {
     $uri = media_mediamosa_media_parse($this->embedCode);
     $existing_files = file_load_multiple(array(), array('uri' => $uri));
     if (count($existing_files)) {
-      throw new MediaInternetValidationException(t('You have entered a URL for a video that is already in your library.'));
+      throw new MediaInternetValidationException(t('You have entered a URL for a media that is already in your library.'));
     }
   }
 

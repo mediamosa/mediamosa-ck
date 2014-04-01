@@ -87,7 +87,7 @@ class MediaMediaMosaFileStyles extends FileStyles {
   }
 
   /**
-   * Get Video.
+   * Get Media.
    */
   public function video($effect) {
     $params = mediamosa_ck::fileuri2parts($this->getUri());

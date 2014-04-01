@@ -528,7 +528,7 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
 
       'numofvideos' => array(
         'title' => t('numofvideos'),
-        'help' => t('The number of videos in the collection.'),
+        'help' => t('The number of media items in the collection.'),
         'field' => array(
           'handler' => 'mediamosa_ck_views_field_text',
         ),
@@ -687,8 +687,8 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
       ),
 
       'player' => array(
-        'title' => t('Video player'),
-        'help' => t('The video (or media) player allows you to get either a play link (URL) or the HTML object code to include a player.'),
+        'title' => t('Media player'),
+        'help' => t('The Media player allows you to get either a play link (URL) or the HTML object code to include a player.'),
         'field' => array(
           'handler' => 'mediamosa_ck_views_field_player',
         ),
@@ -696,7 +696,7 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
 
       'playback_range' => array(
         'title' => t('Playback range'),
-        'help' => t('Used in combination with video player, start and endtime of media. example: t=10,20 (specifies that the video should play the range 10 seconds through 20 seconds).'),
+        'help' => t('Used in combination with player, start and endtime of media. example: t=10,20 (specifies that the video should play the range 10 seconds through 20 seconds).'),
         'field' => array(
           'handler' => 'mediamosa_ck_views_field_playback_range',
         ),

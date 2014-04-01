@@ -9,7 +9,7 @@
  */
 function media_mediamosa_file_formatter_info() {
   $formatters['media_mediamosa_video'] = array(
-    'label' => t('MediaMosa Video'),
+    'label' => t('MediaMosa Media'),
     'file types' => array('video', 'audio', 'image', 'undefined', 'document'),
     'default settings' => array(
       'width' => 480,
