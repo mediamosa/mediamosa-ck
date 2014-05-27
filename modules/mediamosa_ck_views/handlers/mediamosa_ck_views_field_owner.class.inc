@@ -53,7 +53,12 @@ class mediamosa_ck_views_field_owner extends views_handler_field {
     assert(isset($values->owner_id));
 
     // Lookup the owner.
-    $user = mediamosa_ck::lookup_user_with_mail($values->owner_id);
+    if (variable_get('mediamosa_ck_asset_owner', 'mail') == 'mail') {
+      $user = mediamosa_ck::lookup_user_with_mail($values->owner_id);
+    }
+    else {
+      $user = mediamosa_ck::lookup_user_with_name($values->owner_id);
+    }
 
     if (empty($user)) {
       $user = new stdClass();

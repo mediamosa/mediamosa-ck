@@ -49,6 +49,23 @@ function mediamosa_ck_configuration_form() {
     $form[$name]['#weight'] = $weight++;
   }
 
+  $form['mediamosa_ck_settings']['owner'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Ownership',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#description' => t('Setting to identify the owner in the MediaMosa'),
+    '#weight' => 10,
+  );
+
+  $form['mediamosa_ck_settings']['owner']['mediamosa_ck_asset_owner'] = array(
+    '#type' => 'radios',
+    '#title' => t('owner field'),
+    '#default_value' => variable_get('mediamosa_ck_asset_owner', 'mail'),
+    '#options' => array('name' => t('Drupal username'), 'mail' => t('Drupal user mail')),
+    '#description' => t('Either the user name or the user email address is used to store as owner of the asset.'),
+  );
+
   // Add Transcodes settings here. This resides here instead of in the
   // mediamosa_ck_transcode module, as this is an very important setting, and
   // almost always used. The transcode module containes further transcoding
