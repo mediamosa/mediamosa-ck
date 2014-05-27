@@ -219,7 +219,7 @@ function theme_mediamosa_ck_views_player($variables) {
     $variables['response'] = str_replace('poster=""', 'poster="' . $audioimage . '"', $variables['response']);
   }
   // Full screen code for iframes etc., @todo: make 100% possible.
-  $variables['response'] = str_replace('width="942" height="942"', 'width="100%" height=""', $variables['response']);
+  $variables['response'] = str_replace('width="942" height="942"', 'width="100%" height="100%"', $variables['response']);
 
   return $variables['response'];
 }
