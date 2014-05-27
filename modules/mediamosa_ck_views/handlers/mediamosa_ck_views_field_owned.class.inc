@@ -6,16 +6,20 @@
 
 class mediamosa_ck_views_field_owned extends views_handler_field {
 
+  /**
+   * Options_definition.
+   */
   public function option_definition() {
     $options = parent::option_definition();
 
+    $options['owned'] = array('default' => '');
     $options['user_empty_name'] = array('default' => '-');
 
     return $options;
   }
 
   /**
-   * A.
+   * Options_form.
    */
   public function options_form(&$form, &$form_state) {
     $form['owned'] = array(

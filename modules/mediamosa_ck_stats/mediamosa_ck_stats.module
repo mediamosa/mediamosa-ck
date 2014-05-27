@@ -86,10 +86,10 @@ function mediamosa_ck_stats_help($path, $arg) {
  */
 function mediamosa_ck_stats_block_info() {
   $blocks['latest'] = array(
-    'info' => t('Latest videos'),
+    'info' => t('Latest media'),
   );
   $blocks['populair'] = array(
-    'info' => t('Populair videos'),
+    'info' => t('Populair media'),
   );
   return $blocks;
 }
@@ -101,12 +101,12 @@ function mediamosa_ck_stats_block_view($delta = 0) {
   $block = array();
   switch ($delta) {
     case 'latest':
-      $block['subject'] = t('Latest videos');
+      $block['subject'] = t('Latest media');
       $block['content'] = _mediamosa_ck_stats_block_latest_videos();
       break;
 
     case 'populair':
-      $block['subject'] = t('Popular videos');
+      $block['subject'] = t('Popular media');
       $block['content'] = _mediamosa_ck_stats_block_popular_videos();
       break;
 

@@ -33,8 +33,8 @@ function mediamosa_ck_access_menu() {
 function mediamosa_ck_access_permission() {
   return array(
     MEDIAMOSA_CK_ACCESS_PERMISSION_GENERATION => array(
-      'title' => t('Generate access for MediaMosa videos.'),
-      'description' => t('Users with this permission can generate access rules for the MediaMosa Construction Kit videos.'),
+      'title' => t('Generate access for MediaMosa media.'),
+      'description' => t('Users with this permission can generate access rules for the MediaMosa Construction Kit media.'),
     ),
   );
 }

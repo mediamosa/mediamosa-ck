@@ -69,6 +69,18 @@ function mediamosa_ck_upload_library() {
 }
 
 /**
+ * Implements hook_permission().
+ */
+function mediamosa_ck_upload_permission() {
+  return array(
+    mediamosa_ck_upload::ACCESS_TOOL_UPLOAD => array(
+      'title' => t('Batch upload to mediamosa'),
+      'description' => t('Users with this permission can use the Bulk upload tool.'),
+    ),
+  );
+}
+
+/**
  * Implements hook_menu().
  */
 function mediamosa_ck_upload_menu() {
@@ -77,8 +89,7 @@ function mediamosa_ck_upload_menu() {
       'title' => 'Bulk uploader',
       'description' => 'Upload one or more mediafiles to MediaMosa.',
       'page callback' => '_mediamosa_ck_upload_page',
-      'access callback' => mediamosa_permission::CALLBACK_USER_ACCESS,
-      'access arguments' => array(mediamosa_permission::ACCESS_TOOLS_UPLOAD),
+      'access arguments' => array(mediamosa_ck_upload::ACCESS_TOOLS_UPLOAD),
       'file' => 'mediamosa_ck_upload.admin.inc',
     );
     $items['admin/mediamosa/tools/upload/list'] = array(
@@ -121,7 +132,7 @@ function mediamosa_ck_upload_menu() {
     'title' => 'MediaMosa',
     'description' => 'Upload one or more files to MediaMosa.',
     'page callback' => '_mediamosa_ck_upload_page',
-    'access arguments' => array(mediamosa_ck::PERMISSION_ADD_MEDIA),
+    'access arguments' => array(mediamosa_ck_upload::ACCESS_TOOLS_UPLOAD),
     'type' => MENU_LOCAL_TASK | MENU_NORMAL_ITEM,
     'file' => 'mediamosa_ck_upload.admin.inc',
   );

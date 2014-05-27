@@ -190,7 +190,7 @@ class MediaMediaMosa {
       $changes_counter++;
     }
 
-    // Video size is combined from two metavariables.
+    // Size is combined from two metavariables.
     $size = $tech_metadata['width'] . 'px * ' . $tech_metadata['height'] . 'px';
     $field_name = FIELD_PREFIX . 'size';
     if (empty($drupal_media->{$field_name}) || $drupal_media->{$field_name}[LANGUAGE_NONE]['0']['value'] != $size) {
