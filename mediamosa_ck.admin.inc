@@ -140,6 +140,21 @@ function mediamosa_ck_configuration_form() {
     '#description' => 'The list is taken from the defined allowed profiles (see above)',
   );
 
+  // Media view settings.
+  $form['mediamosa_ck_settings']['media_view'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'View options',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#description' => t('Setting page for view options.'),
+  );
+
+  $form['mediamosa_ck_settings']['media_view']['mediamosa_ck_view_https'] = array(
+    '#title' => t('Force Mediamosa backend play/view requests to use https:// instead of http://.'),
+    '#description' => t('A view request to the backend will get a view object with links to media. Depending on the backend, this is served with http or https links. This option rewrites received http:// links with https://.'),
+    '#type' => 'checkbox',
+    '#default_value' => variable_get('mediamosa_ck_view_https', FALSE),
+  );
   return $form;
 }
 

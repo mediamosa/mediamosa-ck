@@ -710,6 +710,16 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
   }
 
   /**
+   * Helper function to optionally convert output to https.
+   */
+  protected static function http_to_https($output) {
+    if (variable_get('mediamosa_ck_view_https', FALSE)) {
+      return str_replace('http://', 'https://', $output);
+    }
+    return $output;
+  }
+
+  /**
    * Create a play link.
    *
    * @param string $asset_id
@@ -790,7 +800,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
         $result = mediamosa_ck::request_get_fatal('asset/' . rawurlencode($asset_id) . '/play', array('data' => $options, 'method' => 'GET'));
         if ($result->xml->header->request_result_id == mediamosa_sdk::ERRORCODE_OKAY) {
           if (!empty($result->xml->items->item->output)) {
-            return $result->xml->items->item->output;
+            return MediaMosaCkConnectorWrapper::http_to_https($result->xml->items->item->output);
           }
         }
       }
@@ -805,7 +815,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
 
       if ($result->xml->header->request_result_id == mediamosa_sdk::ERRORCODE_OKAY) {
         if (!empty($result->xml->items->item->output)) {
-          return $result->xml->items->item->output;
+          return MediaMosaCkConnectorWrapper::http_to_https($result->xml->items->item->output);
         }
       }
       elseif ($result->xml->header->request_result_id == mediamosa_sdk::ERRORCODE_NOT_AUTHORIZED) {
@@ -817,7 +827,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       $result = mediamosa_ck::request('asset/' . rawurlencode($asset_id) . '/play', array('data' => $options, 'method' => 'GET'));
       if ($result->xml->header->request_result_id == mediamosa_sdk::ERRORCODE_OKAY) {
         if (!empty($result->xml->items->item->output)) {
-          return $result->xml->items->item->output;
+          return MediaMosaCkConnectorWrapper::http_to_https($result->xml->items->item->output);
         }
       }
       elseif ($result->xml->header->request_result_id == mediamosa_sdk::ERRORCODE_NOT_AUTHORIZED) {
@@ -829,7 +839,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       $result = mediamosa_ck::request('asset/' . rawurlencode($asset_id) . '/play', array('data' => $options, 'method' => 'GET'));
       if ($result->xml->header->request_result_id == mediamosa_sdk::ERRORCODE_OKAY) {
         if (!empty($result->xml->items->item->output)) {
-          return '<img src="' . $result->xml->items->item->output . '" alt="No media viewer found.">';
+          return '<img src="' . MediaMosaCkConnectorWrapper::http_to_https($result->xml->items->item->output) . '" alt="No media viewer found.">';
         }
       }
 
