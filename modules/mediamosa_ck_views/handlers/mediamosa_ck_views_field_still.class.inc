@@ -109,17 +109,19 @@ class mediamosa_ck_views_field_still extends views_handler_field {
         return theme('image', array('path' => $public_image));
       }
     }
-    elseif (isset($values->vpx_still_url)) {
+    elseif ((isset($this->query->options['mediamosa_ck_views_show_stills'])) && ($this->query->options['mediamosa_ck_views_show_stills'] == 1)  && isset($values->vpx_still_url)) {
       // Still option is given, but no vpx_still_url is found, use some general
       // image.  General images are found in ck_views/images.
-      $img_root = DRUPAL_ROOT . '/' . drupal_get_path('module', 'mediamosa_ck') . '/modules/mediamosa_ck_views/images/';
+      $img_root = DRUPAL_ROOT . '/' . drupal_get_path('module', 'mediamosa_ck') . '/images/';
 
       if (isset($values->asset_type) && ($values->asset_type != '')) {
-        if (in_array($values->asset_type, array('video', 'audio', 'image'))) {
+        if (in_array($values->asset_type, array(
+              'video', 'audio', 'image', 'document', 'archive',
+            ))) {
           $image = $values->asset_type . '.png';
         }
         else {
-          $image = 'notfound.png';
+          $image = 'not_found.png';
         }
       }
       elseif (isset($values->mediafile_mime_type)) {
@@ -129,11 +131,11 @@ class mediamosa_ck_views_field_still extends views_handler_field {
           $image = $mimepart . '.png';
         }
         else {
-          $image = 'notfound.png';
+          $image = 'not_found.png';
         }
       }
       else {
-        $image = 'notfound.png';
+        $image = 'not_found.png';
       }
 
       $public_image = 'public://mediamosa-still/' . $this->options['still_style'] . '/' . $image;
