@@ -73,7 +73,7 @@ function mediamosa_ck_upload_library() {
  */
 function mediamosa_ck_upload_permission() {
   return array(
-    mediamosa_ck_upload::ACCESS_TOOL_UPLOAD => array(
+    mediamosa_ck_upload::ACCESS_TOOLS_UPLOAD => array(
       'title' => t('Batch upload to mediamosa'),
       'description' => t('Users with this permission can use the Bulk upload tool.'),
     ),
