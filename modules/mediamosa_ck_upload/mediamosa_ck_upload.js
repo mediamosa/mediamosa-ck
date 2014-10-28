@@ -14,16 +14,16 @@ Drupal.mediamosaCK.refreshUploadlist = function() {
  * @param file file
  * @returns {uploadticket|Drupal.mediamosaCK.fileUploaded.result}
  */
+
 Drupal.mediamosaCK.fileUploaded = function(file) {
   var result = null;
-  console.log(file);
   $.ajax({
     type: 'GET',
     url: Drupal.settings.basePath + 'mediamosa/ck/json/upload/fileuploaded/' + escape(file.mediafile_id),
 		async: false,
     dataType: 'json',
     success: function (result) {
-      console.log(result);
+        $(document).trigger("mediamosa_file_uploaded",file.asset_id);
     },
     error: function (xmlhttp) {
       alert(Drupal.ajaxError(xmlhttp, 'mediamosa/ck/json/upload/fileuploaded'));
@@ -50,31 +50,21 @@ Drupal.behaviors.ckupload = {
       var elementSettings = (id && settings.plupload[id]) ? settings.plupload[id] : {};
       var pluploadSettings = $.extend({}, defaultSettings, elementSettings);
 
-      // Do additional requirements testing to prevent a less than ideal runtime
-      // from being used. For example, the Plupload library treats Firefox 3.5
-      // as supporting HTML 5, but this is incorrect, because Firefox 3.5
-      // doesn't support the 'multiple' attribute for file input controls. So,
-      // if settings.plupload._requirements.html5.mozilla = '1.9.2', then we
-      // remove 'html5' from pluploadSettings.runtimes if $.browser.mozilla is
-      // true and if $.browser.version is less than '1.9.2'.
-      if (settings.plupload['_requirements'] && pluploadSettings.runtimes) {
-        var runtimes = pluploadSettings.runtimes.split(',');
-        var filteredRuntimes = [];
-        for (var i = 0; i < runtimes.length; i++) {
-          var includeRuntime = true;
-          if (settings.plupload['_requirements'][runtimes[i]]) {
-            var requirements = settings.plupload['_requirements'][runtimes[i]];
-            for (var browser in requirements) {
-              if ($.browser[browser] && Drupal.mediamosaCK.compareVersions($.browser.version, requirements[browser]) < 0) {
-                includeRuntime = false;
-              }
-            }
+      // Process Plupload events.
+      if (elementSettings['init'] || false) {
+        if (!pluploadSettings.init) {
+          pluploadSettings.init = {};
+        }
+        for (var key in elementSettings['init']) {
+          var callback = elementSettings['init'][key].split('.');
+          var fn = window;
+          for (var j = 0; j < callback.length; j++) {
+            fn = fn[callback[j]];
           }
-          if (includeRuntime) {
-            filteredRuntimes.push(runtimes[i]);
+          if (typeof fn === 'function') {
+            pluploadSettings.init[key] = fn;
           }
         }
-        pluploadSettings.runtimes = filteredRuntimes.join(',');
       }
 
       // Initialize Plupload for this element.
