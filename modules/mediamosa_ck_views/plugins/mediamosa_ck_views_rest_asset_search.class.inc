@@ -127,6 +127,15 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest_asset
         }
       }
 
+      if ($this->mediamosa_option_show_stills() || isset($item->vpx_still_url)) {
+        // Provide still if given.
+        $object->vpx_still_url = (string) $item->vpx_still_url;
+      }
+
+      // What is this for type?
+      $object->asset_type = (string) $item->asset_type;
+      $object->mediafile_mime_type = (string) $item->mediafile_mime_type;
+
       // Fill the array.
       foreach ($fields as $field) {
         // @todo need to get default value when value is empty.
