@@ -52,13 +52,23 @@ class mediamosa_ck_views_filter extends views_handler_filter {
       $values = array_filter(is_array($this->value) ? $this->value : array($this->value));
 
       foreach ($values as $value) {
+        $matches = array();
         if (is_array($value)) {
           foreach ($value as $value_child) {
-            $cql_or[] = $this->field . '="' . mediamosa_sdk::escape_cql($value_child) . '"';
+            if (preg_match('/^"(.*)"$/', $value_child, $matches)) {
+              // exact match
+              $cql_or[] = $this->field . '=="' . mediamosa_sdk::escape_cql($matches[1]) . '"';
+            } else {
+              $cql_or[] = $this->field . '="' . mediamosa_sdk::escape_cql($value_child) . '"';
+            }
           }
         }
         else {
-          $cql_or[] = $this->field . '="' . mediamosa_sdk::escape_cql($value) . '"';
+          if (preg_match('/^"(.*)"$/', $value, $matches)) {
+            $cql_or[] = $this->field . '=="' . mediamosa_sdk::escape_cql($matches[1]) . '"';
+          } else {
+            $cql_or[] = $this->field . '="' . mediamosa_sdk::escape_cql($value) . '"';
+          }
         }
       }
 

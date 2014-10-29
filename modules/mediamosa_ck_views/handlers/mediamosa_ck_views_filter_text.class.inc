@@ -40,8 +40,16 @@ class mediamosa_ck_views_filter_text extends mediamosa_ck_views_filter {
 
     if ($this->friendly_advanced_search_enabled()) {
       if (!empty($this->value)) {
-        // replace double quotes by the correct CQL syntax (^foo^)
-        $this->value = preg_replace('/"(.*?)"/', '^\1^', $this->value);
+        // split the value into words, keeping quoted parts as a single word
+        $matches = array();
+        if (is_array($this->value)) {
+          foreach ($this->value as $value) {
+            $matches += $this->splitWords($value);
+          }
+        } else {
+          $matches += $this->splitWords($this->value);
+        }
+        $this->value = $matches;
       }
     }
 
@@ -58,4 +66,12 @@ class mediamosa_ck_views_filter_text extends mediamosa_ck_views_filter {
       '#default_value' => $this->value,
     );
   }
+
+  protected function splitWords($value) {
+    $matches = array();
+    // split the value into words, keeping quoted parts as a single word
+    preg_match_all('/"(?:\\\\.|[^\\\\"])*"|\S+/', $value, $matches);
+    return $matches[0];
+  }
+
 }
