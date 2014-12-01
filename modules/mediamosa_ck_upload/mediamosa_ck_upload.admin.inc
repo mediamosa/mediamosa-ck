@@ -8,6 +8,8 @@
  * Show the upload page.
  */
 function _mediamosa_ck_upload_page() {
+  drupal_set_title(t('Mediamanagement'));
+
   // Get the upload form.
   $upload_form = drupal_get_form('mediamosa_ck_upload_form');
   $variables['left'] = drupal_render($upload_form);

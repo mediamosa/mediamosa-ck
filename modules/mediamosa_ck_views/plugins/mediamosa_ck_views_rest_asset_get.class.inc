@@ -74,9 +74,9 @@ class mediamosa_ck_views_rest_asset_get extends mediamosa_ck_views_rest_asset {
 
       $object->asset_id = (string) $item->asset_id;
       $object->granted = MediaMosaCkConnectorWrapper::string2bool((string) $item->granted) ? 'TRUE' : 'FALSE';
-      $object->is_owner = mediamosa_ck::session_user_id() == $item->owner_id;
+      $object->is_owner = (strtolower(mediamosa_ck::session_user_id()) == strtolower((string) $item->owner_id));
 
-      // Other rights.
+      // Rights.
       $object->access_edit = $object->is_owner;
       $object->access_delete = $object->is_owner;
 

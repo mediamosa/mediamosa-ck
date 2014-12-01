@@ -57,8 +57,8 @@ function mediamosa_ck_media_management_menu() {
   );
 
   $items['admin/content/mediamosa/mediamanagement/asset/%'] = array(
-    'title' => 'Asset view',
-    'description' => 'View the asset.',
+    'title' => 'Media view',
+    'description' => 'View the media.',
     'type' => MENU_CALLBACK,
     'page callback' => '_mediamosa_ck_media_management_search_item_view_page',
     'page arguments' => array(5),

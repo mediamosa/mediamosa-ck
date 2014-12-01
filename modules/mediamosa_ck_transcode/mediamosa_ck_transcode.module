@@ -72,8 +72,8 @@ function mediamosa_ck_transcode_menu() {
 function mediamosa_ck_transcode_permission() {
   return array(
     MEDIAMOSA_CK_TRANSCODE_PERMISSION_GENERATION => array(
-      'title' => t('Generate transcode for MediaMosa videos.'),
-      'description' => t('Users with this permission can transcode videos in the MediaMosa Construction Kit.'),
+      'title' => t('Generate conversions for MediaMosa media.'),
+      'description' => t('Users with this permission can convert media in the MediaMosa Construction Kit.'),
     ),
   );
 }

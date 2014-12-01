@@ -77,7 +77,7 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
    *   class.
    * @param string $field
    *   The name of the field to add.
-   * @param bool $required
+   * @param boolean $required
    *   TRUE or FALSE, will add the field to required listing as input.
    *
    * @return string
@@ -122,10 +122,10 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
   }
 
   /**
-   * Returns the value for mediamosa_show_drupal_error_messages option.
+   * Returns the value for mediamosa_is_public_list option.
    *
-   * @return bool
-   *   The value of mediamosa_show_drupal_error_messages.
+   * @return boolean
+   *   The value of mediamosa_is_public_list.
    */
   public function mediamosa_option_show_drupal_error_messages() {
 
@@ -275,7 +275,7 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
         // 3 types; date, text and integer.
         switch ($type) {
           case 'DATETIME':
-            $data[$set . '.' . $name] = array(
+            $data[$set . '_' . $name] = array(
               'title' => $set . '.' . $name,
               'help' => t('Metadata date field in @set_label.', array('@set_label' => $metadata['title'])),
               'field' => array(
@@ -290,7 +290,7 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
 
           case 'CHAR':
           default:
-            $data[$set . '.' . $name] = array(
+            $data[$set . '_' . $name] = array(
               'title' => $set . '.' . $name,
               'help' => t('Metadata field in @set_label.', array('@set_label' => $metadata['title'])),
               'field' => array(
@@ -307,7 +307,7 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
             break;
 
           case 'INT':
-            $data[$set . '.' . $name] = array(
+            $data[$set . '_' . $name] = array(
               'title' => $set . '.' . $name,
               'help' => t('Metadata field in @set_label.', array('@set_label' => $metadata['title'])),
               'field' => array(
@@ -393,6 +393,34 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
         ),
       ),
 
+      'mediafile_mime_type' => array(
+        'title' => t('Mime Type of Original'),
+        'help' => t('Mime type of original mediafile. This filter is available since MediaMosa 3.5.'),
+        'field' => array(
+          'handler' => 'mediamosa_ck_views_field_text',
+        ),
+        'filter' => array(
+          'handler' => 'mediamosa_ck_views_filter_mimetype_original',
+        ),
+        'sort' => array(
+          'handler' => 'mediamosa_ck_views_sort',
+        ),
+      ),
+
+      'mime_type' => array(
+        'title' => t('Mime Type'),
+        'help' => t('Search if an assets contains files with given mimetype.'),
+        'field' => array(
+          'handler' => 'mediamosa_ck_views_field_text',
+        ),
+        'filter' => array(
+          'handler' => 'mediamosa_ck_views_filter_mimetype',
+        ),
+        'sort' => array(
+          'handler' => 'mediamosa_ck_views_sort',
+        ),
+      ),
+
       'access_edit' => array(
         'title' => t('Access - Edit'),
         'help' => t('A boolean value to indicate that the current user can edit the object. TRUE / Yes will allow the user to edit the object.'),
@@ -411,9 +439,6 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
     );
   }
 
-  /**
-   * Get data fields for collection.
-   */
   public static function get_views_data_collection_common(&$data) {
     $data += array(
       // Fields.
@@ -503,7 +528,7 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
 
       'numofvideos' => array(
         'title' => t('numofvideos'),
-        'help' => t('The number of videos in the collection.'),
+        'help' => t('The number of media items in the collection.'),
         'field' => array(
           'handler' => 'mediamosa_ck_views_field_text',
         ),
@@ -662,8 +687,8 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
       ),
 
       'player' => array(
-        'title' => t('Video player'),
-        'help' => t('The video (or media) player allows you to get either a play link (URL) or the HTML object code to include a player.'),
+        'title' => t('Media player'),
+        'help' => t('The Media player allows you to get either a play link (URL) or the HTML object code to include a player.'),
         'field' => array(
           'handler' => 'mediamosa_ck_views_field_player',
         ),
@@ -671,7 +696,7 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
 
       'playback_range' => array(
         'title' => t('Playback range'),
-        'help' => t('Used in combination with video player, start and endtime of media. example: t=10,20 (specifies that the video should play the range 10 seconds through 20 seconds).'),
+        'help' => t('Used in combination with player, start and endtime of media. example: t=10,20 (specifies that the video should play the range 10 seconds through 20 seconds).'),
         'field' => array(
           'handler' => 'mediamosa_ck_views_field_playback_range',
         ),
@@ -712,7 +737,7 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
   /**
    * Fixes empty array's.
    */
-  protected static function _xmlobject2array_helper(&$array) {
+  private static function _xmlobject2array_helper(&$array) {
     foreach ($array as $key => &$child_array) {
       if (is_array($child_array)) {
         if (empty($child_array)) {

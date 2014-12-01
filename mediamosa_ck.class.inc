@@ -156,7 +156,12 @@ class mediamosa_ck extends mediamosa_sdk {
     global $user;
 
     // We use mail address as owner.
-    return isset($user->mail) ? $user->mail : '<anonymous>';
+    if (variable_get('mediamosa_ck_asset_owner', 'mail') == 'mail') {
+      return isset($user->mail) ? $user->mail : '<anonymous>';
+    }
+    else {
+      return isset($user->name) ? $user->name : '<anonymous>';
+    }
   }
 
   /**

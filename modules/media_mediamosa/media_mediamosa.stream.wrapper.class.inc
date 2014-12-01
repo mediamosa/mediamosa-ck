@@ -173,11 +173,11 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
       // If no thumbnail, but the original is audio, we present an audio image.
       $mime_type = empty($asset->items->item->mediafiles->mediafile->metadata->mime_type) ? '' : $asset->items->item->mediafiles->mediafile->metadata->mime_type;
       if (drupal_substr($mime_type, 0, 5) == 'audio') {
-        $thumb = $base_url . '/' . drupal_get_path('module', 'mediamosa_ck') . '/modules/mediamosa_ck_views/images/audio.png';
+        $thumb = DRUPAL_ROOT . '/' . drupal_get_path('module', 'mediamosa_ck') . '/modules/mediamosa_ck_views/images/audio.png';
       }
       else {
         // If all failes we present an borken image.
-        $thumb = $base_url . '/' . drupal_get_path('module', 'mediamosa_ck') . '/modules/mediamosa_ck_views/images/' . self::MEDIA_MEDIAMOSA_NOT_FOUND_IMAGE;
+        $thumb = DRUPAL_ROOT . '/' . drupal_get_path('module', 'mediamosa_ck') . '/modules/mediamosa_ck_views/images/' . self::MEDIA_MEDIAMOSA_NOT_FOUND_IMAGE;
       }
     }
     return $thumb;
@@ -220,6 +220,7 @@ class MediaMosaStreamWrapper extends MediaReadOnlyStreamWrapper {
 
       // Remove existing image styles.
       image_path_flush($local_path);
+
       // Copy the found thumbnail.
       copy($original_thumb, $local_path);
 

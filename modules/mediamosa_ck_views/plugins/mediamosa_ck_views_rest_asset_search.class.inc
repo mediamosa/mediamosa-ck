@@ -127,6 +127,15 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest_asset
         }
       }
 
+      if ($this->mediamosa_option_show_stills() || isset($item->vpx_still_url)) {
+        // Provide still if given.
+        $object->vpx_still_url = (string) $item->vpx_still_url;
+      }
+
+      // What is this for type?
+      $object->asset_type = (string) $item->asset_type;
+      $object->mediafile_mime_type = (string) $item->mediafile_mime_type;
+
       // Fill the array.
       foreach ($fields as $field) {
         // @todo need to get default value when value is empty.
@@ -202,6 +211,14 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest_asset
 
     // Return the public list option value.
     return TRUE;
+  }
+
+  function option_definition() {
+    $options = parent::option_definition();
+    $options['mediamosa_ck_views_is_public_list'] = array('default' => '');
+    $options['mediamosa_ck_views_hide_empty_assets'] = array('default' => '');
+    $options['mediamosa_ck_views_granted'] = array('default' => '');
+    return $options;
   }
 
   /**

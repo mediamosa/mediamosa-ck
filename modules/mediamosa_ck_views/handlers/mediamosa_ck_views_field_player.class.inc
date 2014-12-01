@@ -123,11 +123,14 @@ class mediamosa_ck_views_field_player extends views_handler_field {
     // Response.
     $options['response'] = $this->options['response'];
 
-    // Both not empty.
-    if (!empty($this->options['player_width']) && !empty($this->options['player_height'])) {
+    // Width and/of height.
+    if (!empty($this->options['player_width'])) {
       $options['width'] = $this->options['player_width'];
+    }
+    if (!empty($this->options['player_width']) && !empty($this->options['player_height'])) {
       $options['height'] = $this->options['player_height'];
     }
+    $options['autostart'] = $this->options['player_autostart'] ? 'TRUE' : 'FALSE';
 
     $options['autostart'] = $this->options['player_autostart'] ? 'TRUE' : 'FALSE';
 

@@ -5,10 +5,11 @@ version = 7.x-3.5
 core = 7.x
 
 dependencies[] = views (>=3.0)
-dependencies[] = mediamosa_ck (>=3.5-RC1)
+dependencies[] = mediamosa_ck
 
 features[ctools][] = "views:views_default:3.0"
 
+; Fields and filters.
 files[] = handlers/mediamosa_ck_views_field_asset_actions.class.inc
 files[] = handlers/mediamosa_ck_views_field_boolean.class.inc
 files[] = handlers/mediamosa_ck_views_field_collection_actions.class.inc
@@ -29,11 +30,12 @@ files[] = handlers/mediamosa_ck_views_field_text_technical_metadata.class.inc
 files[] = handlers/mediamosa_ck_views_filter.class.inc
 files[] = handlers/mediamosa_ck_views_filter_boolean.class.inc
 files[] = handlers/mediamosa_ck_views_filter_collections.class.inc
+files[] = handlers/mediamosa_ck_views_filter_metadata.class.inc
+files[] = handlers/mediamosa_ck_views_filter_metadata_selector.class.inc
+files[] = handlers/mediamosa_ck_views_filter_mimetype.class.inc
 files[] = handlers/mediamosa_ck_views_filter_owner.class.inc
 files[] = handlers/mediamosa_ck_views_filter_owned.class.inc
 files[] = handlers/mediamosa_ck_views_filter_text.class.inc
-files[] = handlers/mediamosa_ck_views_filter_metadata.class.inc
-files[] = handlers/mediamosa_ck_views_filter_metadata_selector.class.inc
 files[] = handlers/mediamosa_ck_views_filter_text_exact.class.inc
 files[] = handlers/mediamosa_ck_views_sort.class.inc
 

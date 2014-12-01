@@ -151,7 +151,7 @@ function _media_mediamosa_metadata_get_default() {
       'label' => t('Container'),
     ),
     'size' => array(
-      'label' => t('Video size'),
+      'label' => t('Size'),
     ),
     'fps' => array(
       'label' => t('FPS'),

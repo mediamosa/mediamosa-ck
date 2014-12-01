@@ -10,6 +10,7 @@ class mediamosa_ck_upload {
   // ------------------------------------------------------------------- Consts.
   // Default max file size, about 2gb.
   const MAX_FILE_SIZE = 2000;
+  const ACCESS_TOOLS_UPLOAD = 'access to bulk upload tool';
 
   // ---------------------------------------------------------------- Functions.
   /**

@@ -54,8 +54,8 @@ function mediamosa_ck_still_menu() {
 function mediamosa_ck_still_permission() {
   return array(
     MEDIAMOSA_CK_STILL_PERMISSION_GENERATION => array(
-      'title' => t('Generate still for MediaMosa videos.'),
-      'description' => t('Users with this permission can generate stills for the MediaMosa Construction Kit videos.'),
+      'title' => t('Generate still for MediaMosa media.'),
+      'description' => t('Users with this permission can generate stills for the MediaMosa Construction Kit media.'),
     ),
   );
 }
