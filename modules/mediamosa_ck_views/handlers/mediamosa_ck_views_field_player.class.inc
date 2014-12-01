@@ -82,8 +82,6 @@ class mediamosa_ck_views_field_player extends views_handler_field {
   }
 
   public function render($values) {
-    global $user;
-
     // To render, asset_id must be present.
     if (empty($values->asset_id)) {
       return;
@@ -91,13 +89,12 @@ class mediamosa_ck_views_field_player extends views_handler_field {
 
     // Empty at start.
     $options = array();
-    $mime_type = '';
 
     // Possible start/end time from _GET['t'] parameter.
     if (isset($_GET['t'])) {
 
+      $matches = array();
       preg_match('/(?P<start_sec>([0-9]*\.?[0-9]*))(?P<comma>\,?)(?P<end_sec>([0-9]*\.?[0-9]*))/', check_plain($_GET['t']), $matches);
-      $endtime = 0;
       $options['start'] = 0;
       if (isset($matches['start_sec'])) {
         $options['start'] = $matches['start_sec'] * 1000;
@@ -109,6 +106,8 @@ class mediamosa_ck_views_field_player extends views_handler_field {
         }
       }
     }
+
+    $this->options['player_autostart'] = isset($_GET['autoplay']) && (drupal_strtolower($_GET['autoplay']) === 'true' || $_GET['autoplay'] === '1');
 
     // What mediafile to play?
     $mediafile_id_to_play = empty($values->mediafile_id_to_play) ? NULL : $values->mediafile_id_to_play;
@@ -128,8 +127,9 @@ class mediamosa_ck_views_field_player extends views_handler_field {
     if (!empty($this->options['player_width']) && !empty($this->options['player_height'])) {
       $options['width'] = $this->options['player_width'];
       $options['height'] = $this->options['player_height'];
-      $options['autostart'] = $this->options['player_autostart'] ? 'TRUE' : 'FALSE';
     }
+
+    $options['autostart'] = $this->options['player_autostart'] ? 'TRUE' : 'FALSE';
 
     try {
       $options['fatal'] = TRUE;
