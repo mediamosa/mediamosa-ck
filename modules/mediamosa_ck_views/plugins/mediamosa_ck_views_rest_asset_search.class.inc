@@ -55,6 +55,10 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest_asset
       $cql[] = '(' . trim($view->args['cql'], '()') . ')';
     }
 
+    if ($this->mediamosa_option_show_private_assets_for_owners()) {
+      $cql[] = strtr('is_private = FALSE OR (is_private = TRUE AND owner_id == "^:owner_id^")', array(':owner_id' => mediamosa_sdk::escape_cql(mediamosa_ck::session_user_id())));
+    }
+
     // Glue with AND.
     $cql = implode(' AND ', $cql);
 
@@ -62,7 +66,7 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest_asset
       'offset' => $params['start'],
       'limit' => $params['rows'],
       'hide_empty_assets' => $this->mediamosa_option_hide_empty_assets() ? 'TRUE' : 'FALSE',
-      'is_public_list' => $this->mediamosa_option_is_public_list() ? 'TRUE' : 'FALSE',
+      'is_public_list' => $this->mediamosa_option_is_public_list() && !$this->mediamosa_option_show_private_assets_for_owners() ? 'TRUE' : 'FALSE',
       'show_stills' => $this->mediamosa_option_show_stills() ? 'TRUE' : 'FALSE',
       'show_collections' => $this->mediamosa_option_show_collections() ? 'TRUE' : 'FALSE',
       'cql' => $cql,
@@ -171,6 +175,22 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest_asset
    * @return bool
    *   The value of mediamosa_is_public_list.
    */
+  public function mediamosa_option_show_private_assets_for_owners() {
+
+    if (isset($this->options['mediamosa_ck_views_show_private_assets_for_owners'])) {
+      return $this->options['mediamosa_ck_views_show_private_assets_for_owners'];
+    }
+
+    // Default is off.
+    return FALSE;
+  }
+
+  /**
+   * Returns the value for mediamosa_is_public_list option.
+   *
+   * @return bool
+   *   The value of mediamosa_is_public_list.
+   */
   public function mediamosa_option_is_public_list() {
 
     if (isset($this->options['mediamosa_ck_views_is_public_list'])) {
@@ -234,6 +254,14 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest_asset
       '#description' => t("Assets marked with the 'is_public' flag will return in the view results when this option is checked. Unchecked will ignore the 'is_public' value on the asset."),
       '#type' => 'checkbox',
       '#default_value' => $this->mediamosa_option_is_public_list(),
+    );
+
+    // Checkbox to allow show only public marked assets.
+    $form['mediamosa_ck_views_show_private_assets_for_owners'] = array(
+      '#title' => t('Show private assets for owners.'),
+      '#description' => t('Allow asset owners to see their assets that are not set for public (have the asset is_public flag on false).'),
+      '#type' => 'checkbox',
+      '#default_value' => $this->mediamosa_option_show_private_assets_for_owners(),
     );
 
     // Checkbox to include empty assets.
