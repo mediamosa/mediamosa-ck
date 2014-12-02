@@ -1,4 +1,4 @@
-Mediamosa CK 7.x-3.5.2-dev build (97)
+Mediamosa CK 7.x-3.5.2-dev build (98)
 -------------------------------------
 - Fixed an awkward setting flip on 'granted'.
 - Fixed query settings for mediamosa_ck views.
@@ -121,6 +121,8 @@ Mediamosa CK 7.x-3.5.2-dev build (97)
 - Fixing typo in default metadata theme name when add new metadata block to
   view.
 - Added autoplay option for view /asset/player/$asset_id.
+- Added option to asset search view to allow owner to see their own private
+  assets while public list option is on.
 
 Mediamosa CK 7.x-2.0
 --------------------
