@@ -60,26 +60,27 @@ Drupal.mediamosaCK.getUploadTicket = function(file) {
 /**
  * Check if MediaMosa connector is setup correctly.
  *
- * @return boolean
- *   Either true (success) or false (failure).
+ * Executes a callback with a boolean as single parameter.
+ *
  */
-Drupal.mediamosaCK.getConnectorStatus = function() {
-  var result = false;
+Drupal.mediamosaCK.getConnectorStatus = function(callback) {
   $.ajax({
     type: 'GET',
     url: Drupal.settings.basePath + 'mediamosa/ck/json/connector/status',
-		async: false,
+		async: true,
     dataType: 'json',
     success: function (status) {
-      result = (parseInt(status.ok) === 1);
+      if(status.ok = 1){
+        callback(true);
+      } else {
+        callback(false);
+      }
     },
     error: function (xmlhttp) {
       alert(Drupal.ajaxError(xmlhttp, 'mediamosa/ck/json/connector/status'));
     }
   });
-
-  return result;
-}
+};
 
 /**
  * Helper function to parse a querystring.

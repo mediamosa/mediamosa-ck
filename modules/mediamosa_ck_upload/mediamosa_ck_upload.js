@@ -88,82 +88,84 @@ Drupal.behaviors.ckuploadform = {
           'target': $form.attr('target')
         };
 
-        if (Drupal.mediamosaCK.getConnectorStatus() !== true) {
-          alert(Drupal.t('MediaMosa connector is not setup.'));
-        }
+	Drupal.mediamosaCK.getConnectorStatus(function(status){
+          if(status !== true){
+            alert(Drupal.t('MediaMosa connector is not setup.'));
+          } else {
+            $(this).find('.mm-ck-upload-element').each( function(index) {
+              var uploader = $(this).pluploadQueue();
+              uploader.bind('BeforeUpload', function(Uploader, file) {
+                var uploadticket = Drupal.mediamosaCK.getUploadTicket(file);
+                Uploader.settings['url'] = uploadticket.action;
+                file['asset_id'] = uploadticket.asset_id;
+                file['mediafile_id'] = uploadticket.mediafile_id;
+              });
 
-        $(this).find('.mm-ck-upload-element').each( function(index) {
-          var uploader = $(this).pluploadQueue();
-          uploader.bind('BeforeUpload', function(Uploader, file) {
-            var uploadticket = Drupal.mediamosaCK.getUploadTicket(file);
-            Uploader.settings['url'] = uploadticket.action;
-            file['asset_id'] = uploadticket.asset_id;
-            file['mediafile_id'] = uploadticket.mediafile_id;
-          });
+              uploader.bind('FileUploaded', function(Uploader, file) {
+                Drupal.mediamosaCK.refreshUploadlist();
+                Drupal.mediamosaCK.fileUploaded(file)
+              });
+            });
 
-          uploader.bind('FileUploaded', function(Uploader, file) {
-            Drupal.mediamosaCK.refreshUploadlist();
-            Drupal.mediamosaCK.fileUploaded(file)
-          });
-        });
+            $(this).submit(function(e) {
+              var completedPluploaders = 0;
+              var totalPluploaders = $(this).find('.mm-ck-upload-element').length;
+              var errors = '';
 
-        $(this).submit(function(e) {
-          var completedPluploaders = 0;
-          var totalPluploaders = $(this).find('.mm-ck-upload-element').length;
-          var errors = '';
+              $(this).find('.mm-ck-upload-element').each( function(index) {
+                var uploader = $(this).pluploadQueue();
 
-          $(this).find('.mm-ck-upload-element').each( function(index) {
-            var uploader = $(this).pluploadQueue();
+                var id = $(this).attr('id');
+                var defaultSettings = settings.plupload['_default'] ? settings.plupload['_default'] : {};
+                var elementSettings = (id && settings.plupload[id]) ? settings.plupload[id] : {};
+                var pluploadSettings = $.extend({}, defaultSettings, elementSettings);
 
-            var id = $(this).attr('id');
-            var defaultSettings = settings.plupload['_default'] ? settings.plupload['_default'] : {};
-            var elementSettings = (id && settings.plupload[id]) ? settings.plupload[id] : {};
-            var pluploadSettings = $.extend({}, defaultSettings, elementSettings);
-
-            // Only allow the submit to proceed if there are files and they've
-            // all completed uploading.
-            if (uploader.state == plupload.STARTED) {
-              errors += Drupal.t("Please wait while your files are being uploaded.");
-            }
-            else if (uploader.files.length == 0 && !pluploadSettings.required) {
-              completedPluploaders++;
-            }
-            else if (uploader.files.length == 0) {
-              errors += Drupal.t("@index: You must upload at least one file.\n",{'@index': (index + 1)});
-            }
-            else if (uploader.files.length > 0 && uploader.total.uploaded == uploader.files.length) {
-              completedPluploaders++;
-            }
-            else {
-              var stateChangedHandler = function() {
-                if (uploader.total.uploaded == uploader.files.length) {
-                  uploader.unbind('StateChanged', stateChangedHandler);
-                  completedPluploaders++;
-                  if (completedPluploaders == totalPluploaders ) {
-                    for (var attr in originalFormAttributes) {
-                      $form.attr(attr, originalFormAttributes[attr]);
-                    }
-                    $form.submit();
-                    return true;
-                  }
+                // Only allow the submit to proceed if there are files and they've
+                // all completed uploading.
+                if (uploader.state == plupload.STARTED) {
+                  errors += Drupal.t("Please wait while your files are being uploaded.");
                 }
-              };
-              uploader.bind('StateChanged', stateChangedHandler);
-              uploader.start();
-            }
-          });
+                else if (uploader.files.length == 0 && !pluploadSettings.required) {
+                  completedPluploaders++;
+                }
+                else if (uploader.files.length == 0) {
+                  errors += Drupal.t("@index: You must upload at least one file.\n",{'@index': (index + 1)});
+                }
+                else if (uploader.files.length > 0 && uploader.total.uploaded == uploader.files.length) {
+                  completedPluploaders++;
+                }
+                else {
+                  var stateChangedHandler = function() {
+                    if (uploader.total.uploaded == uploader.files.length) {
+                      uploader.unbind('StateChanged', stateChangedHandler);
+                      completedPluploaders++;
+                      if (completedPluploaders == totalPluploaders ) {
+                        for (var attr in originalFormAttributes) {
+                          $form.attr(attr, originalFormAttributes[attr]);
+                        }
+                        $form.submit();
+                        return true;
+                      }
+                    }
+                  };
+                  uploader.bind('StateChanged', stateChangedHandler);
+                  uploader.start();
+                }
+              });
 
-          if (completedPluploaders == totalPluploaders) {
-            for (var attr in originalFormAttributes) {
-              $form.attr(attr, originalFormAttributes[attr]);
-            }
-            return true;
-          }
-          else if (0 < errors.length) {
-            alert(errors);
-          }
+              if (completedPluploaders == totalPluploaders) {
+                for (var attr in originalFormAttributes) {
+                  $form.attr(attr, originalFormAttributes[attr]);
+                }
+                return true;
+              }
+              else if (0 < errors.length) {
+                alert(errors);
+              }
 
-          return false;
+              return false;
+            });
+          }
         });
       }
     });
