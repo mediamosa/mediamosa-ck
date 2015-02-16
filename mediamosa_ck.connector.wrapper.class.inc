@@ -433,7 +433,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    * @param array $asset_ids
    *   The assets to get.
    * @param array $options
-   *   - 'view_count'
+   *   - 'count_view'
    *     Specifing 'FALSE' will prevent increasing the view count on the assets.
    *     (Default FALSE)
    *   - show_stills (Default TRUE).
@@ -451,7 +451,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
     $options += array(
       'show_stills' => TRUE,
       'show_collections' => FALSE,
-      'view_count' => TRUE,
+      'count_view' => TRUE,
 
       // acl_realm.
       'acl_realm' => '',
@@ -490,7 +490,7 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
     unset($options['user_id']);
 
     // Convert bool to strings.
-    $options = self::bool2string($options, array('view_count', 'show_stills', 'show_collections', 'is_app_admin'));
+    $options = self::bool2string($options, array('count_view', 'show_stills', 'show_collections', 'is_app_admin'));
 
     // Do the REST call.
     return mediamosa_ck::request_get_fatal('assets', array('data' => $options));
