@@ -103,7 +103,7 @@ Drupal.behaviors.ckuploadform = {
 
           uploader.bind('FileUploaded', function(Uploader, file) {
             Drupal.mediamosaCK.refreshUploadlist();
-            Drupal.mediamosaCK.fileUploaded(file)
+            Drupal.mediamosaCK.fileUploaded(file);
           });
         });
 
