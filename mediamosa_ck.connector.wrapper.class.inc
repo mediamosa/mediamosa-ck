@@ -177,6 +177,10 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
 
         if ($options['create_still']) {
           $parse_url['query']['create_still'] = $options['create_still'] ? 'TRUE' : 'FALSE';
+          $parse_url['query']['still_type'] = 'NORMAL';
+          $parse_url['query']['still_per_mediafile'] = '5';
+          $parse_url['query']['start_frame'] = '10';
+          $parse_url['query']['end_frame'] = '90';
         }
 
         if (!empty($options['transcode'])) {
