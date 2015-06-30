@@ -42,10 +42,14 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest_asset
     // Add possible filters to CQL search string.
     // @todo: filters need some preprocessing. see self::build().
     if (!empty($params['filters'])) {
-      // Add the filters.
-      foreach ($params['filters'] as $cql_expression) {
-        if (trim($cql_expression) !== '') {
-          $cql[] = trim($cql_expression);
+      foreach ($params['filters'] as $filter => $value) {
+        if (trim($filter) !== '') {
+          if ($filter == 'published') {
+            $filter_published = $value;
+          }
+          else {
+            $cql[] = trim($value);
+          }
         }
       }
     }
@@ -73,6 +77,11 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest_asset
       'granted' => $this->mediamosa_option_granted() ? 'TRUE' : 'FALSE',
       'acl_user_id' => array(mediamosa_ck::session_user_id()),
     );
+
+    // Published filter.
+    if (isset($filter_published)) {
+      $mm_options['published'] = $filter_published;
+    }
 
     // Mediamosa only supports one param order, so take the first.
     $orderby = empty($this->orderby) ? FALSE : reset($this->orderby);
