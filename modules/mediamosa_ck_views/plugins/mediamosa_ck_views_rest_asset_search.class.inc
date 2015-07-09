@@ -284,7 +284,7 @@ class mediamosa_ck_views_rest_asset_search extends mediamosa_ck_views_rest_asset
     // Checkbox to include empty assets.
     $form['mediamosa_ck_views_granted'] = array(
       '#title' => t('Filter on access.'),
-      '#description' => t("By default, all media is included, even when its protected by access. You can use the value of 'granted' variable to see if the user has access to the media. When the value of granted is 'TRUE', then access is allowed. If granted is 'FALSE', then the user has no access to the media. This 'granted' value is used if you want to show the all the media, but use an 'lock' image to indicate that the user has no access. If you turn on the filter, it will only return media on which the user has access on. In that case the value of 'granted' is always 'TRUE'."),
+      '#description' => t("By default -checkbox off-, only granted media (media that the user has access to) will be shown. <br> If the checkbox is on, all media will be included in the search result, the protected media will be shown with a 'lock' image."),
       '#type' => 'checkbox',
       '#default_value' => $this->mediamosa_option_granted(),
     );
