@@ -712,6 +712,17 @@ abstract class mediamosa_ck_views_rest extends views_plugin_query {
           'handler' => 'mediamosa_ck_views_sort',
         ),
       ),
+
+      'published' => array(
+        'title' => t('Published'),
+        'help' => t('Published status of the Asset.'),
+        'field' => array(
+          'handler' => 'mediamosa_ck_views_field_text_asset',
+        ),
+        'filter' => array(
+          'handler' => 'mediamosa_ck_views_filter_published',
+        ),
+      ),
     );
   }
 

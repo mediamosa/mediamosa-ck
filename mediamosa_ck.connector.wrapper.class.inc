@@ -128,8 +128,10 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       $user_id = mediamosa_ck::session_user_id();
 
       // Create the asset.
-      $response = mediamosa_ck::request_post_fatal('asset/create', array('user_id' => $user_id));
+      $response = mediamosa_ck::request_post_fatal('asset/create', array('user_id' => $user_id, 'data' =>  array('published' => 'FALSE')));
       $asset_id = (string) $response->items->item->asset_id;
+
+      $data_create_mediafile = array();
       $data_create_mediafile['asset_id'] = $asset_id;
 
       if (isset($options['isprivate'])) {
@@ -404,6 +406,11 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
       'is_app_admin' => FALSE,
     );
 
+    // Get the user_id for the owner.
+    if (!isset($options['user_id'])) {
+      $options['user_id'] = mediamosa_ck::session_user_id();
+    }
+
     // Build ACL for alter.
     $acl = array(
       'acl_realm' => $options['acl_realm'],
@@ -583,7 +590,9 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
 
     try {
       // Get the assets.
-      $asset = self::get_asset($asset_id, array('show_stills' => FALSE));
+      // We do show_stills and show_collections here, to benefit from the cached
+      // result that has been done with the /asset/detail/id call.
+      $asset = self::get_asset($asset_id, array('show_stills' => TRUE, 'show_collections' => TRUE));
 
       foreach ($asset->xpath('items/item/mediafiles/mediafile') as $mediafile) {
         // Only original IDs?
