@@ -50,6 +50,8 @@ function _mediamosa_ck_json_file_uploaded($mediafile_id) {
     }
   }
 
+  module_invoke_all("mediamosa_ck_asset_uploaded");
+
   // Output as JSON.
   drupal_json_output($file_uploaded);
 }
