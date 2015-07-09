@@ -881,6 +881,28 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
   }
 
   /**
+   * Get job details.
+   *
+   * @param string $job_id
+   *   The job ID.
+   * @param string $user_id
+   *   The owner of the job.
+   *
+   * @return object
+   *   job.
+   */
+  public static function get_job($job_id, $user_id = FALSE) {
+    if (!$user_id) {
+      $user_id = mediamosa_ck::session_user_id();
+    }
+    $data = array(
+      'user_id' => $user_id,
+    );
+
+    return mediamosa_ck::request_get_fatal('job/' . rawurlencode($job_id) . '/status', array('data' => $data));
+  }
+
+  /**
    * Get jobs of mediafile.
    *
    * @param string $mediafile_id
