@@ -666,8 +666,12 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
    */
   public static function get_collection($coll_id, array $options = array(), $cached = TRUE, $reset = FALSE) {
 
+    // Get the user_id.
+    $user_id = mediamosa_ck::session_user_id();
+
     $options += array(
       'hide_empty_assets' => TRUE,
+      'user_id' => $user_id,
     );
 
     // Convert bool to strings.
@@ -675,7 +679,17 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
 
     try {
       // Get the collection.
-      return mediamosa_ck::request_get_fatal('collection/' . rawurlencode($coll_id), array('data' => $options), FALSE, $cached, $reset);
+      $response = mediamosa_ck::request_get_fatal('collection/' . rawurlencode($coll_id), array('data' => $options), FALSE, $cached, $reset);
+
+      // Authorisation check.
+      if ((string) $response->xml->items->item->private == 'TRUE') {
+        if ((string) $response->xml->items->item->owner_id[0] != $user_id) {
+          if (!(isset($options['is_app_admin']) && ($options['is_app_admin'] == 'TRUE'))) {
+            throw new Exception('Not authorized', mediamosa_sdk::ERRORCODE_NOT_AUTHORIZED);
+          }
+        }
+      }
+      return $response;
     }
     catch (Exception $e) {
       mediamosa_ck::watchdog_error('Unable to find collection; !message.', array('!message' => $e->getMessage()));
