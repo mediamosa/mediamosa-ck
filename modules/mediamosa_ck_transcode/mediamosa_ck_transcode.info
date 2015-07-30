@@ -1,11 +1,5 @@
-name = "MediaMosa CK: Transcoding"
-description = "This module enables transcoding for MediaMosa frontend applications."
+name = "MediaMosa CK: Transcoding (removed)"
+description = "This module has been removed and needs to be turned off."
 package = "MediaMosa - Construction Kit"
 version = 7.x-3.5
 core = 7.x
-
-dependencies[] = mediamosa_sdk
-dependencies[] = media_mediamosa
-
-files[] = mediamosa_ck_transcode.class.inc
-files[] = mediamosa_ck_transcode.connector.wrapper.class.inc

@@ -1,10 +1,5 @@
-name = "MediaMosa CK: Access control"
-description = "This module enables access control for frontend applications."
+name = "MediaMosa CK: Access control (removed)"
+description = "This module has been removed and needs to be turned off."
 package = "MediaMosa - Construction Kit"
 version = 7.x-3.5
 core = 7.x
-
-dependencies[] = mediamosa_sdk
-dependencies[] = media_mediamosa
-
-files[] = mediamosa_ck_access.connector.wrapper.class.inc

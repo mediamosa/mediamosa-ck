@@ -29,7 +29,6 @@ dependencies[] = media
 dependencies[] = mediamosa_sdk
 dependencies[] = mediamosa_connector
 dependencies[] = mediamosa_ck
-dependencies[] = media_mediamosa
 dependencies[] = mediamosa_ck_stats
 dependencies[] = mediamosa_ck_still
 dependencies[] = mediamosa_ck_access

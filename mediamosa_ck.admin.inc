@@ -11,9 +11,6 @@
  *
  * @return array
  *   An array representing the form definition.
- *
- * @see media_mediamosa_configuration_form_validate()
- * @see media_mediamosa_configuration_form_submit()
  */
 function mediamosa_ck_configuration_form() {
   // Build the settings form and enrich it with our settings collect hook.
@@ -25,6 +22,7 @@ function mediamosa_ck_configuration_form() {
   );
 
   // Collect the titles.
+  $titles = array();
   foreach ($form as $name => $item) {
     if (empty($item['#type']) || $item['#type'] != 'fieldset') {
       continue;
@@ -163,8 +161,6 @@ function mediamosa_ck_configuration_form() {
  *
  * Form validation handler for main configuration form for MediaMosa
  * Construction Kit.
- *
- * @see media_mediamosa_configuration_form()
  */
 function mediamosa_ck_configuration_form_validate($form, &$form_state) {
 
@@ -177,8 +173,6 @@ function mediamosa_ck_configuration_form_validate($form, &$form_state) {
  *
  * Form submission handler for the main configuration form for MediaMosa
  * Construction Kit.
- *
- * @see media_mediamosa_configuration_form()
  */
 function mediamosa_ck_configuration_form_submit($form, &$form_state) {
 

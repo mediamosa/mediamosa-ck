@@ -95,69 +95,6 @@ function mediamosa_ck_stats_block_info() {
 }
 
 /**
- * Implements hook_block_view().
- */
-function mediamosa_ck_stats_block_view($delta = 0) {
-  $block = array();
-  switch ($delta) {
-    case 'latest':
-      $block['subject'] = t('Latest media');
-      $block['content'] = _mediamosa_ck_stats_block_latest_videos();
-      break;
-
-    case 'populair':
-      $block['subject'] = t('Popular media');
-      $block['content'] = _mediamosa_ck_stats_block_popular_videos();
-      break;
-
-    default:
-      assert(0);
-      break;
-  }
-
-  return $block;
-}
-
-/**
- * Block callback for popular mediafiles.
- */
-function _mediamosa_ck_stats_block_popular_videos() {
-
-  // Load the themes.
-  assert(module_load_include('inc', 'media_mediamosa', 'media_mediamosa.theme') !== FALSE);
-
-  // Get videos.
-  $populair_videos = MediaMosaCkConnectorStatsWrapper::get_stats_popular_mediafiles(array('limit' => MEDIAMOSA_CK_STATS_PER_PAGE_BLOCK_POPULAR_MEDIA));
-
-  if (!empty($populair_videos)) {
-    foreach ($populair_videos['response']->xml->items->item as $item) {
-      $items[] = theme('media_mediamosa_link', array('asset_id' => $item->asset_id));
-    }
-  }
-
-  return theme('item_list', array('items' => $items));
-}
-
-/**
- * Block callback for latest videos.
- */
-function _mediamosa_ck_stats_block_latest_videos() {
-  // Load the themes.
-  assert(module_load_include('inc', 'media_mediamosa', 'media_mediamosa.theme') !== FALSE);
-
-  // Get the latest videos.
-  $response = MediaMosaCkConnectorStatsWrapper::request_stats_latest_mediafiles(array('limit' => MEDIAMOSA_CK_STATS_PER_PAGE_BLOCK_LATEST_MEDIA));
-
-  if (!empty($response)) {
-    foreach ($response->xml->items->item as $item) {
-      $items[] = theme('media_mediamosa_link', array('asset_id' => $item->asset_id));
-    }
-  }
-
-  return theme('item_list', array('items' => $items));
-}
-
-/**
  * Overview of all statstics options.
  */
 function _mediamosa_ck_stats_overview() {

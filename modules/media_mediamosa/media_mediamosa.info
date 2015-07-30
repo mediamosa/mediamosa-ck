@@ -1,23 +1,5 @@
 name = "Media: MediaMosa"
-description = "Enables MediaMosa integration with Media API."
+description = "This module has been removed and needs to be turned off."
 package = "MediaMosa - Construction Kit"
 version = 7.x-3.5
 core = 7.x
-
-; Dependencies (module names)
-;dependencies[] = field_group
-
-dependencies[] = mediamosa_ck
-dependencies[] = media_internet (>=7.x-2.0-unstable7)
-dependencies[] = file_entity (>=7.x-2.0-unstable7)
-
-files[] = MediamosaMediaBrowserUpload.class.inc
-files[] = media_mediamosa.class.inc
-files[] = media_mediamosa.connector.wrapper.class.inc
-files[] = media_mediamosa.internetbase.handler.class.inc
-files[] = media_mediamosa.stream.wrapper.class.inc
-files[] = media_mediamosa.styles.class.inc
-files[] = media_mediamosa.sync.class.inc
-files[] = media_mediamosa.thumb.wrapper.class.inc
-files[] = media_mediamosa_views_plugin_display_media_browser.inc
-files[] = media_mediamosa_views_plugin_style_media_browser.inc

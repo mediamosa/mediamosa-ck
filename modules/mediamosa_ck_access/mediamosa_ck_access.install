@@ -1,0 +1,34 @@
+<?php
+/**
+ * @file
+ * Install, update, and uninstall functions.
+ */
+
+/**
+ * Module media_mediamosa is no longer supported and will be turned off. In
+ * later versions of CK, this module will be removed.
+ */
+function mediamosa_ck_access_update_7000() {
+  // Disable our module.
+  module_disable(array('mediamosa_ck_access'));
+
+  // Now uninstall.
+  drupal_uninstall_modules(array('mediamosa_ck_access'));
+}
+
+/**
+ * Implements hook_requirements().
+ *
+ * Checks the existance of the jquery_localscroll library.
+ */
+function mediamosa_ck_access_requirements($phase) {
+  $requirements = array();
+  $t = get_t();
+  if (($phase == 'runtime') || ($phase === 'install')) {
+    $requirements['media_mediamosa']['title'] = $t('No longer supported');
+    $requirements['media_mediamosa']['description'] = $t('The module mediamosa_ck_access is no longer supported and can not be turned on.');
+    $requirements['media_mediamosa']['severity'] = REQUIREMENT_ERROR;;
+  }
+
+  return $requirements;
+}

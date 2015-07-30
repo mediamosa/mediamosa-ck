@@ -5,6 +5,5 @@ version = 7.x-3.5
 core = 7.x
 
 dependencies[] = mediamosa_sdk
-dependencies[] = media_mediamosa
 
 files[] = mediamosa_ck_stats.connector.wrapper.class.inc

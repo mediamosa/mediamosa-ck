@@ -1,28 +1,224 @@
 <?php
 /**
  * @file
- * The install file for media_mediamosa module.
+ * Install, update, and uninstall functions.
  */
-
-// Need these.
-
-// Include the media_mediamosa.module.
-assert(module_load_include('module', 'media_mediamosa') !== FALSE);
-
-// Include the media_mediamosa.class.inc.
-assert(module_load_include('inc', 'media_mediamosa', 'media_mediamosa.class') !== FALSE);
 
 /**
- * Implements hook_install().
+ * Implements hook_requirements().
+ *
+ * Checks the existance of the jquery_localscroll library.
  */
-function media_mediamosa_install() {
+function media_mediamosa_requirements($phase) {
+  $requirements = array();
+  $t = get_t();
+  if (($phase == 'runtime') || ($phase === 'install')) {
+    $requirements['media_mediamosa']['title'] = $t('No longer supported');
+    $requirements['media_mediamosa']['description'] = $t('The module media_mediamosa is no longer supported and can not be turned on.');
+    $requirements['media_mediamosa']['severity'] = REQUIREMENT_ERROR;;
+  }
+
+  return $requirements;
 }
 
 /**
- * Implements hook_enable().
+ * Definitions of Metadata fields of MediaMosa.
+ *
+ * No longer used, just here for uninstall.
+ *
+ * @return array
+ *   MediaMosa metafield name as a key.
+ *
+ * Each element is an array with the following fields:
+ *   - 'label'
+ *     Label used in Drupal interface.
+ *   - 'read_only'
+ *     Boolean, if TRUE Drupal can only display this data;
+ *   - 'section'
+ *     Can be 'dublincore', 'qualified_dublincore' or 'technical' use it to
+ *     group data in section;
+ *   - 'field_name'
+ *     Field name in Drupal.
+ *   - 'rdf'
+ *     Property name for RDF, if differs from key value.
+ * @see http://www.w3.org/TR/xhtml-rdfa-primer/
+ * @see http://dublincore.org/documents/library-application-profile/index.shtml
  */
-function media_mediamosa_enable() {
-  _media_mediamosa_metadata_link_fields();
+function _media_mediamosa_metadata_get_default() {
+
+  static $fields = FALSE;
+
+  if ($fields) {
+    return $fields;
+  }
+
+  $fields_dc = array(
+    'contributor' => array(
+      'label' => t('Contributor'),
+    ),
+    'coverage_spatial' => array(
+      'label' => t('Сoverage spatial'),
+      'rdf'   => 'spatial',
+    ),
+    'coverage_temporal' => array(
+      'label' => t('Сoverage temporal'),
+      'rdf'   => 'temporal',
+    ),
+    'creator' => array(
+      'label' => t('Creator'),
+    ),
+    'date' => array(
+      'label' => t('Date'),
+    ),
+    'description' => array(
+      'label' => t('Description'),
+    ),
+    'format' => array(
+      'label' => t('Format'),
+    ),
+    'identifier' => array(
+      'label' => t('Identifier'),
+    ),
+    'language' => array(
+      'label' => t('Language'),
+    ),
+    'publisher' => array(
+      'label' => t('Publisher'),
+    ),
+    'relation' => array(
+      'label' => t('Relation'),
+    ),
+    'rights' => array(
+      'label' => t('Rights'),
+    ),
+    'source' => array(
+      'label' => t('Source'),
+    ),
+    'subject' => array(
+      'label' => t('Subject'),
+    ),
+    'title' => array(
+      'label' => t('Title'),
+    ),
+    'type' => array(
+      'label' => t('Type'),
+    ),
+  );
+
+  $fields_qdc = array(
+    'created' => array(
+      'label' => t('Created'),
+    ),
+    'description_abstract' => array(
+      'label' => t('Description abstract'),
+      'rdf'   => 'abstract',
+    ),
+    'format_extent' => array(
+      'label' => t('Format extent'),
+      'rdf'   => 'extent',
+    ),
+    'format_medium' => array(
+      'label' => t('Format medium'),
+      'rdf'   => 'medium',
+    ),
+    'hasformat' => array(
+      'label' => t('Has format'),
+      'rdf'   => 'hasFormat',
+    ),
+    'isformatof' => array(
+      'label' => t('Is format of'),
+      'rdf'   => 'isFormatOf',
+    ),
+    'isreferencedby' => array(
+      'label' => t('Is referenced by'),
+      'rdf'   => 'isReferencedBy',
+    ),
+    'issued' => array(
+      'label' => t('Issued'),
+    ),
+    'license' => array(
+      'label' => t('License'),
+    ),
+    'rightsholder' => array(
+      'label' => t('Rightsholder'),
+      'rdf'   => 'rights',
+    ),
+    'title_alternative' => array(
+      'label' => t('Alternative title'),
+      'rdf'   => 'alternative',
+    ),
+  );
+
+  // Some of the keys are named exactly as entries in metadata array inside
+  // Mediamosa. Different story for 'mediafile_id', 'size', 'original'.
+  $fields_tech = array(
+    'file_duration' => array(
+      'label' => t('Duration'),
+    ),
+    'filesize' => array(
+      'label' => t('File size'),
+    ),
+    'mediafile_id' => array(
+      'label' => t('Mediafile ID'),
+    ),
+    'mime_type' => array(
+      'label' => t('MIME type'),
+    ),
+    'container_type' => array(
+      'label' => t('Container'),
+    ),
+    'size' => array(
+      'label' => t('Size'),
+    ),
+    'fps' => array(
+      'label' => t('FPS'),
+    ),
+    'video_codec' => array(
+      'label' => t('Video Codec'),
+    ),
+    'original' => array(
+      'label' => t('Original'),
+    ),
+  );
+
+  // Set 'section' and 'readonly' to all DC.
+  foreach ($fields_dc as $name => &$field_dc) {
+    $field_dc['section'] = 'dc';
+    $field_dc['readonly'] = FALSE;
+  }
+
+  // Set 'section' and 'readonly' to all QDC.
+  foreach ($fields_qdc as $name => &$field_qdc) {
+    $field_qdc['section'] = 'qdc';
+    $field_qdc['readonly'] = FALSE;
+  }
+
+  // Set 'section' and 'readonly' to all technical.
+  foreach ($fields_tech as $name => &$field_tech) {
+    $field_tech['section'] = 'mft';
+    $field_tech['readonly'] = TRUE;
+    $field_tech['rdf'] = FALSE;
+  }
+
+  // Now combine into one array.
+  $fields = $fields_dc;
+  $fields += $fields_qdc;
+  $fields += $fields_tech;
+
+  // Set default RDF terms.
+  foreach ($fields as $name => &$field) {
+    if (!isset($field['rdf'])) {
+      $field['rdf'] = $name;
+    }
+  }
+
+  // We're forced to introduce another element in addition to key because of 32
+  // char limitation.
+  foreach ($fields as $key => &$field) {
+    $field['field_name'] = drupal_substr('field_mm_meta_' . $key, 0, 32);
+  }
+
+  return $fields;
 }
 
 /**
@@ -32,8 +228,21 @@ function media_mediamosa_enable() {
  */
 function media_mediamosa_uninstall() {
 
-  // Unfortunatelly in D7 there are no parameters to turn off cache-rebuild.
-  _media_mediamosa_metadata_unlink_fields();
+  // When field module is enabled.
+  if (module_exists('field')) {
+    $fields = _media_mediamosa_metadata_get_default();
+    foreach ($fields as $item) {
+      field_delete_field($item['field_name']);
+    }
+  }
+
+  // We no longer use our mediamosa file wrapper. No way we can delete it
+  // the normal way, so just remove them.
+  $query = db_delete('file_managed');
+  $query->condition('uri', 'mediamosa://%', 'LIKE');
+  $query->execute();
+
+  entity_get_controller('file')->resetCache();
 
   // Clean up own variables.
   db_delete('variable')
@@ -46,123 +255,22 @@ function media_mediamosa_uninstall() {
  * module.
  */
 function media_mediamosa_update_7000() {
-  // Allow File Entity module to take over the {file_managed}.type field. It
-  // will create new indexes as it needs to, but it doesn't know about old ones,
-  // so delete them.
-  if (db_index_exists('file_managed', 'file_type')) {
-    db_drop_index('file_managed', 'file_type');
-  }
-  module_enable(array('file_entity'));
-
-  // Move all field instances from Media entity to File entity.
-  $instances = field_read_instances(array('entity_type' => 'media'), array('include_inactive' => TRUE, 'include_deleted' => TRUE));
-  foreach ($instances as $instance) {
-    // Skip the old self-referencing file field. It will be deleted later in
-    // this function.
-    if ($instance['field_name'] === 'file') {
-      continue;
-    }
-
-    $fields = field_read_fields(array('id' => $instance['field_id']), array('include_inactive' => TRUE, 'include_deleted' => TRUE));
-    $field = $fields[$instance['field_id']];
-
-    // There is no API for updating the entity_type foreign key within field
-    // data storage. We can do a direct db_update() for when the default SQL
-    // storage back-end is being used, but must skip updating fields that use a
-    // different storage type.
-    // @todo What else should be added here (e.g., logging and/or a message to
-    //   the administrator)?
-    if ($field['storage']['type'] !== 'field_sql_storage' || !module_exists('field_sql_storage') || !$field['storage']['active']) {
-      continue;
-    }
-
-    // Update the data tables.
-    $table_name = _field_sql_storage_tablename($field);
-    $revision_name = _field_sql_storage_revision_tablename($field);
-    db_update($table_name)
-      ->fields(array('entity_type' => 'file'))
-      ->condition('entity_type', 'media')
-      ->condition('bundle', $instance['bundle'])
-      ->execute();
-    db_update($revision_name)
-      ->fields(array('entity_type' => 'file'))
-      ->condition('entity_type', 'media')
-      ->condition('bundle', $instance['bundle'])
-      ->execute();
-
-    // Once all the data has been updated, update the {field_config_instance}
-    // record.
-    db_update('field_config_instance')
-      ->fields(array('entity_type' => 'file'))
-      ->condition('id', $instance['id'])
-      ->execute();
-  }
-
-  // Update the field_bundle_settings configuration variable: move media bundle
-  // settings to file bundles, and move settings of the old self-referencing
-  // file field to the new file pseudo-field.
-  $settings = variable_get('field_bundle_settings', array());
-  if (!isset($settings['file'])) {
-    $settings['file'] = array();
-  }
-  if (isset($settings['media'])) {
-    $settings['file'] = array_merge($settings['file'], $settings['media']);
-    unset($settings['media']);
-  }
-  foreach ($instances as $instance) {
-    if ($instance['field_name'] === 'file' && !$instance['deleted']) {
-      if (isset($instance['widget']['weight'])) {
-        $settings['file'][$instance['bundle']]['extra_fields']['form']['file']['weight'] = $instance['widget']['weight'];
-      }
-      if (isset($instance['display'])) {
-        foreach ($instance['display'] as $view_mode => $display) {
-          if (isset($display['weight'])) {
-            $settings['file'][$instance['bundle']]['extra_fields']['display']['file'][$view_mode]['weight'] = $display['weight'];
-          }
-          if (isset($display['type'])) {
-            $settings['file'][$instance['bundle']]['extra_fields']['display']['file'][$view_mode]['visible'] = ($display['type'] != 'hidden');
-          }
-        }
-      }
-    }
-  }
-  variable_set('field_bundle_settings', $settings);
-
-
-  // Copy field formatter settings of old self-referencing file field to file
-  // pseudo-field formatter settings.
-  $file_displays = variable_get('file_displays', array());
-  foreach ($instances as $instance) {
-    if ($instance['field_name'] === 'file' && !$instance['deleted']) {
-      if (isset($instance['display'])) {
-        foreach ($instance['display'] as $view_mode => $display) {
-          if (isset($display['type']) && $display['type'] != 'hidden') {
-            $file_formatter = 'file_field_' . $display['type'];
-            $file_displays[$instance['bundle']][$view_mode][$file_formatter]['status'] = TRUE;
-            if (isset($display['settings'])) {
-              $file_displays[$instance['bundle']][$view_mode][$file_formatter]['settings'] = $display['settings'];
-            }
-          }
-        }
-      }
-    }
-  }
-  variable_set('file_displays', $file_displays);
-
-  // Delete the old self-referencing file field instances. If all instances are
-  // deleted, field_delete_instance() will delete the field too.
-  foreach ($instances as $instance) {
-    if ($instance['field_name'] === 'file' && !$instance['deleted']) {
-      field_delete_instance($instance);
-    }
-  }
-
-  field_cache_clear();
 }
 
 /**
  * Clear cache as some classes have been moved or added.
  */
 function media_mediamosa_update_7001() {
-  cache_clear_all();
+}
+
+/**
+ * Module media_mediamosa is no longer supported and will be turned off. In
+ * later versions of CK, this module will be removed.
+ */
+function media_mediamosa_update_7002() {
+  // Disable our module.
+  module_disable(array('media_mediamosa'));
+
+  // Now uninstall.
+  drupal_uninstall_modules(array('media_mediamosa'));
 }

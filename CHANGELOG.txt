@@ -124,6 +124,16 @@ Mediamosa CK 7.x-3.5.2-dev build (99)
 - Added option to asset search view to allow owner to see their own private
   assets while public list option is on.
 - Added missing LICENSE.txt file to root.
+- The module 'media_mediamosa' is no longer supported and will be turned off.
+- The module 'mediamosa_ck_transcode' is no longer supported and will be turned
+  off.
+- The module 'mediamosa_ck_still' is no longer supported and will be turned
+  off.
+- The module 'mediamosa_ck_access' is no longer supported and will be turned
+  off.
+- Turned off and removed several media module related modules. We stopped
+  support on the media module. Make sure to backup database before you run
+  update.php.
 
 
 Mediamosa CK 7.x-2.0
