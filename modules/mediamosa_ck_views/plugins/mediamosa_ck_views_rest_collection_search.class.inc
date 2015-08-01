@@ -25,7 +25,9 @@ class mediamosa_ck_views_rest_collection_search extends mediamosa_ck_views_rest 
     if (!empty($params['filters'])) {
       // Add the filters.
       foreach ($params['filters'] as $cql_expression) {
-        $cql[] = $cql_expression;
+        if (!empty($cql_expression)) {
+          $cql[] = $cql_expression;
+        }
       }
     }
 
@@ -34,8 +36,18 @@ class mediamosa_ck_views_rest_collection_search extends mediamosa_ck_views_rest 
       $cql[] = '(' . trim($view->args['cql'], '()') . ')';
     }
 
+    if ($this->mediamosa_option_hide_private_collections()) {
+      // Do not add any private collections.
+      $cql[] = '(private = FALSE)';
+    }
+
     // Glue with AND.
-    $cql = implode(' AND ', $cql);
+    if (count($cql) > 1) {
+      $cql = implode(' AND ', $cql);
+    }
+    else {
+      $cql = implode(' ', $cql);
+    }
 
     $options += array(
       'offset' => $params['start'],
@@ -97,6 +109,58 @@ class mediamosa_ck_views_rest_collection_search extends mediamosa_ck_views_rest 
 
     // Assign total number of records to get pager.
     $view->total_rows = (int) $response->header->item_count_total;
+  }
+
+  /**
+   * Returns the value for mediamosa_hide_private_collections option.
+   *
+   * @return bool
+   *   The value of mediamosa_hide_private_collections.
+   */
+  public function mediamosa_option_hide_private_collections() {
+
+    if (isset($this->options['mediamosa_ck_views_hide_private_collections'])) {
+      return $this->options['mediamosa_ck_views_hide_private_collections'];
+    }
+    return TRUE;
+  }
+
+  /**
+   * Options.
+   */
+  function option_definition() {
+    $options = parent::option_definition();
+    $options['mediamosa_ck_views_hide_private_collections'] = array('default' => '');
+    return $options;
+  }
+
+  /**
+   * Provide a form to edit options for this plugin.
+   */
+  public function options_form(&$form, &$form_state) {
+    // Call my parent.
+    parent::options_form($form, $form_state);
+
+    // Checkbox to allow show only public marked assets.
+    $form['mediamosa_ck_views_hide_private_collections'] = array(
+      '#title' => t('Hide private collections.'),
+      '#type' => 'checkbox',
+      '#default_value' => $this->mediamosa_option_hide_private_collections(),
+    );
+  }
+
+  /**
+   * Validate the options form.
+   */
+  public function options_validate(&$form, &$form_state) {
+    parent::options_validate($form, $form_state);
+  }
+
+  /**
+   * Handle any special handling on the validate form.
+   */
+  public function options_submit(&$form, &$form_state) {
+    parent::options_submit($form, $form_state);
   }
 
   /**
