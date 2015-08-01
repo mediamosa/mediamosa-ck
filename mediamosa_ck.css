@@ -42,6 +42,10 @@
 CK-Tabs.
 */
 
+div.mediamosa-ck-tabs {
+  width: 100%;
+}
+
 ul.mediamosa-ck-tab, .mediamosa-ck-tabs {
   position: relative!important;
   right: auto!important;

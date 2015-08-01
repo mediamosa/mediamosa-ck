@@ -1036,6 +1036,8 @@ class mediamosa_ck extends mediamosa_sdk {
           'title' => mediamosa_ck::get_asset_title($item),
           'videotimestampmodified' => (string) $item->videotimestampmodified,
           'isprivate' => (string) $item->isprivate,
+          'published' => ((string) $item->asset->published) === 'TRUE',
+          'trashcan' => ((string) $item->asset->trashcan) === 'TRUE',
         );
       }
 
@@ -1083,6 +1085,8 @@ class mediamosa_ck extends mediamosa_sdk {
       'order_by' => 'videotimestampmodified',
       // Direction either desc or asc.
       'order_direction' => 'desc',
+      // Need all.
+      'published' => 'ALL',
     );
 
     // Do the request.

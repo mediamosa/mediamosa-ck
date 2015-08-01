@@ -37,15 +37,25 @@ Drupal.behaviors.MediaManagement = {
       jQuery($('#ck-tab-search-result')).trigger('click');
     });
 
-    // Select the inner-most table in case of nested tables.
-    //$('th.select-all').closest('table').once('table-select-media-management', Drupal.tableSelectMediaManagement);
-
-    $('.mm-ck-cs-checkbox-search').click(function (e) {
-      Drupal.mediamosaCK.MM.updateMediaManagement(e.target.value, e.target.checked, true);
+    $('#ck-tab-selection').once().click(function (e) {
+      jQuery($('#edit-mediamosa-ck-media-management-batch-selection-refresh')).trigger('click');
     });
 
-    $('.mm-ck-cs-checkbox').click(function (e) {
-      Drupal.mediamosaCK.MM.updateMediaManagement(e.target.value, e.target.checked, false);
+    $('.mm-ck-mm-checkbox-search').once().click(function (e) {
+      Drupal.mediamosaCK.MM.updateMediaManagement(e.target.value, e.target.checked, true);
+      var checkboxes = $('table.mediamosa-ck-media-management-search-result').find('input:checkbox.mm-ck-mm-checkbox-search');
+      var checked = $(checkboxes).filter(':checked').length;
+      $('table.mediamosa-ck-media-management-search-result').find('input:checkbox.mm-ck-mm-checkbox-search-all').each(function() {
+        this.checked = checkboxes.length && (checkboxes.length === checked);
+      });
+    });
+
+    $('.mm-ck-mm-checkbox-search-all').once().click(function (e) {
+      Drupal.mediamosaCK.MM.updateMediaManagement(e.target.value, e.target.checked, true);
+
+      $('table.mediamosa-ck-media-management-search-result').find('input:checkbox.mm-ck-mm-checkbox-search').each(function() {
+        this.checked = e.target.checked;
+      });
     });
 
     // Anchor links in 'Batches' tab opens hidden tab for delete, queueing forms
@@ -78,6 +88,15 @@ Drupal.behaviors.MediaManagement = {
         popup.html($(this).find('div.mediamosa-ck-popup'));
       });
     });
+
+
+    $('input.ck-mm-search-text-submit-on-enter').keypress(function(e) {
+      // If keypress enter.
+      if (e.keyCode === 13) {
+        jQuery($('#edit-mediamosa-ck-media-management-search')).trigger('click');
+      }
+    });
+
   }
 };
 
@@ -103,20 +122,12 @@ Drupal.mediamosaCK.MM.updateMediaManagement = function(id, state, refresh) {
     type: 'GET',
     url: Drupal.settings.basePath + 'mediamosa/ck/json/mediamanagement/selection/state/' + encodeURIComponent(id) + '/' + encodeURIComponent(state),
     dataType: 'json',
-    success: function (status) {
+    success: function (text) {
+      $('#ck-tab-mm-selection').text(text.text);
+
       if (refresh) {
         // Refresh.
         jQuery($('#edit-mediamosa-ck-media-management-batch-selection-refresh')).trigger('click');
-
-        // Show content selection tab contents.
-        $('#ck-tab-content-selection').show();
-        $('#ck-tab-content-selection').siblings('.mediamosa-ck-tab-content').hide();
-
-        // Remove the 'active' status of all tabs.
-        $('#ck-tab-selection').parent('li').siblings('li').removeClass('active');
-
-        // Make visible.
-        $('#ck-tab-selection').parent('li').addClass('active');
       }
       result = true;
     },
@@ -127,34 +138,6 @@ Drupal.mediamosaCK.MM.updateMediaManagement = function(id, state, refresh) {
 
   return result;
 };
-
-//Drupal.tableSelectMediaManagement = function() {
-//  var table = $(this);
-////  $('th.select-all input:checkbox:enabled', table).click(function (e) {
-////    console.log(e);
-////  });
-//
-//  // When clicked on checkbox, call ajax to store selection.
-//  $('.mm-ck-cs-checkbox-selection').click(function (e) {
-//    Drupal.mediamosaCK.updateMediaManagement(e.target.value, e.target.checked, TRUE);
-////    // Either add or remove the selected class based on the state of the check all checkbox.
-////    $(this).closest('tr').toggleClass('selected', this.checked);
-////
-////    // If this is a shift click, we need to highlight everything in the range.
-////    // Also make sure that we are actually checking checkboxes over a range and
-////    // that a checkbox has been checked or unchecked before.
-////    if (e.shiftKey && lastChecked && lastChecked != e.target) {
-////      // We use the checkbox's parent TR to do our range searching.
-////      Drupal.tableSelectRange($(e.target).closest('tr')[0], $(lastChecked).closest('tr')[0], e.target.checked);
-////    }
-////
-////    // If all checkboxes are checked, make sure the select-all one is checked too, otherwise keep unchecked.
-////    updateSelectAll((checkboxes.length == $(checkboxes).filter(':checked').length));
-////
-////    // Keep track of the last checked checkbox.
-////    lastChecked = e.target;
-//  });
-//};
 
 /**
  * Attach ajax click link to the pager link.

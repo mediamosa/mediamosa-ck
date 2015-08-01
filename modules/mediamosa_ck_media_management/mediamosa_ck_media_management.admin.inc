@@ -14,11 +14,10 @@ function _mediamosa_ck_media_management_page() {
   $page[] = '<div id="mediamosa-ck-cs-popup-full"></div>';
   $page[] = '<div id="mediamosa-ck-cs-popup-right"></div>';
 
-  // Add the search form.
-  $variables['left'] = _mediamosa_ck_media_management_search_panel();
+  $variables['left'] = _mediamosa_ck_media_management_left_panel();
 
-  // Upload contents.
-  $variables['right'] = _mediamosa_ck_media_management_batch_panel();
+  $variables['right'] = _mediamosa_ck_media_management_right_panel();
+
 
   $page[] = theme('mediamosa_ck_two_column_page', $variables);
 
@@ -27,26 +26,23 @@ function _mediamosa_ck_media_management_page() {
 
 // ------------------------------------------------------- Search panel + forms.
 /**
- * Left search panel.
+ * The search result panel.
  *
  * @return string
  *   The search panel in HTML.
  */
-function _mediamosa_ck_media_management_search_panel() {
-
-  // Get the asset selection form.
-  $search_form = drupal_get_form('mediamosa_ck_media_management_search_form');
-  $media_management_search_form = drupal_render($search_form);
+function _mediamosa_ck_media_management_right_panel() {
 
   $variables = array(
     'tabs' => array(
       array(
-        'title' => 'Search',
-        'content' => $media_management_search_form,
-      ),
-      array(
         'title' => 'Search result',
         'content' => _mediamosa_ck_media_management_search_wrapper(),
+      ),
+      array(
+        'title' => mediamosa_ck_media_management::get_selection_state_count_text(),
+        'content' => _mediamosa_ck_media_management_batch_selection_form_page(),
+        'id' => 'ck-tab-mm-selection',
       ),
     ),
     'tab-overlay' => 'search',
@@ -76,7 +72,6 @@ function mediamosa_ck_media_management_search_form($form, &$form_state) {
     '#title' => 'Search filter',
   );
 
-  // @todo: Get collections.
   $collections = MediaMosaCkConnectorWrapper::get_collections_for_options(array(), array('' => t('Select collection')));
 
   // Get the metadata options array for dropdown.
@@ -90,10 +85,23 @@ function mediamosa_ck_media_management_search_form($form, &$form_state) {
     'search_operator' => 'and',
     'cql' => '',
     'search_collection' => 0,
+    'search_text' => '',
   );
 
+  $form['filter']['search_text'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Search'),
+    '#description' => t("Enter free text to search."),
+    '#attributes' => array(
+      'placeholder' => 'Enter any text to search',
+      'class' => array('ck-mm-search-text-submit-on-enter'),
+    ),
+    '#default_value' => $values['search_text'],
+  );
+
+  // For now hide the search_operator.
   $form['filter']['search_operator'] = array(
-    '#type' => 'select',
+    '#type' => 'hidden',
     '#title' => t('Search criteria operator'),
     '#description' => t("Filter on all search criteria ('AND') or a least one criterium ('OR')."),
     '#options' => array('or' => t('OR'), 'and' => t('AND')),
@@ -112,7 +120,11 @@ function mediamosa_ck_media_management_search_form($form, &$form_state) {
       '#type' => 'select',
       '#title' => t('Published'),
       '#description' => t('limit published / unpublished assets.'),
-      '#options' => array(1 => 'show published/unpublished', 2 => 'only published'),
+      '#options' => array(
+        'ALL' => t('show all'),
+        'TRUE' => t('show published'),
+        'FALSE' => t('show unpublished'),
+      ),
       '#default_value' => 1,
     );
 
@@ -147,7 +159,7 @@ function mediamosa_ck_media_management_search_form($form, &$form_state) {
     '#type' => 'fieldset',
     '#title' => 'Metadata search',
     '#collapsible' => TRUE,
-    '#collapsed' => FALSE, //empty($_SESSION['mediamosa_ck_mm'][$values['type']]['search_metadata']),
+    '#collapsed' => FALSE,
   );
 
   // Get metadata def.
@@ -342,9 +354,18 @@ function _mediamosa_ck_media_management_search_page() {
   // Setup header.
   $header = array(
     'title' => t('Title'),
-    'isprivate' => t('Published'),
-    'videotimestampmodified' => t('Modified'),
-    t('Actions'),
+    array(
+      'data' => t('Published'),
+      'class' => 'mm-ck-mm-published',
+    ),
+    array(
+      'data' => t('Modified'),
+      'class' => 'mm-ck-mm-modified',
+    ),
+    array(
+      'data' => t('Actions'),
+      'class' => 'mm-ck-mm-actions',
+    ),
   );
 
   $options = array(
@@ -372,13 +393,16 @@ function _mediamosa_ck_media_management_search_page() {
         'data' => $asset['title'],
       ),
       array(
-        'data' => $asset['isprivate'] == 'TRUE' ? 'no' : 'yes',
+        'data' => $asset['published'] ? t('yes') : t('no'),
+        'class' => 'mm-ck-mm-published'
       ),
       array(
         'data' => $asset['videotimestampmodified'],
+        'class' => 'mm-ck-mm-modified',
       ),
       array(
         'data' => empty($actions) ? '-' : implode(', ', $actions),
+        'class' => 'mm-ck-mm-actions',
       ),
     );
   }
@@ -395,7 +419,8 @@ function _mediamosa_ck_media_management_search_page() {
       'page' => $page,
       'pager top' => FALSE,
       'selection' => $default_value,
-      'selection checkbox class' => 'mm-ck-cs-checkbox-search',
+      'selection checkbox class' => 'mm-ck-mm-checkbox-search',
+      'selection checkbox class all' => 'mm-ck-mm-checkbox-search-all',
       'caption_bottom' => t('Total found: @total', array('@total' => $item_count_total)),
     )
   );
@@ -404,14 +429,15 @@ function _mediamosa_ck_media_management_search_page() {
 /**
  * Called from JQuery when checkbox is (un)checked in search result.
  *
- * @param string $id
- *   The asset ID.
+ * @param string $ids
+ *   The query encoded asset IDs.
  * @param string $state
  *   Either 'true' or 'false'. State of the checkbox.
  */
-function _mediamosa_ck_json_mediamanagement_selection_state_ajax($id, $state) {
+function _mediamosa_ck_json_mediamanagement_selection_state_ajax($ids, $state) {
   global $user;
-  mediamosa_ck_media_management::set_selection_state($user->uid, $id, drupal_strtolower($state) == 'true');
+  mediamosa_ck_media_management::set_selection_state($user->uid, drupal_get_query_array($ids), drupal_strtolower($state) === 'true');
+  drupal_json_output(array('text' => mediamosa_ck_media_management::get_selection_state_count_text()));
   drupal_exit();
 }
 
@@ -422,12 +448,16 @@ function _mediamosa_ck_json_mediamanagement_selection_state_ajax($id, $state) {
  * @return string
  *   The batch panel in HTML.
  */
-function _mediamosa_ck_media_management_batch_panel() {
+function _mediamosa_ck_media_management_left_panel() {
+  // Get the asset selection form.
+  $search_form = drupal_get_form('mediamosa_ck_media_management_search_form');
+  $media_management_search_form = drupal_render($search_form);
+
   $variables = array(
     'tabs' => array(
       array(
-        'title' => 'Selection',
-        'content' => _mediamosa_ck_media_management_batch_selection_form_page(),
+        'title' => 'Search',
+        'content' => $media_management_search_form,
       ),
       array(
         'title' => 'Create batch',
@@ -445,7 +475,7 @@ function _mediamosa_ck_media_management_batch_panel() {
   if (mediamosa_ck_media_management_queue::count_queued_batches()) {
     $variables['tabs'][] = array(
       'title' => t('Queue'),
-      'content' => _mediamosa_ck_media_management_batch_panel_queue_page(),
+      'content' => _mediamosa_ck_media_management_left_panel_queue_page(),
     );
   }
 
@@ -482,7 +512,7 @@ function _mediamosa_ck_media_management_batch_create_form_page() {
  * @return string
  *   The queue listing content.
  */
-function _mediamosa_ck_media_management_batch_panel_queue_page() {
+function _mediamosa_ck_media_management_left_panel_queue_page() {
   $queued = drupal_get_form('mediamosa_ck_media_management_batch_panel_queue_form');
   return drupal_render($queued);
 }
@@ -619,8 +649,18 @@ function _mediamosa_ck_media_management_batch_selection_page() {
   // Setup header.
   $header = array(
     'title' => t('Title'),
-    'isprivate' => t('Published'),
-    'videotimestampmodified' => t('Modified'),
+    array(
+      'data' => t('Published'),
+      'class' => 'mm-ck-mm-published',
+    ),
+    array(
+      'data' => t('Modified'),
+      'class' => 'mm-ck-mm-modified',
+    ),
+    array(
+      'data' => t('Actions'),
+      'class' => 'mm-ck-mm-actions',
+    ),
   );
 
   $page = isset($_GET['page']) ? $_GET['page'] : 0;
@@ -633,14 +673,29 @@ function _mediamosa_ck_media_management_batch_selection_page() {
   $assets = mediamosa_ck_media_management::get_selection_assets($options);
   $item_count_total = mediamosa_ck_media_management::get_batch_asset_count();
 
-  $options = array();
+  $rows = array();
   $default_value = array();
   if (!empty($assets)) {
     foreach ($assets['assets'] as $asset_id => $asset) {
-      $options[$asset_id] = array(
-        'title' => $asset['title'],
-        'isprivate' => $asset['isprivate'] == 'TRUE' ? 'no' : 'yes',
-        'videotimestampmodified' => $asset['videotimestampmodified'],
+      $actions = array();
+      $actions[] = l(t('view'), request_path() . '/asset/' . $asset_id, array('query' => drupal_get_destination(), 'attributes' => array('class' => array('cs-link-popup'))));
+
+      $rows[$asset_id] = array(
+        array(
+          'data' => $asset['title'],
+        ),
+        array(
+          'data' => $asset['published'] ? t('yes') : t('no'),
+          'class' => 'mm-ck-mm-published'
+        ),
+        array(
+          'data' => $asset['videotimestampmodified'],
+          'class' => 'mm-ck-mm-modified',
+        ),
+        array(
+          'data' => empty($actions) ? '-' : implode(', ', $actions),
+          'class' => 'mm-ck-mm-actions',
+        ),
       );
 
       // By default, all are selected.
@@ -652,9 +707,11 @@ function _mediamosa_ck_media_management_batch_selection_page() {
     array(
       'attributes' => array('class' => array('mediamosa-ck-media-management-batch-selection')),
       'header' => $header,
-      'rows' => $options,
+      'rows' => $rows,
       'empty' => t('There are no assets selected.'),
       'selection' => $default_value,
+      'selection checkbox class' => 'mm-ck-mm-checkbox-search',
+    //  'selection checkbox class all' => 'mm-ck-mm-checkbox-search-all',
       'pager top' => FALSE,
       'page' => $page,
       'item_count_total' => $item_count_total,

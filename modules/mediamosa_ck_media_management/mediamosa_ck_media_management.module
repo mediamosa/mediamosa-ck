@@ -4,6 +4,9 @@
  * The MediaMosa batch module.
  */
 
+// Needed for system/ajax calling the validation hooks.
+module_load_include('admin.inc', 'mediamosa_ck_media_management', 'mediamosa_ck_media_management');
+
 /**
  * Implements hook_permission().
  */

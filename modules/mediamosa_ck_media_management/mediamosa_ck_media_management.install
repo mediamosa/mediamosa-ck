@@ -225,3 +225,9 @@ function mediamosa_ck_media_management_schema() {
 
   return $schema;
 }
+
+/**
+ * This empty update will force Drupal to rebuild the registry.
+ */
+function mediamosa_ck_media_management_update_7000() {
+}

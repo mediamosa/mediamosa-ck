@@ -118,7 +118,7 @@ function mediamosa_ck_theme() {
         'empty' => '',
         // Selection box (optional).
         'selection' => NULL,
-        'selection checkbox class' => 'mm-ck-cs-checkbox',
+        'selection checkbox class' => 'mm-ck-mm-checkbox',
         // Make rows dragable.
         'draggable' => FALSE,
         // Pager (optional).

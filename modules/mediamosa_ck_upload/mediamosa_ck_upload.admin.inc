@@ -104,7 +104,10 @@ function _mediamosa_ck_media_management_upload_listing_refresh_ajax($form, $form
       'header' => array(
         t('title'),
         t('published'),
-        t('date'),
+        array(
+          'data' =>  t('date'),
+          'style' => 'text-align:right;',
+        ),
       ),
       'rows' => array(),
       'empty' => t('No assets uploaded.'),
@@ -116,9 +119,11 @@ function _mediamosa_ck_media_management_upload_listing_refresh_ajax($form, $form
           'data' => $asset['title'],
         ),
         array(
-          'data' => $asset['isprivate'] == 'TRUE' ? 'no' : 'yes',
+          'style' => 'width:50px;text-align:center;',
+          'data' => $asset['published'] ? t('yes') : t('no'),
         ),
         array(
+          'style' => 'width:180px;text-align:right;',
           'data' => $asset['videotimestampmodified'],
         ),
       );

@@ -1,3 +1,14 @@
+Mediamosa CK Media Management 7.x-3.6-dev
+-----------------------------------------
+- Fixed several CSS problems.
+- Cleaned up result table CSS.
+- Added select all box to search result.
+- Added text free search box to search form.
+- Made the AND/OR option hidden.
+- Tab selection now show how many items are selected.
+- Swapped the left and right panel.
+- Moved tabs to more logical locations.
+
 
 Mediamosa CK Media Management 7.x-3.x-dev
 -----------------------------------------

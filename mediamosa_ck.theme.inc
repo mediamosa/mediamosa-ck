@@ -24,7 +24,7 @@
  *       Do not use pagers when dragable as you can not drag from page to page.
  *   Add selection boxes (checkbox).
  *   - 'selection' => array(with selected IDs or empty) | NULL
- *   - 'selection checkbox class' => 'mm-ck-cs-checkbox' (optional).
+ *   - 'selection checkbox class' => 'mm-ck-mm-checkbox' (optional).
  *   Pager (optional)
  *   - 'page' => 0
  *   - 'item_count_total' => 0,
@@ -58,13 +58,33 @@ function theme_mediamosa_ck_table($variables) {
 
   // Add extra selection box.
   if (isset($variables['selection'])) {
-    array_unshift($variables['header'], array('class' => array('select-all')));
+    $all_selected = count($variables['selection']) == count($variables['rows']) && count($variables['rows']);
+    $ids = drupal_http_build_query(array_keys($variables['rows']));
+
+    if (!empty($variables['selection checkbox class all'])) {
+      $checkbox = array(
+        $ids => array(
+          '#return_value' => $ids,
+          '#checked' => $all_selected,
+          '#type' => 'checkbox',
+          '#attributes' => array('class' => array($variables['selection checkbox class all'])),
+        ),
+      );
+      array_unshift($variables['header'], array(
+        'class' => array($variables['selection checkbox class all']),
+        'data' => drupal_render($checkbox),
+      ));
+    }
+    else {
+      array_unshift($variables['header'], array('class' => array('ck-tab-select-all-off')));
+    }
 
     // Add checkbox to rows.
     foreach ($variables['rows'] as $id => &$row) {
+      $ids = drupal_http_build_query(array(0 => $id));
       $checkbox = array(
-        $id => array(
-          '#return_value' => $id,
+        $ids => array(
+          '#return_value' => $ids,
           '#checked' => !empty($variables['selection'][$id]),
           '#type' => 'checkbox',
           '#attributes' => array('class' => array($variables['selection checkbox class'])),
@@ -222,7 +242,9 @@ function theme_mediamosa_ck_tabs($variables) {
     }
     $identifiers[$identifier] = $identifier;
 
-    $tabs['ck-tab-' . $identifier] = '<li>' . l(t($tab['title']), request_path(), array('fragment' => 'ck-tab-' . $identifier, 'attributes' => array('name' => 'ck-tab-content-' . $identifier, 'id' => 'ck-tab-' . $identifier, 'class' => array('ck-tab-link')))) . '</li>';
+    $tab_id = empty($tab['id']) ? 'ck-tab-' . $identifier : $tab['id'];
+
+    $tabs['ck-tab-' . $identifier] = '<li>' . l(t($tab['title']), request_path(), array('fragment' => 'ck-tab-' . $identifier, 'attributes' => array('name' => 'ck-tab-content-' . $identifier, 'id' => $tab_id, 'class' => array('ck-tab-link')))) . '</li>';
     $tabs_content['ck-tab-content-' . $identifier] = '<div>' . $tab['content'] . '</div>';
     $id++;
   }
