@@ -82,6 +82,7 @@ function mediamosa_ck_date_formats() {
     array(
       'type' => 'mediamosa_ck_normal',
       'format' => 'd-m-Y',
+      'locales' => array(),
     ),
     array(
       'type' => 'mediamosa_ck_normal',

@@ -1,4 +1,4 @@
-Mediamosa CK 7.x-3.5.2-dev build (99)
+Mediamosa CK 7.x-3.5.2-dev build (100)
 -------------------------------------
 - Fixed an awkward setting flip on 'granted'.
 - Fixed query settings for mediamosa_ck views.
@@ -134,7 +134,8 @@ Mediamosa CK 7.x-3.5.2-dev build (99)
 - Turned off and removed several media module related modules. We stopped
   support on the media module. Make sure to backup database before you run
   update.php.
-
+- Added 'locales' empty array to mediamosa_ck_date_formats() for
+  mediamosa_ck_normal date type.
 
 Mediamosa CK 7.x-2.0
 --------------------
