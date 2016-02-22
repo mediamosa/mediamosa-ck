@@ -1846,4 +1846,43 @@ class MediaMosaCkConnectorWrapper extends mediamosa_connector {
     // Got here, return FALSE.
     return FALSE;
   }
+
+  /**
+   * Get the status for a specific Job.
+   *
+   * @param int $job_id
+   *   The job ID to lookup.
+   *
+   * @return array
+   *   An array with the job info with array keys: 'owner', status, progress,
+   */
+  public static function get_job_status($job_id) {
+    try {
+      // Get user id for current session.
+      $user_id = mediamosa_ck::session_user_id();
+
+      // Do request.
+      $response = mediamosa_ck::request_get_fatal('/job/' . $job_id . '/status', array('user_id' => $user_id, 'data' => array('is_app_admin' => 'TRUE')));
+      if ((int) $response->header->item_count > 0) {
+        return array(
+          'job_id' => (string) $response->items->item->id,
+          'owner' => (string) $response->items->item->owner,
+          'status' => (string) $response->items->item->status,
+          'progress' => (string) $response->items->item->progress,
+          'job_type' => (string) $response->items->item->job_type,
+        );
+      }
+      else {
+        mediamosa_ck::watchdog_error(t('Retrieved empty result for job_id @job_id'), array('@job_id' => $job_id));
+      }
+
+    }
+    catch (Exception $e) {
+      mediamosa_ck::watchdog(t('Unable retrieve job status: !message.'), array('!message' => $e->getMessage()));
+    }
+
+    // Got here, return FALSE.
+    return FALSE;
+  }
+}
 }
