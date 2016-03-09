@@ -1,5 +1,22 @@
-Mediamosa CK 7.x-3.5.2-dev build (100)
--------------------------------------
+Mediamosa CK 7.x-3.6.0 build 101
+--------------------------------
+- Added bagit module.
+- Added function get_job_status
+- Added locales empty array to mediamosa_ck_date_formats() for mediamosa_ck_normal date type.
+- First fase of improvements on media management tool.
+- Turned off and removed several media module related modules. We stopped support on the media module. Make sure you
+  make backup before attempting to run update.php.
+- Added private option to collections.
+- Improved views field 'filter on access'.
+- Added support for published flag in views.
+- Set still defaults to generate 5 stills.
+- Added api: get_job info.
+- Fixed media management delete batch query, allowing deleting of selected assets.
+- Removed support and usage of the media (2.x) module.
+
+
+Mediamosa CK 7.x-3.5.2 build 100
+--------------------------------
 - Fixed an awkward setting flip on 'granted'.
 - Fixed query settings for mediamosa_ck views.
 - Added support for boolean views fields.
@@ -136,6 +153,7 @@ Mediamosa CK 7.x-3.5.2-dev build (100)
   update.php.
 - Added 'locales' empty array to mediamosa_ck_date_formats() for
   mediamosa_ck_normal date type.
+
 
 Mediamosa CK 7.x-2.0
 --------------------

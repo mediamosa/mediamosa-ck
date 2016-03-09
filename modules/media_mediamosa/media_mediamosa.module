@@ -1,5 +1,6 @@
 <?php
 /**
  * @file
- * The media mediamosa module is no longer supported
+ * The media mediamosa module (extension on the Drupal media module) is no
+ * longer supported
  */
