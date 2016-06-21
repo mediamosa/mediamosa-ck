@@ -1,3 +1,7 @@
+Mediamosa CK 7.x-3.6.0 build 102
+--------------------------------
+- Fixed merge issue with Github.
+
 Mediamosa CK 7.x-3.6.0 build 101
 --------------------------------
 - Added bagit module.
