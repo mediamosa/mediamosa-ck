@@ -25,9 +25,9 @@ function mediamosa_ck_still_requirements($phase) {
   $requirements = array();
   $t = get_t();
   if (($phase == 'runtime') || ($phase === 'install')) {
-    $requirements['media_mediamosa']['title'] = $t('No longer supported');
-    $requirements['media_mediamosa']['description'] = $t('The module mediamosa_ck_still is no longer supported and can not be turned on.');
-    $requirements['media_mediamosa']['severity'] = REQUIREMENT_ERROR;;
+    $requirements['mediamosa_ck_still']['title'] = $t('No longer supported');
+    $requirements['mediamosa_ck_still']['description'] = $t('The module mediamosa_ck_still is no longer supported and can not be turned on.');
+    $requirements['mediamosa_ck_still']['severity'] = REQUIREMENT_ERROR;;
   }
 
   return $requirements;
